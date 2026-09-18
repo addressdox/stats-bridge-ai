@@ -344,6 +344,47 @@ describe("call audio lifecycle with synthetic browser devices", () => {
     expect(stopped).toBe(1);
   });
 
+  for (const [renderer, chunkSizes] of [
+    ["native", [960, 1920, 480, 960]],
+    // Sample counts from observed preserved-voice network chunks, after byte alignment.
+    ["preserved", [229, 673, 1143, 1343, 2692]],
+  ] as const) {
+    test(`${renderer} PCM arriving before the previous chunk ends does not acquire a silent gap`, async () => {
+      const { audio } = callbacks();
+      permission.resolve(stream);
+      await audio.start();
+      const context = FakeContext.instances[0]!;
+      let position = 0;
+      for (let i = 0; i < 20; i++) {
+        const previous = context.sources.at(-1);
+        const previousEnd = previous ? previous.startTime! + previous.buffer!.duration : null;
+        // Main-thread/network delivery has only 1–4 ms of headroom, but is still on time.
+        if (previousEnd !== null) context.currentTime = previousEnd - [0.001, 0.004, 0.002][i % 3]!;
+        const length = chunkSizes[i % chunkSizes.length]!;
+        const samples = Float32Array.from({ length }, (_, sample) =>
+          Math.sin(((position + sample) / 24000) * 440 * 2 * Math.PI) * 0.4,
+        );
+        position += length;
+        audio.queue(encodePcm16(samples));
+        const scheduled = context.sources.at(-1)!;
+        if (previousEnd !== null) expect(scheduled.startTime).toBeCloseTo(previousEnd, 9);
+        expect(scheduled.buffer!.data.length).toBe(length);
+      }
+    });
+  }
+
+  test("a real playback underrun starts a new buffer with startup headroom", async () => {
+    const { audio } = callbacks();
+    permission.resolve(stream);
+    await audio.start();
+    const context = FakeContext.instances[0]!;
+    const pcm = encodePcm16(new Float32Array(960));
+    audio.queue(pcm);
+    context.currentTime = context.sources[0]!.startTime! + 0.04 + 0.02;
+    audio.queue(pcm);
+    expect(context.sources[1]!.startTime).toBeCloseTo(context.currentTime + 0.005, 9);
+  });
+
   test("encoded audio finishing decode after interruption cannot restart playback", async () => {
     const { audio, playback } = callbacks();
     permission.resolve(stream);

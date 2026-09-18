@@ -76,7 +76,7 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
 
   function submit(question: string) {
     const trimmed = question.trim();
-    if (trimmed.length < 3 || ask.isPending) return;
+    if (!trimmed || ask.isPending) return;
     setTurns((current) => [...current, { id: uid(), role: "user", text: trimmed }]);
     setDraft("");
     setVoiceStatus("ready");
@@ -110,7 +110,7 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
                     {turn.role === "assistant" && <Message from="assistant"><MessageContent className="w-full"><AnswerTurn answer={turn.answer} compact={compact} onFollowUp={submit} onEscalate={() => escalate.mutate(turn.answer.question)} escalating={escalate.isPending} /></MessageContent></Message>}
                   </motion.div>
                 ))}
-                {ask.isPending && <div className="flex items-center gap-3 text-sm text-muted-foreground"><AssistantPortrait state="checking" size="small" className="!size-12" /><Shimmer>Checking approved sources…</Shimmer></div>}
+                {ask.isPending && <div className="flex items-center gap-3 text-sm text-muted-foreground"><AssistantPortrait state="checking" size="small" className="!size-12" /><Shimmer>Preparing a reply…</Shimmer></div>}
               </AnimatePresence>
             )}
 
@@ -134,10 +134,10 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
           <PromptInput onSubmit={({ text }) => submit(text)} className="mx-auto max-w-3xl rounded-2xl border-input bg-surface/90 shadow-[var(--glass-shadow)] backdrop-blur-xl">
             <PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" />
             <PromptInputFooter className="justify-end">
-              <PromptInputSubmit disabled={draft.trim().length < 3 || ask.isPending} status={ask.isPending ? "submitted" : "ready"} />
+              <PromptInputSubmit disabled={!draft.trim() || ask.isPending} status={ask.isPending ? "submitted" : "ready"} />
             </PromptInputFooter>
           </PromptInput>
-          <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-muted-foreground">Answers use approved Stats SA material. Media and sensitive requests always go to a person.</p>
+          <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-muted-foreground">Statistical answers use approved Stats SA material. Media and sensitive requests always go to a person.</p>
         </div>
       </section>
 
@@ -160,6 +160,8 @@ function AnswerTurn({
   onEscalate: () => void;
   escalating: boolean;
 }) {
+  const conversational = answer.outcome === "answered" && answer.references.length === 0 && answer.officialBlocks.length === 0;
+
   return (
     <div className="space-y-3">
       {answer.outcome === "escalated" && answer.caseReference && (
@@ -217,10 +219,10 @@ function AnswerTurn({
 
       {answer.aiExplanation && (
         <div className="rounded-2xl border border-assist/35 bg-assist-surface p-5">
-          <p className="mb-2 flex items-center gap-1.5 eyebrow text-assist">
+          {!conversational && <p className="mb-2 flex items-center gap-1.5 eyebrow text-assist">
             <Bot aria-hidden className="size-3.5" />
             AI-generated explanation
-          </p>
+          </p>}
           <p className="text-[15px] leading-relaxed text-foreground">{answer.aiExplanation}</p>
         </div>
       )}
@@ -279,7 +281,7 @@ function AnswerTurn({
             {q}
           </button>
         ))}
-        {answer.outcome !== "escalated" && (
+        {answer.outcome !== "escalated" && !conversational && (
           <button
             type="button"
             onClick={onEscalate}

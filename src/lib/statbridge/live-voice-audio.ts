@@ -254,7 +254,13 @@ export class LiveVoiceAudio {
     const source = context.createBufferSource();
     source.buffer = buffer;
     source.connect(this.analyser);
-    const start = Math.max(context.currentTime + 0.005, this.nextStartTime);
+    // Apply startup headroom only to an empty/expired queue. Reapplying it to
+    // an on-time chunk inserts silence when less than 5 ms remains, producing
+    // repeated hard edges in otherwise continuous speech from either renderer.
+    const start =
+      this.nextStartTime > 0 && this.nextStartTime >= context.currentTime
+        ? this.nextStartTime
+        : context.currentTime + 0.005;
     source.onended = () => {
       if (!this.sources.delete(source)) return;
       source.disconnect();

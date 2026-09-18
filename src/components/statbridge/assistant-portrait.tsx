@@ -11,8 +11,8 @@ const STATE_LABELS: Record<AssistantState, string> = {
   ready: "Naledi assistant is ready",
   connecting: "Connecting to voice input",
   listening: "Listening",
-  checking: "Checking approved sources",
-  speaking: "Reading the checked answer",
+  checking: "Preparing a reply",
+  speaking: "Naledi is speaking",
   ended: "Voice session ended",
 };
 

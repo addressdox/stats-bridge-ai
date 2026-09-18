@@ -104,6 +104,8 @@ describe("constrained realtime voice sessions", () => {
     expect(prompt).toContain("Call answer_question for EVERY substantive question");
     expect(prompt).toContain("explicit spoken agreement before invoking");
     expect(prompt).toContain("Never speak internal drafts");
+    expect(prompt).toContain("ordinary social conversation do not need statistical evidence");
+    expect(prompt).toContain("a greeting or casual wording never waives that check");
   });
 
   test("tokens lock the exact model and persona, allow one start, expire within thirty minutes", () => {

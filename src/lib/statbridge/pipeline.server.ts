@@ -3,7 +3,7 @@
  *
  * Order of work, and none of it may be skipped:
  *   1. deterministic routing rules
- *   2. retrieval limited to approved, public source material
+ *   2. authored service help, or retrieval limited to approved, public material
  *   3. the assistant proposes evidence ids and plain wording only
  *   4. the server resolves ids, inserts verified values itself and rejects
  *      anything unsupported
@@ -16,6 +16,7 @@ import type { PublicAnswer, PublicRenderBlock, PublicSourceReference } from "./c
 import { API_VERSION } from "./contract";
 import { languageInstruction, normalizeLanguage } from "./languages";
 import { interpretQuestion, localizeServiceText, readQuestionContext } from "./question.server";
+import { serviceReply } from "./service-replies";
 import { AssistantUnavailable, getAssistant, parseModelJson } from "./provider.server";
 import {
   isAcknowledgementOnly,
@@ -24,7 +25,7 @@ import {
   type ReviewReason,
 } from "./routing.server";
 
-const PROMPT_VERSION = "ask-2026-09-3";
+const PROMPT_VERSION = "ask-2026-09-4";
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
@@ -299,6 +300,38 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
       siteId,
       guidelineId: guideline?.id ?? null,
       startedAt: started,
+    });
+  }
+
+  // Product help contains no statistics and must not be mistaken for a source gap.
+  // Review and language gates above still apply; no model-authored facts bypass retrieval.
+  if (interpretation.serviceIntent) {
+    const help = serviceReply(interpretation.serviceIntent, interpretation.conversationalReply);
+    const [text, followUps] = await Promise.all([
+      interpretation.serviceIntent === "conversation" && interpretation.conversationalReply
+        ? Promise.resolve(help.text)
+        : localizeServiceText(help.text, input.language),
+      Promise.all(help.followUps.map((question) => localizeServiceText(question, input.language))),
+    ]);
+    return await storeAnswer({
+      db,
+      input,
+      siteId,
+      guidelineId: guideline?.id ?? null,
+      outcome: "answered",
+      topic: "service_help",
+      officialBlocks: [],
+      aiExplanation: text,
+      caveats: [],
+      followUps,
+      references: [],
+      clarification: null,
+      gapDescription: null,
+      reviewReasons: [],
+      evidence: [],
+      provider: null,
+      latency: Date.now() - started,
+      validation: { service_intent: interpretation.serviceIntent, wording: interpretation.serviceIntent === "conversation" ? "social_reply" : "authored_service_help" },
     });
   }
 

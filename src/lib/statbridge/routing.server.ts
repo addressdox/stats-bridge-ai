@@ -73,6 +73,14 @@ const HUMAN_REQUEST_SIGNALS = [
   /\b(i want|i need|please get)\b.{0,30}\b(human|real person)\b/i,
 ];
 
+// These complete questions ask about using the assistant, not causal judgement.
+// Anchoring the whole message keeps an appended statistical request under review.
+const ASSISTANT_HELP_ONLY = [
+  /^(?:please\s+)?do you think you (?:can|could) help(?: me| us)?[?.!]*$/i,
+  /^why (?:are you (?:called|named)|is your name) naledi[?.!]*$/i,
+  /^how well (?:can|do) you (?:speak|understand) (?:english|afrikaans|isizulu|isixhosa|sepedi|sesotho|setswana|siswati|tshivenda|xitsonga|isindebele)[?.!]*$/i,
+];
+
 export type RoutingVerdict = {
   reasons: ReviewReason[];
   adversarial: boolean;
@@ -98,7 +106,7 @@ export function routeQuestion(question: string): RoutingVerdict {
   if (matchAny(mediaText, MEDIA_SIGNALS)) reasons.add("media");
   if (matchAny(text, SENSITIVE_SIGNALS)) reasons.add("sensitive");
   if (matchAny(text, OFFICIAL_POSITION_SIGNALS)) reasons.add("formal_approval");
-  if (matchAny(text, INTERPRETATION_SIGNALS)) reasons.add("interpretation");
+  if (!matchAny(text, ASSISTANT_HELP_ONLY) && matchAny(text, INTERPRETATION_SIGNALS)) reasons.add("interpretation");
   if (matchAny(text, HUMAN_REQUEST_SIGNALS)) reasons.add("complex");
 
   const adversarial = matchAny(text, ADVERSARIAL_SIGNALS);

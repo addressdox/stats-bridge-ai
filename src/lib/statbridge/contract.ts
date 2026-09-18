@@ -195,7 +195,7 @@ export const publicAnswerSchema = z.object({
 export type PublicAnswer = z.infer<typeof publicAnswerSchema>;
 
 export const askRequestSchema = z.object({
-  question: z.string().trim().min(3, "Please type a question.").max(1000),
+  question: z.string().trim().min(1, "Please type a message.").max(1000),
   readingLevel: z.enum(["short", "detailed"]).default("short"),
   language: z.string().trim().max(40).default("auto"),
   channel: z.enum(["web", "widget", "api"]).default("web"),
