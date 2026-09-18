@@ -81,7 +81,6 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const lastQuestion = [...turns].reverse().find((turn) => turn.role === "user");
   const showCanvas = Boolean(latestWithEvidence) && canvasOpen && !compact;
   const state = roomState(voiceStatus, ask.isPending);
-  const statusText = state === "ready" ? "Ready when you are" : state === "connecting" ? "Connecting…" : state === "listening" ? "Listening…" : state === "checking" ? "Checking approved sources…" : "Voice session ended";
 
   return (
     <div className={showCanvas ? "grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,27rem)]" : "mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"}>
