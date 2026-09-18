@@ -46,7 +46,7 @@ export function AssistantMark({
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--color-accent) 26%, transparent) 0%, transparent 68%)",
         }}
-        animate={reduce ? undefined : { scale: active ? 1 + swell : [1, 1.06, 1], opacity: active ? 0.9 : [0.5, 0.75, 0.5] }}
+        animate={reduce ? {} : { scale: active ? 1 + swell : [1, 1.06, 1], opacity: active ? 0.9 : [0.5, 0.75, 0.5] }}
         transition={{ duration: active ? 0.18 : 4.5, repeat: active ? 0 : Infinity, ease: "easeInOut" }}
       />
 
@@ -58,7 +58,7 @@ export function AssistantMark({
           inset: size * 0.04,
           borderColor: "color-mix(in oklab, var(--color-official) 45%, transparent)",
         }}
-        animate={reduce ? undefined : { rotate: 360 }}
+        animate={reduce ? {} : { rotate: 360 }}
         transition={{ duration: 46, repeat: Infinity, ease: "linear" }}
       />
 
@@ -71,7 +71,7 @@ export function AssistantMark({
           borderColor: "color-mix(in oklab, var(--color-accent) 70%, transparent)",
           boxShadow: "var(--glow-teal)",
         }}
-        animate={reduce ? undefined : { scale: 1 + swell * 0.6 }}
+        animate={reduce ? {} : { scale: 1 + swell * 0.6 }}
         transition={{ type: "spring", stiffness: 240, damping: 20 }}
       />
 
@@ -96,7 +96,7 @@ export function AssistantMark({
             aria-hidden
             className="absolute inset-0 rounded-full border-2 border-transparent"
             style={{ borderTopColor: "var(--color-accent)" }}
-            animate={reduce ? undefined : { rotate: 360 }}
+            animate={reduce ? {} : { rotate: 360 }}
             transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
           />
         )}

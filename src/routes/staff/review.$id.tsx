@@ -402,7 +402,7 @@ function WorkbenchPage() {
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="font-semibold">v{d.version_number}</span>
                       <span className="text-muted-foreground">
-                        {d.author_kind === "assistant" ? "Assistant suggestion" : "Written by a person"}
+                        {d.author_kind === "ai" ? "Assistant suggestion" : "Written by a person"}
                       </span>
                       <span className="text-muted-foreground">{new Date(d.created_at).toLocaleString("en-ZA")}</span>
                       <span className="font-mono text-[10px] text-muted-foreground">
