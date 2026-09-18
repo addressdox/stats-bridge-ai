@@ -92,9 +92,9 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
         conversationToken: body.token,
         connectionType: "webrtc",
         dynamicVariables: {
-          conversation_id: session?.conversationId ?? "",
-          browser_token: readBrowserToken(),
-          known_name: session?.knownName ?? "",
+          conversation_id: session?.conversationId ?? "none",
+          browser_token: readBrowserToken() || "none",
+          known_name: session?.knownName ?? "unknown",
         },
       });
     } catch {
@@ -110,6 +110,16 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
 
   useEffect(() => {
     if (startedRef.current) return;
+    // Give the conversation record a moment so the call can be tied to it,
+    // but never hold the caller waiting for it.
+    if (!session) {
+      const waited = setTimeout(() => {
+        if (startedRef.current) return;
+        startedRef.current = true;
+        void startCall();
+      }, 1500);
+      return () => clearTimeout(waited);
+    }
     startedRef.current = true;
     void startCall();
     return () => {
@@ -117,7 +127,7 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
     };
     // the call was requested by the click that opened this screen
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [session]);
 
   // call timer
   useEffect(() => {
