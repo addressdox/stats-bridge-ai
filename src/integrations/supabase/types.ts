@@ -1167,14 +1167,125 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_guidelines: {
+        Args: { _guideline_id: string }
+        Returns: undefined
+      }
+      approve_draft: { Args: { _draft_id: string }; Returns: string }
+      approve_source: {
+        Args: {
+          _basis?: Database["public"]["Enums"]["approval_basis"]
+          _version_id: string
+        }
+        Returns: undefined
+      }
+      assign_case: {
+        Args: { _case_id: string; _owner: string }
+        Returns: undefined
+      }
+      correct_routing: {
+        Args: {
+          _case_id: string
+          _kind: Database["public"]["Enums"]["case_kind"]
+          _note: string
+          _reasons: Database["public"]["Enums"]["review_reason"][]
+        }
+        Returns: undefined
+      }
+      erase_contacts: { Args: never; Returns: number }
+      flag_source_change: {
+        Args: {
+          _actor: string
+          _reason: Database["public"]["Enums"]["void_reason"]
+          _version_id: string
+        }
+        Returns: undefined
+      }
       has_staff_role: {
         Args: { _role: Database["public"]["Enums"]["staff_role"]; _uid: string }
         Returns: boolean
       }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      next_case_reference: { Args: never; Returns: string }
+      open_case: {
+        Args: {
+          _channel?: Database["public"]["Enums"]["channel"]
+          _consent?: boolean
+          _contact?: string
+          _deadline?: string
+          _is_demo?: boolean
+          _kind: Database["public"]["Enums"]["case_kind"]
+          _name?: string
+          _notice?: string
+          _origin_answer?: string
+          _outlet?: string
+          _question: string
+          _reasons: Database["public"]["Enums"]["review_reason"][]
+          _token_hash: string
+        }
+        Returns: {
+          id: string
+          reference: string
+        }[]
+      }
+      reject_case: {
+        Args: { _case_id: string; _reason: string }
+        Returns: undefined
+      }
+      reject_source: {
+        Args: { _reason: string; _version_id: string }
+        Returns: undefined
+      }
+      release_draft: { Args: { _case_id: string }; Returns: string }
+      request_changes: {
+        Args: { _case_id: string; _instruction: string }
+        Returns: undefined
+      }
+      require_role: {
+        Args: { _role: Database["public"]["Enums"]["staff_role"] }
+        Returns: string
+      }
+      save_draft: {
+        Args: {
+          _adapted_from?: string
+          _body: string
+          _case_id: string
+          _format?: Database["public"]["Enums"]["draft_format"]
+          _gaps?: string[]
+          _parts?: Json
+          _reading_level?: Database["public"]["Enums"]["reading_level"]
+        }
+        Returns: string
+      }
+      set_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["staff_role"]
+          _target: string
+        }
+        Returns: undefined
+      }
       staff_role_of: {
         Args: { _uid: string }
         Returns: Database["public"]["Enums"]["staff_role"]
+      }
+      start_review: { Args: { _case_id: string }; Returns: undefined }
+      withdraw_source: {
+        Args: { _reason: string; _version_id: string }
+        Returns: undefined
+      }
+      write_audit: {
+        Args: {
+          _action: string
+          _actor: string
+          _case_id: string
+          _detail: Json
+          _entity_id: string
+          _entity_kind: string
+          _from: string
+          _origin: Database["public"]["Enums"]["audit_origin"]
+          _to: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
