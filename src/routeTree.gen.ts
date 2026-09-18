@@ -15,6 +15,8 @@ import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
+import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as StaffReviewIndexRouteImport } from './routes/staff/review.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +48,16 @@ const CaseRefRoute = CaseRefRouteImport.update({
   path: '/case/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffSignInRoute = StaffSignInRouteImport.update({
+  id: '/staff/sign-in',
+  path: '/staff/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffReviewIndexRoute = StaffReviewIndexRouteImport.update({
+  id: '/staff/review/',
+  path: '/staff/review/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +65,9 @@ export interface FileRoutesByFullPath {
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/sign-in': typeof StaffSignInRoute
   '/case/': typeof CaseIndexRoute
+  '/staff/review/': typeof StaffReviewIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +75,9 @@ export interface FileRoutesByTo {
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/sign-in': typeof StaffSignInRoute
   '/case': typeof CaseIndexRoute
+  '/staff/review': typeof StaffReviewIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,13 +86,31 @@ export interface FileRoutesById {
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/sign-in': typeof StaffSignInRoute
   '/case/': typeof CaseIndexRoute
+  '/staff/review/': typeof StaffReviewIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/developers' | '/embed' | '/media' | '/case/$ref' | '/case/'
+  fullPaths:
+    | '/'
+    | '/developers'
+    | '/embed'
+    | '/media'
+    | '/case/$ref'
+    | '/staff/sign-in'
+    | '/case/'
+    | '/staff/review/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/developers' | '/embed' | '/media' | '/case/$ref' | '/case'
+  to:
+    | '/'
+    | '/developers'
+    | '/embed'
+    | '/media'
+    | '/case/$ref'
+    | '/staff/sign-in'
+    | '/case'
+    | '/staff/review'
   id:
     | '__root__'
     | '/'
@@ -84,7 +118,9 @@ export interface FileRouteTypes {
     | '/embed'
     | '/media'
     | '/case/$ref'
+    | '/staff/sign-in'
     | '/case/'
+    | '/staff/review/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -93,7 +129,9 @@ export interface RootRouteChildren {
   EmbedRoute: typeof EmbedRoute
   MediaRoute: typeof MediaRoute
   CaseRefRoute: typeof CaseRefRoute
+  StaffSignInRoute: typeof StaffSignInRoute
   CaseIndexRoute: typeof CaseIndexRoute
+  StaffReviewIndexRoute: typeof StaffReviewIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/sign-in': {
+      id: '/staff/sign-in'
+      path: '/staff/sign-in'
+      fullPath: '/staff/sign-in'
+      preLoaderRoute: typeof StaffSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/review/': {
+      id: '/staff/review/'
+      path: '/staff/review'
+      fullPath: '/staff/review/'
+      preLoaderRoute: typeof StaffReviewIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -149,7 +201,9 @@ const rootRouteChildren: RootRouteChildren = {
   EmbedRoute: EmbedRoute,
   MediaRoute: MediaRoute,
   CaseRefRoute: CaseRefRoute,
+  StaffSignInRoute: StaffSignInRoute,
   CaseIndexRoute: CaseIndexRoute,
+  StaffReviewIndexRoute: StaffReviewIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
