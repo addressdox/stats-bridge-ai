@@ -37,9 +37,9 @@ function roomState(voice: VoiceStatus, pending: boolean): AssistantState {
   return "ready";
 }
 
-export function AskExperience({ compact = false }: { compact?: boolean }) {
+export function AskExperience({ compact = false, initialDraft = "" }: { compact?: boolean; initialDraft?: string }) {
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(initialDraft);
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
   const [micLevel, setMicLevel] = useState(0);
