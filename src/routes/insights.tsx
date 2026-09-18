@@ -217,6 +217,13 @@ function InsightsPage() {
                       <p className="text-xs text-muted-foreground">
                         {t.geography} · {t.latestPeriod}
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => setDrillDown(t.measureKey)}
+                        className="mt-1 text-xs font-semibold text-accent underline underline-offset-2 print:hidden"
+                      >
+                        See every verified figure
+                      </button>
                       {t.points.length >= 2 && (
                         <div className="mt-3 h-28 w-full" role="img" aria-label={`${t.measure} over time`}>
                           <ResponsiveContainer width="100%" height="100%">
