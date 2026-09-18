@@ -108,6 +108,9 @@ export function SiteFooter() {
             <Link to="/ask" className="hover:text-foreground">
               Ask
             </Link>
+            <Link to="/insights" className="hover:text-foreground">
+              Insights
+            </Link>
             <Link to="/media" className="hover:text-foreground">
               Media desk
             </Link>

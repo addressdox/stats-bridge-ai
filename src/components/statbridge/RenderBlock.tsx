@@ -5,7 +5,18 @@
  * quiet notice instead of failing, so an older browser build can never crash
  * on a newer server response.
  */
-import { AlertTriangle, ExternalLink, FileText, Quote, ShieldCheck, TableIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  ExternalLink,
+  FileText,
+  ImageIcon,
+  PlayCircle,
+  Quote,
+  Sheet,
+  ShieldCheck,
+  TableIcon,
+} from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -110,6 +121,21 @@ function AccessibleTable({ columns, rows }: { columns: string[]; rows: Array<Rec
       </table>
     </div>
   );
+}
+
+/** Builds the download in the browser from the verified rows already shown. */
+function downloadCsv(fileName: string, columns: string[], rows: Array<Record<string, string>>) {
+  const escape = (value: string) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const csv = [
+    columns.map(escape).join(","),
+    ...rows.map((row) => columns.map((column) => escape(row[column] ?? "")).join(",")),
+  ].join("\r\n");
+  const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export function RenderBlock({ block }: { block: PublicRenderBlock }) {
@@ -288,6 +314,86 @@ export function RenderBlock({ block }: { block: PublicRenderBlock }) {
         <Panel tone="warn" label="Sent to an official">
           <p className="text-sm text-warn-foreground">{block.message}</p>
           <p className="mt-3 font-mono text-lg font-semibold text-foreground">{block.reference}</p>
+        </Panel>
+      );
+
+    case "image":
+      return (
+        <Panel tone="plain" label="Published figure" icon={<ImageIcon aria-hidden className="size-3.5" />}>
+          <p className="text-sm font-semibold text-foreground">{block.title}</p>
+          <img
+            src={block.url}
+            alt={block.alternativeText}
+            loading="lazy"
+            className="mt-2 max-h-80 w-full rounded-md border border-border object-contain"
+            onError={(event) => {
+              const image = event.currentTarget;
+              image.style.display = "none";
+              image.insertAdjacentHTML(
+                "afterend",
+                '<p class="mt-2 text-sm text-muted-foreground">This image could not be loaded. Use the source link below to open it at the publisher.</p>',
+              );
+            }}
+          />
+          {block.caption && <p className="mt-2 text-sm text-muted-foreground">{block.caption}</p>}
+          <SourceLine source={block.source} />
+        </Panel>
+      );
+
+    case "video":
+      return (
+        <Panel tone="plain" label="Published recording" icon={<PlayCircle aria-hidden className="size-3.5" />}>
+          <p className="text-sm font-semibold text-foreground">{block.title}</p>
+          {block.playback === "file" ? (
+            <video
+              controls
+              preload="metadata"
+              src={block.url}
+              className="mt-2 w-full rounded-md border border-border"
+              aria-label={block.title}
+            >
+              Your browser cannot play this recording.
+            </video>
+          ) : (
+            <a
+              href={block.url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-accent underline underline-offset-2"
+            >
+              Watch at the publisher
+              <ExternalLink aria-hidden className="size-3" />
+            </a>
+          )}
+          {block.caption && <p className="mt-2 text-sm text-muted-foreground">{block.caption}</p>}
+          <SourceLine source={block.source} />
+        </Panel>
+      );
+
+    case "dataset":
+      return (
+        <Panel label="Data you can download" icon={<Sheet aria-hidden className="size-3.5" />}>
+          <p className="text-sm font-medium text-foreground">{block.title}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {block.rowCount} verified {block.rowCount === 1 ? "row" : "rows"} — opens in Excel, Numbers or any
+            spreadsheet.
+          </p>
+          <div className="mt-3">
+            <AccessibleTable columns={block.columns} rows={block.rows.slice(0, 8)} />
+          </div>
+          <button
+            type="button"
+            onClick={() => downloadCsv(block.fileName, block.columns, block.rows)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:border-accent hover:text-accent"
+          >
+            <Download aria-hidden className="size-3.5" />
+            Download CSV
+          </button>
+          <div className="mt-2 space-y-1">
+            {block.sources.slice(0, 2).map((s) => (
+              <SourceLine key={`${s.sourceVersionId}-${s.sectionLabel}`} source={s} />
+            ))}
+          </div>
         </Panel>
       );
 

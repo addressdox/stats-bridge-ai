@@ -14,6 +14,7 @@ import { Route as AskRouteImport } from './routes/ask'
 import { Route as DeskRouteImport } from './routes/desk'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as EmbedRouteImport } from './routes/embed'
+import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
@@ -50,6 +51,11 @@ const DevelopersRoute = DevelopersRouteImport.update({
 const EmbedRoute = EmbedRouteImport.update({
   id: '/embed',
   path: '/embed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MediaRoute = MediaRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/desk': typeof DeskRoute
   '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
+  '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/insights': typeof StaffInsightsRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/desk': typeof DeskRoute
   '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
+  '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/insights': typeof StaffInsightsRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/desk': typeof DeskRoute
   '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
+  '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/insights': typeof StaffInsightsRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/desk'
     | '/developers'
     | '/embed'
+    | '/insights'
     | '/media'
     | '/case/$ref'
     | '/staff/insights'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/desk'
     | '/developers'
     | '/embed'
+    | '/insights'
     | '/media'
     | '/case/$ref'
     | '/staff/insights'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/desk'
     | '/developers'
     | '/embed'
+    | '/insights'
     | '/media'
     | '/case/$ref'
     | '/staff/insights'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   DeskRoute: typeof DeskRoute
   DevelopersRoute: typeof DevelopersRoute
   EmbedRoute: typeof EmbedRoute
+  InsightsRoute: typeof InsightsRoute
   MediaRoute: typeof MediaRoute
   CaseRefRoute: typeof CaseRefRoute
   StaffInsightsRoute: typeof StaffInsightsRoute
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/embed'
       fullPath: '/embed'
       preLoaderRoute: typeof EmbedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/media': {
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeskRoute: DeskRoute,
   DevelopersRoute: DevelopersRoute,
   EmbedRoute: EmbedRoute,
+  InsightsRoute: InsightsRoute,
   MediaRoute: MediaRoute,
   CaseRefRoute: CaseRefRoute,
   StaffInsightsRoute: StaffInsightsRoute,

@@ -116,6 +116,19 @@ function observationReference(row: ObservationRow): PublicSourceReference {
   };
 }
 
+/**
+ * What kind of media, if any, an approved source address points at. Only
+ * https addresses are ever considered.
+ */
+function mediaKindOf(url: string | null): "image" | "video-file" | "video-link" | null {
+  if (!url || !/^https:\/\//i.test(url)) return null;
+  const path = url.split("?")[0]!.toLowerCase();
+  if (/\.(png|jpe?g|webp|gif|svg)$/.test(path)) return "image";
+  if (/\.(mp4|webm|ogv)$/.test(path)) return "video-file";
+  if (/(youtube\.com|youtu\.be|vimeo\.com)/.test(path)) return "video-link";
+  return null;
+}
+
 function trimQuote(text: string, limit = 420) {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= limit) return clean;
@@ -136,7 +149,7 @@ Reply with a single JSON object and nothing else:
   "topic": "short lowercase topic label",
   "passageIds": ["id from EXTRACTS you rely on"],
   "observationIds": ["id from FIGURES you rely on"],
-  "blocks": ["metric" | "official_quote" | "comparison_table" | "chart" | "document" | "definition"],
+  "blocks": ["metric" | "official_quote" | "comparison_table" | "chart" | "dataset" | "image" | "video" | "document" | "definition"],
   "explanation": "2-4 short plain-language sentences. No new numbers beyond the supplied ones. No causes, no forecasts, no opinions.",
   "caveats": ["short wording caution, only where the evidence says so"],
   "clarificationQuestion": "asked only when decision is clarify",
@@ -151,6 +164,9 @@ Rules:
 - If the question could mean more than one period, geography or population, use "clarify".
 - Never explain why a number moved, never predict, never give an official Stats SA position.
 - Use "chart" only when three or more FIGURES share a measure and unit across periods.
+- Ask for "dataset" when two or more FIGURES are worth downloading as a spreadsheet.
+- Ask for "image" or "video" only when the question is about a published picture, map or recording. The server drops them unless the approved source really is one; nothing is invented.
+- Only South African official material is ever used. If the question is about another country, use "gap".
 - Every sentence in "explanation" must be traceable to the ids you listed.`;
 
 type ModelProposal = {
@@ -473,6 +489,28 @@ ${extracts || "(none)"}`,
     });
   }
 
+  // Verified figures offered as a spreadsheet-readable download.
+  if (wanted.has("dataset") && usedObservations.length >= 2) {
+    const columns = ["Measure", "Value", "Unit", "Geography", "Period", "Source", "Publication"];
+    blocks.push({
+      type: "dataset",
+      title: "Verified figures used in this answer",
+      fileName: "statbridge-verified-figures.csv",
+      columns,
+      rows: usedObservations.map((o) => ({
+        Measure: o.measure,
+        Value: o.display_value,
+        Unit: o.unit,
+        Geography: o.geography,
+        Period: o.reference_period,
+        Source: o.publisher,
+        Publication: `${o.title} (${o.version_label})`,
+      })),
+      rowCount: usedObservations.length,
+      sources: usedObservations.map(observationReference),
+    });
+  }
+
   for (const p of usedPassages) {
     const ref = passageReference(p);
     addReference(ref);
@@ -488,6 +526,30 @@ ${extracts || "(none)"}`,
     } else {
       blocks.push({ type: "official_quote", text: quote, source: ref });
     }
+    // Pictures and recordings are only ever taken from the approved source's
+    // own published address. Anything else is left out.
+    const media = mediaKindOf(p.original_url);
+    if (media === "image" && wanted.has("image") && p.original_url) {
+      blocks.push({
+        type: "image",
+        title: p.section_label ?? p.title,
+        url: p.original_url,
+        alternativeText: `Published figure from ${p.title} (${p.publisher})`,
+        caption: null,
+        source: ref,
+      });
+    }
+    if (media?.startsWith("video") && wanted.has("video") && p.original_url) {
+      blocks.push({
+        type: "video",
+        title: p.section_label ?? p.title,
+        url: p.original_url,
+        playback: media === "video-file" ? "file" : "link",
+        caption: null,
+        source: ref,
+      });
+    }
+
     if (wanted.has("document")) {
       blocks.push({
         type: "document",
