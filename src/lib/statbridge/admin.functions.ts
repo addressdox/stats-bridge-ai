@@ -135,7 +135,7 @@ export const setStaffActive = createServerFn({ method: "POST" })
       .update({ is_active: data.isActive })
       .eq("id", data.staffId);
     if (error) throw new Error("The account could not be changed.");
-    await supabaseAdmin.rpc("record_audit", {
+    await supabaseAdmin.rpc("write_audit", {
       _actor: actor,
       _action: data.isActive ? "staff_reactivated" : "staff_suspended",
       _entity_kind: "profile",
@@ -195,7 +195,7 @@ export const createStaffAccount = createServerFn({ method: "POST" })
       { onConflict: "email" },
     );
 
-    await supabaseAdmin.rpc("record_audit", {
+    await supabaseAdmin.rpc("write_audit", {
       _actor: actor,
       _action: "staff_account_created",
       _entity_kind: "profile",

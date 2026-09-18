@@ -91,7 +91,7 @@ function TeamPage() {
           <ul className="space-y-2 text-sm">
             {(Object.keys(ROLE_LABELS) as StaffRole[]).map((role) => (
               <li key={role} className="flex flex-wrap items-center gap-2">
-                <Pill tone={role === "administrator" ? "warn" : "default"}>{ROLE_LABELS[role]}</Pill>
+                <Pill tone={role === "administrator" ? "warn" : "muted"}>{ROLE_LABELS[role]}</Pill>
                 <span className="text-muted-foreground">{ROLE_POWERS[role]}</span>
               </li>
             ))}
@@ -162,7 +162,7 @@ function TeamPage() {
           {staff.isLoading ? (
             <Loading />
           ) : (staff.data ?? []).length === 0 ? (
-            <Empty message="No staff accounts yet." />
+            <Empty>No staff accounts yet.</Empty>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

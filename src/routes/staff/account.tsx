@@ -32,7 +32,7 @@ export const Route = createFileRoute("/staff/account")({
 const inputClass = "w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm";
 
 function AccountPage() {
-  const { profile, refresh } = useStaff();
+  const { profile } = useStaff();
   const saveProfile = useServerFn(updateMyProfile);
 
   const [fullName, setFullName] = useState("");
@@ -49,7 +49,6 @@ function AccountPage() {
     mutationFn: () => saveProfile({ data: { fullName } }),
     onSuccess: () => {
       toast.success("Your name has been updated.");
-      refresh?.();
     },
     onError: (error: Error) => toast.error(error.message),
   });
