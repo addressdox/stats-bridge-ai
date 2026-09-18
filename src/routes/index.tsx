@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { AssistantMark } from "@/components/statbridge/AssistantMark";
+import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
 const title = "StatBridge — Ask about South Africa's official statistics";
 const description =
