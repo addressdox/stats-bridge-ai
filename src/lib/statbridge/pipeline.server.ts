@@ -164,6 +164,9 @@ Rules:
 - If the question could mean more than one period, geography or population, use "clarify".
 - Never explain why a number moved, never predict, never give an official Stats SA position.
 - Use "chart" only when three or more FIGURES share a measure and unit across periods.
+- Ask for "dataset" when two or more FIGURES are worth downloading as a spreadsheet.
+- Ask for "image" or "video" only when the question is about a published picture, map or recording. The server drops them unless the approved source really is one; nothing is invented.
+- Only South African official material is ever used. If the question is about another country, use "gap".
 - Every sentence in "explanation" must be traceable to the ids you listed.`;
 
 type ModelProposal = {
