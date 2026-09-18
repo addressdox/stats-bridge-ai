@@ -40,17 +40,17 @@ export const getDeskOverview = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase.rpc("staff_dashboard_summary", { _since: since, _include_demo: false });
     if (error || !data) throw new Error("The command-centre summary could not be loaded.");
     const value = data as Record<string, number | string | null>;
-    const conversations = Number(value.conversations ?? 0);
-    const resolved = Number(value.resolved ?? 0);
+    const conversations = Number(value["conversations"] ?? 0);
+    const resolved = Number(value["resolved"] ?? 0);
     return {
-      generatedAt: String(value.generated_at ?? new Date().toISOString()),
-      liveConversations: Number(value.live_conversations ?? 0), waitingHandoffs: Number(value.waiting_handoffs ?? 0),
+      generatedAt: String(value["generated_at"] ?? new Date().toISOString()),
+      liveConversations: Number(value["live_conversations"] ?? 0), waitingHandoffs: Number(value["waiting_handoffs"] ?? 0),
       conversationsToday: conversations, answeredToday: resolved,
       resolutionRate: conversations ? Math.round(resolved / conversations * 100) : null,
-      averageSeconds: value.average_seconds === null ? null : Number(value.average_seconds),
-      openCases: Number(value.open_cases ?? 0), overdueCases: Number(value.overdue_cases ?? 0), coverageGaps: Number(value.coverage_gaps ?? 0), visitors: Number(value.visitors ?? 0),
-      pendingSources: Number(value.pending_sources ?? 0), failedIngestions: Number(value.failed_ingestions ?? 0), staleSources: Number(value.stale_sources ?? 0),
-      passages: Number(value.passages ?? 0), verifiedObservations: Number(value.verified_observations ?? 0), embeddings: Number(value.embeddings ?? 0),
+      averageSeconds: value["average_seconds"] === null ? null : Number(value["average_seconds"]),
+      openCases: Number(value["open_cases"] ?? 0), overdueCases: Number(value["overdue_cases"] ?? 0), coverageGaps: Number(value["coverage_gaps"] ?? 0), visitors: Number(value["visitors"] ?? 0),
+      pendingSources: Number(value["pending_sources"] ?? 0), failedIngestions: Number(value["failed_ingestions"] ?? 0), staleSources: Number(value["stale_sources"] ?? 0),
+      passages: Number(value["passages"] ?? 0), verifiedObservations: Number(value["verified_observations"] ?? 0), embeddings: Number(value["embeddings"] ?? 0),
     };
   });
 
