@@ -8,6 +8,7 @@ Everything you need is in this repository:
 | `migrate/01_schema.sql` | Every table, view, function, trigger, access rule and permission grant |
 | `migrate/02a_defer_constraints.sql` | Lets the records load despite circular links between records |
 | `migrate/02_data.sql` | All current records (publications, passages, figures, answers, cases, roles, settings) |
+| `migrate/04_storage.sql` | Creates the two private file stores and their access rules |
 | `migrate/03_relink_admin.sql` | Attaches the imported staff profile to your new sign-in account |
 | `migrate/import.sh` | Runs steps 0–2 in the right order |
 | `scripts/copy-storage.ts` | Copies the two private file buckets and their contents |

@@ -23,4 +23,7 @@ echo "==> data"
 psql "$TARGET_DB_URL" -v ON_ERROR_STOP=1 --single-transaction \
   -c "SET CONSTRAINTS ALL DEFERRED;" -f "$DIR/02_data.sql"
 
+echo "==> private file stores and their access rules"
+psql "$TARGET_DB_URL" -v ON_ERROR_STOP=1 -f "$DIR/04_storage.sql"
+
 echo "==> done. Next: create the staff sign-in account, then run 03_relink_admin.sql"
