@@ -2013,8 +2013,57 @@ export type Database = {
           version_label: string
         }[]
       }
+      search_observations_by_id: {
+        Args: { _ids: string[] }
+        Returns: {
+          adjustment: string
+          comparability_note: string
+          display_value: string
+          geography: string
+          measure: string
+          measure_key: string
+          observation_id: string
+          original_url: string
+          page_number: number
+          period_end: string
+          period_start: string
+          population: string
+          published_on: string
+          publisher: string
+          rank: number
+          reference_period: string
+          reported_change: string
+          source_version_id: string
+          table_label: string
+          title: string
+          unit: string
+          value: number
+          value_state: Database["public"]["Enums"]["value_state"]
+          version_label: string
+        }[]
+      }
       search_passages: {
         Args: { _limit?: number; _q: string }
+        Returns: {
+          content: string
+          original_url: string
+          page_number: number
+          passage_id: string
+          published_on: string
+          publisher: string
+          rank: number
+          reference_period: string
+          section_label: string
+          source_id: string
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_version_id: string
+          title: string
+          topic: string
+          version_label: string
+        }[]
+      }
+      search_passages_by_id: {
+        Args: { _ids: string[] }
         Returns: {
           content: string
           original_url: string
