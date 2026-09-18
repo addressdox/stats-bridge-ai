@@ -111,6 +111,19 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
                 {ask.isPending && <div className="flex items-center gap-3 text-sm text-muted-foreground"><AssistantPortrait state="checking" size="small" className="!size-12" /><Shimmer>Checking approved sources…</Shimmer></div>}
               </AnimatePresence>
             )}
+
+            {session && turns.length > 0 && (
+              <div className="mt-6 space-y-3">
+                {!session.hasContact && !contactSaved && (
+                  <ContactCard session={session} onSaved={() => setContactSaved(true)} />
+                )}
+                <TalkToPerson
+                  session={session}
+                  compact={compact}
+                  summary={lastQuestion?.role === "user" ? lastQuestion.text : "A visitor asked to speak with a person."}
+                />
+              </div>
+            )}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
