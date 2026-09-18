@@ -193,6 +193,9 @@ export type DeskHandoff = {
   visitorName: string | null;
   visitorEmail: string | null;
   visitorPhone: string | null;
+  channel: string;
+  callerPhone: string | null;
+  offeredPhone: string | null;
 };
 
 export const listHandoffs = createServerFn({ method: "POST" })
@@ -209,7 +212,7 @@ export const listHandoffs = createServerFn({ method: "POST" })
     let query = db
       .from("handoffs")
       .select(
-        "id, conversation_id, state, reason, urgency, topic, summary, requested_at, accepted_by, visitors(full_name, email, phone), profiles!handoffs_accepted_by_fkey(full_name)",
+        "id, conversation_id, state, reason, urgency, topic, summary, requested_at, accepted_by, channel, caller_phone, offered_phone, visitors(full_name, email, phone), profiles!handoffs_accepted_by_fkey(full_name)",
       )
       .order("requested_at", { ascending: false })
       .limit(100);
@@ -235,6 +238,9 @@ export const listHandoffs = createServerFn({ method: "POST" })
         visitorName: visitor?.full_name ?? null,
         visitorEmail: visitor?.email ?? null,
         visitorPhone: visitor?.phone ?? null,
+        channel: row.channel,
+        callerPhone: row.caller_phone,
+        offeredPhone: row.offered_phone,
       };
     });
   });
