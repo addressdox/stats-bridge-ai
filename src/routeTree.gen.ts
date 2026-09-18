@@ -26,6 +26,7 @@ import { Route as StaffRecordRouteImport } from './routes/staff/record'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
 import { Route as StaffVisitorsRouteImport } from './routes/staff/visitors'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
+import { Route as ApiPublicEmbeddingsRouteImport } from './routes/api/public/embeddings'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
 import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
@@ -117,6 +118,11 @@ const ApiPublicCrawlRoute = ApiPublicCrawlRouteImport.update({
   path: '/api/public/crawl',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEmbeddingsRoute = ApiPublicEmbeddingsRouteImport.update({
+  id: '/api/public/embeddings',
+  path: '/api/public/embeddings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffKnowledgeGuidelinesRoute =
   StaffKnowledgeGuidelinesRouteImport.update({
     id: '/staff/knowledge/guidelines',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
+  '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/staff/visitors': typeof StaffVisitorsRoute
   '/case': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
+  '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
+  '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
     | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
+    | '/api/public/embeddings'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/staff/visitors'
     | '/case'
     | '/api/public/crawl'
+    | '/api/public/embeddings'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
+    | '/api/public/embeddings'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -310,6 +322,7 @@ export interface RootRouteChildren {
   StaffVisitorsRoute: typeof StaffVisitorsRoute
   CaseIndexRoute: typeof CaseIndexRoute
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
+  ApiPublicEmbeddingsRoute: typeof ApiPublicEmbeddingsRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
   StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
   StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
@@ -438,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCrawlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/embeddings': {
+      id: '/api/public/embeddings'
+      path: '/api/public/embeddings'
+      fullPath: '/api/public/embeddings'
+      preLoaderRoute: typeof ApiPublicEmbeddingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/knowledge/guidelines': {
       id: '/staff/knowledge/guidelines'
       path: '/staff/knowledge/guidelines'
@@ -494,6 +514,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffVisitorsRoute: StaffVisitorsRoute,
   CaseIndexRoute: CaseIndexRoute,
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,
+  ApiPublicEmbeddingsRoute: ApiPublicEmbeddingsRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
   StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,
   StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,
