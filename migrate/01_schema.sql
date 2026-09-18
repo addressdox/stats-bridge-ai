@@ -29,7 +29,7 @@ SET row_security = off;
 -- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
 --
 
-COMMENT ON SCHEMA public IS 'standard public schema';
+-- COMMENT ON SCHEMA public skipped (owned by supabase_admin)
 
 
 --
