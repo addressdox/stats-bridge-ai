@@ -90,11 +90,9 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
           <ConversationContent className={turns.length === 0 ? "min-h-full justify-center px-5 py-8" : "mx-auto w-full max-w-3xl px-5 py-8"}>
             {turns.length === 0 ? (
               <div className="flex flex-col items-center text-center">
-                <AssistantPortrait state={state} level={micLevel} size="large" />
-                <Shimmer as="p" className="mt-1 font-mono text-xs uppercase tracking-[0.22em]" duration={2.4}>{statusText}</Shimmer>
-                <h1 className="mt-4 text-2xl font-semibold sm:text-4xl">What would you like to know?</h1>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Ask about a published statistic, definition or release. Voice is optional and starts only when you choose it.</p>
-                <div className="mt-5"><VoiceInput onTranscript={(text) => setDraft((value) => value ? `${value} ${text}` : text)} onStatusChange={setVoiceStatus} onLevel={setMicLevel} prominent /></div>
+                <AssistantPortrait state={state} size="small" className="!size-16" />
+                <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">What would you like to know?</h1>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Ask about a published statistic, definition or release. Type your question below.</p>
                 <div className="mt-6 flex max-w-2xl flex-wrap justify-center gap-2">
                   {STARTERS.map((starter) => <button key={starter} type="button" onClick={() => submit(starter)} className="rounded-full border border-hairline bg-surface/60 px-3.5 py-2 text-left text-xs text-muted-foreground transition-colors hover:border-official/50 hover:text-foreground">{starter}</button>)}
                 </div>
