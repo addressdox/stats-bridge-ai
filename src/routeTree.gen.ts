@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AskRouteImport } from './routes/ask'
+import { Route as DeskRouteImport } from './routes/desk'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as MediaRouteImport } from './routes/media'
@@ -33,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
 const AskRoute = AskRouteImport.update({
   id: '/ask',
   path: '/ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeskRoute = DeskRouteImport.update({
+  id: '/desk',
+  path: '/desk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevelopersRoute = DevelopersRouteImport.update({
@@ -105,6 +111,7 @@ const StaffReviewIdRoute = StaffReviewIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/desk': typeof DeskRoute
   '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/desk': typeof DeskRoute
   '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/desk': typeof DeskRoute
   '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/ask'
+    | '/desk'
     | '/developers'
     | '/embed'
     | '/media'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/ask'
+    | '/desk'
     | '/developers'
     | '/embed'
     | '/media'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/ask'
+    | '/desk'
     | '/developers'
     | '/embed'
     | '/media'
@@ -211,6 +223,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AskRoute: typeof AskRoute
+  DeskRoute: typeof DeskRoute
   DevelopersRoute: typeof DevelopersRoute
   EmbedRoute: typeof EmbedRoute
   MediaRoute: typeof MediaRoute
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/ask'
       fullPath: '/ask'
       preLoaderRoute: typeof AskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desk': {
+      id: '/desk'
+      path: '/desk'
+      fullPath: '/desk'
+      preLoaderRoute: typeof DeskRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/developers': {
@@ -339,6 +359,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AskRoute: AskRoute,
+  DeskRoute: DeskRoute,
   DevelopersRoute: DevelopersRoute,
   EmbedRoute: EmbedRoute,
   MediaRoute: MediaRoute,

@@ -1,30 +1,18 @@
-/**
- * The Ask surface.
- *
- * Conversation is central. When an answer carries evidence the layout
- * becomes conversation plus an Evidence Canvas — a glass column beside the
- * transcript on a wide screen, a bottom sheet on a phone. Evidence stays
- * visible while the same topic continues and the transcript is never covered.
- */
+/** Public Ask room: portrait-led, typed-first, evidence-backed. */
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import {
-  ArrowUp,
-  Bot,
-  CircleAlert,
-  Loader2,
-  PanelRightOpen,
-  Send,
-  ShieldCheck,
-  SquareArrowOutUpRight,
-} from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Bot, CircleAlert, PanelRightOpen, Send, SquareArrowOutUpRight } from "lucide-react";
+import { useMemo, useState } from "react";
 
-import { AssistantMark } from "@/components/statbridge/AssistantMark";
+import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import { PromptInput, PromptInputBody, PromptInputFooter, PromptInputSubmit, PromptInputTextarea, PromptInputTools } from "@/components/ai-elements/prompt-input";
+import { Shimmer } from "@/components/ai-elements/shimmer";
+import { AssistantPortrait, type AssistantState } from "@/components/statbridge/assistant-portrait";
 import { EvidenceCanvas } from "@/components/statbridge/EvidenceCanvas";
 import { RenderBlock } from "@/components/statbridge/RenderBlock";
-import { VoiceInput } from "@/components/statbridge/VoiceInput";
+import { VoiceInput, type VoiceStatus } from "@/components/statbridge/VoiceInput";
 import { REVIEW_REASON_LABELS, type PublicAnswer } from "@/lib/statbridge/contract";
 import { askQuestion, sendToOfficial } from "@/lib/statbridge/public.functions";
 
@@ -37,220 +25,110 @@ const STARTERS = [
   "What was the unemployment rate in the latest Quarterly Labour Force Survey?",
   "How does Stats SA define the expanded unemployment rate?",
   "When is the next Quarterly Labour Force Survey published?",
-  "How do I request data from Stats SA?",
 ];
 
-function uid() {
-  return Math.random().toString(36).slice(2);
+const uid = () => Math.random().toString(36).slice(2);
+
+function roomState(voice: VoiceStatus, pending: boolean): AssistantState {
+  if (pending) return "checking";
+  if (voice === "requesting") return "connecting";
+  if (voice === "listening") return "listening";
+  if (voice === "ended" || voice === "denied" || voice === "error") return "ended";
+  return "ready";
 }
 
 export function AskExperience({ compact = false }: { compact?: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [canvasOpen, setCanvasOpen] = useState(true);
-  const [listening, setListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
   const [micLevel, setMicLevel] = useState(0);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
 
   const ask = useMutation({
-    mutationFn: (question: string) =>
-      askQuestion({
-        data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web" },
-      }),
+    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web" } }),
     onSuccess: (answer) => {
-      setTurns((t) => [...t, { id: uid(), role: "assistant", answer }]);
+      setTurns((current) => [...current, { id: uid(), role: "assistant", answer }]);
       setCanvasOpen(true);
     },
-    onError: (error: Error) => {
-      setTurns((t) => [
-        ...t,
-        {
-          id: uid(),
-          role: "error",
-          text:
-            error.message ||
-            "StatBridge could not complete a checked answer just now. Please try again, or send the question to an official.",
-        },
-      ]);
-    },
+    onError: (error: Error) => setTurns((current) => [...current, {
+      id: uid(), role: "error", text: error.message || "StatBridge could not complete a checked answer just now. Please try again, or send the question to an official.",
+    }]),
   });
 
   const escalate = useMutation({
-    mutationFn: (question: string) =>
-      sendToOfficial({ data: { question, consent: false, channel: compact ? "widget" : "web" } }),
-    onSuccess: (answer) => setTurns((t) => [...t, { id: uid(), role: "assistant", answer }]),
+    mutationFn: (question: string) => sendToOfficial({ data: { question, consent: false, channel: compact ? "widget" : "web" } }),
+    onSuccess: (answer) => setTurns((current) => [...current, { id: uid(), role: "assistant", answer }]),
   });
 
   const latestWithEvidence = useMemo(() => {
-    for (let i = turns.length - 1; i >= 0; i -= 1) {
-      const turn = turns[i]!;
+    for (let index = turns.length - 1; index >= 0; index -= 1) {
+      const turn = turns[index]!;
       if (turn.role === "assistant" && turn.answer.officialBlocks.length > 0) return turn.answer;
     }
     return null;
   }, [turns]);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "end" });
-  }, [turns.length, ask.isPending, reduce]);
-
-  useEffect(() => {
-    if (!ask.isPending) textareaRef.current?.focus();
-  }, [ask.isPending]);
-
   function submit(question: string) {
     const trimmed = question.trim();
     if (trimmed.length < 3 || ask.isPending) return;
-    setTurns((t) => [...t, { id: uid(), role: "user", text: trimmed }]);
+    setTurns((current) => [...current, { id: uid(), role: "user", text: trimmed }]);
     setDraft("");
+    setVoiceStatus("ready");
     ask.mutate(trimmed);
   }
 
-  const lastQuestion = [...turns].reverse().find((t) => t.role === "user");
+  const lastQuestion = [...turns].reverse().find((turn) => turn.role === "user");
   const showCanvas = Boolean(latestWithEvidence) && canvasOpen && !compact;
-  const markState = listening ? "listening" : ask.isPending ? "thinking" : "idle";
+  const state = roomState(voiceStatus, ask.isPending);
+  const statusText = state === "ready" ? "Ready when you are" : state === "connecting" ? "Connecting…" : state === "listening" ? "Listening…" : state === "checking" ? "Checking approved sources…" : "Voice session ended";
 
   return (
-    <div
-      className={
-        showCanvas
-          ? "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)] lg:items-start lg:gap-8"
-          : "mx-auto w-full max-w-3xl"
-      }
-    >
-      {/* Conversation */}
-      <div className={`min-w-0 ${showCanvas ? "" : ""}`}>
-        {turns.length === 0 && <Primer compact={compact} state={markState} level={micLevel} onPick={submit} />}
+    <div className={showCanvas ? "grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,27rem)]" : "mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"}>
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <Conversation className="min-h-0">
+          <ConversationContent className={turns.length === 0 ? "min-h-full justify-center px-5 py-8" : "mx-auto w-full max-w-3xl px-5 py-8"}>
+            {turns.length === 0 ? (
+              <div className="flex flex-col items-center text-center">
+                <AssistantPortrait state={state} level={micLevel} size="large" />
+                <Shimmer as="p" className="mt-1 font-mono text-xs uppercase tracking-[0.22em]" duration={2.4}>{statusText}</Shimmer>
+                <h1 className="mt-4 text-2xl font-semibold sm:text-4xl">What would you like to know?</h1>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Ask about a published statistic, definition or release. Voice is optional and starts only when you choose it.</p>
+                <div className="mt-5"><VoiceInput onTranscript={(text) => setDraft((value) => value ? `${value} ${text}` : text)} onStatusChange={setVoiceStatus} onLevel={setMicLevel} prominent /></div>
+                <div className="mt-6 flex max-w-2xl flex-wrap justify-center gap-2">
+                  {STARTERS.map((starter) => <button key={starter} type="button" onClick={() => submit(starter)} className="rounded-full border border-hairline bg-surface/60 px-3.5 py-2 text-left text-xs text-muted-foreground transition-colors hover:border-official/50 hover:text-foreground">{starter}</button>)}
+                </div>
+              </div>
+            ) : (
+              <AnimatePresence initial={false}>
+                {turns.map((turn) => (
+                  <motion.div key={turn.id} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                    {turn.role === "user" && <Message from="user"><MessageContent>{turn.text}</MessageContent></Message>}
+                    {turn.role === "error" && <div className="flex items-start gap-2.5 rounded-xl border border-destructive/35 bg-destructive/10 p-4 text-sm"><CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" /><div><p>{turn.text}</p>{lastQuestion?.role === "user" && <button type="button" onClick={() => submit(lastQuestion.text)} className="mt-2 text-xs font-semibold text-destructive underline">Try again</button>}</div></div>}
+                    {turn.role === "assistant" && <Message from="assistant"><MessageContent className="w-full"><AnswerTurn answer={turn.answer} compact={compact} onFollowUp={submit} onEscalate={() => escalate.mutate(turn.answer.question)} escalating={escalate.isPending} /></MessageContent></Message>}
+                  </motion.div>
+                ))}
+                {ask.isPending && <div className="flex items-center gap-3 text-sm text-muted-foreground"><AssistantPortrait state="checking" size="small" className="!size-12" /><Shimmer>Checking approved sources…</Shimmer></div>}
+              </AnimatePresence>
+            )}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
 
-        <div className="space-y-6">
-          <AnimatePresence initial={false}>
-            {turns.map((turn) => (
-              <motion.div
-                key={turn.id}
-                initial={reduce ? false : { opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.28, ease: "easeOut" }}
-              >
-                {turn.role === "user" && (
-                  <div className="flex justify-end">
-                    <p className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground">
-                      {turn.text}
-                    </p>
-                  </div>
-                )}
-
-                {turn.role === "error" && (
-                  <div className="flex items-start gap-2.5 rounded-xl border border-destructive/35 bg-destructive/10 p-4 text-sm text-foreground">
-                    <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-destructive" />
-                    <div>
-                      <p>{turn.text}</p>
-                      {lastQuestion?.role === "user" && (
-                        <button
-                          type="button"
-                          onClick={() => submit(lastQuestion.text)}
-                          className="mt-2 text-xs font-semibold text-destructive underline underline-offset-4"
-                        >
-                          Try again
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {turn.role === "assistant" && (
-                  <AnswerTurn
-                    answer={turn.answer}
-                    compact={compact}
-                    onFollowUp={submit}
-                    onEscalate={() => escalate.mutate(turn.answer.question)}
-                    escalating={escalate.isPending}
-                  />
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {ask.isPending && (
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <AssistantMark state="thinking" size={40} showBadge={false} />
-              Checking approved Stats SA sources…
-            </div>
-          )}
+        <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-3 sm:px-6">
+          <PromptInput onSubmit={({ text }) => submit(text)} className="mx-auto max-w-3xl rounded-2xl border-input bg-surface/90 shadow-[var(--glass-shadow)] backdrop-blur-xl">
+            <PromptInputBody><PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" /></PromptInputBody>
+            <PromptInputFooter>
+              <PromptInputTools>{turns.length > 0 && <VoiceInput onTranscript={(text) => setDraft((value) => value ? `${value} ${text}` : text)} onStatusChange={setVoiceStatus} onLevel={setMicLevel} />}</PromptInputTools>
+              <PromptInputSubmit disabled={draft.trim().length < 3 || ask.isPending} status={ask.isPending ? "submitted" : "ready"} />
+            </PromptInputFooter>
+          </PromptInput>
+          <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-muted-foreground">Answers use approved Stats SA material. Media and sensitive requests always go to a person.</p>
         </div>
+      </section>
 
-        <div ref={endRef} />
-
-        {/* Composer */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            submit(draft);
-          }}
-          className={`sticky bottom-0 z-30 mt-6 bg-gradient-to-t from-background via-background to-transparent pt-5 ${
-            latestWithEvidence && canvasOpen && !compact ? "pb-[58svh] lg:pb-0" : ""
-          }`}
-        >
-          <div className="rounded-2xl border border-input bg-surface/80 p-2.5 backdrop-blur transition-colors focus-within:border-accent/70 focus-within:shadow-[var(--glow-teal)]">
-            <label htmlFor="ask-input" className="sr-only">
-              Type your question
-            </label>
-            <textarea
-              id="ask-input"
-              ref={textareaRef}
-              rows={compact ? 2 : 3}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  submit(draft);
-                }
-              }}
-              placeholder="Ask about a published statistic, a definition, or how to reach Stats SA…"
-              className="w-full resize-none bg-transparent px-2 py-1.5 text-[15px] outline-none placeholder:text-muted-foreground"
-            />
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-1">
-              <VoiceInput
-                onTranscript={(text) => setDraft((d) => (d ? `${d} ${text}` : text))}
-                onListeningChange={setListening}
-                onLevel={setMicLevel}
-              />
-              <button
-                type="submit"
-                disabled={draft.trim().length < 3 || ask.isPending}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
-              >
-                {ask.isPending ? (
-                  <Loader2 aria-hidden className="size-4 animate-spin" />
-                ) : (
-                  <ArrowUp aria-hidden className="size-4" />
-                )}
-                Ask
-              </button>
-            </div>
-          </div>
-          <p className="mt-2 px-1 text-xs text-muted-foreground">
-            Answers quote approved Stats SA material. Media and sensitive requests always go to a person.
-          </p>
-        </form>
-      </div>
-
-      {/* Evidence canvas */}
-      {latestWithEvidence && !compact && (
-        <EvidenceCanvas answer={latestWithEvidence} open={canvasOpen} onClose={() => setCanvasOpen(false)} />
-      )}
-
-      {latestWithEvidence && !canvasOpen && !compact && (
-        <button
-          type="button"
-          onClick={() => setCanvasOpen(true)}
-          className="fixed bottom-28 right-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-official/50 bg-surface px-3.5 py-2 text-xs font-semibold text-official shadow-lg"
-        >
-          <PanelRightOpen aria-hidden className="size-3.5" />
-          Show evidence
-        </button>
-      )}
+      {latestWithEvidence && !compact && <EvidenceCanvas answer={latestWithEvidence} open={canvasOpen} onClose={() => setCanvasOpen(false)} />}
+      {latestWithEvidence && !canvasOpen && !compact && <button type="button" onClick={() => setCanvasOpen(true)} className="fixed bottom-28 right-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-official/50 bg-surface px-3.5 py-2 text-xs font-semibold text-official shadow-lg"><PanelRightOpen className="size-3.5" />Show evidence</button>}
     </div>
   );
 }
@@ -409,74 +287,3 @@ function AnswerTurn({
   );
 }
 
-function Primer({
-  compact,
-  state,
-  level,
-  onPick,
-}: {
-  compact: boolean;
-  state: "idle" | "listening" | "thinking";
-  level: number;
-  onPick: (q: string) => void;
-}) {
-  return (
-    <div className="mb-10">
-      {!compact && (
-        <div className="flex flex-col items-center text-center">
-          <AssistantMark state={state} level={level} size={132} />
-          <h1 className="mt-6 text-3xl font-bold uppercase tracking-tight sm:text-[2.6rem]">
-            Ask South Africa&apos;s official statistics
-          </h1>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-            StatBridge answers from approved Statistics South Africa publications — published figures, definitions,
-            methods, release dates and how to reach the organisation. No sign-up.
-          </p>
-        </div>
-      )}
-
-      <dl className={`mt-8 grid gap-3 ${compact ? "" : "sm:grid-cols-3"}`}>
-        <div className="rounded-xl border border-official/30 bg-official-surface p-4">
-          <dt className="flex items-center gap-1.5 eyebrow text-official">
-            <ShieldCheck aria-hidden className="size-3.5" />
-            Official
-          </dt>
-          <dd className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-            Quotations and figures from approved Stats SA documents, with the page or section shown.
-          </dd>
-        </div>
-        <div className="rounded-xl border border-assist/35 bg-assist-surface p-4">
-          <dt className="flex items-center gap-1.5 eyebrow text-assist">
-            <Bot aria-hidden className="size-3.5" />
-            AI-generated
-          </dt>
-          <dd className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-            The plain-language wording around the evidence. Always labelled, never a new figure.
-          </dd>
-        </div>
-        <div className="rounded-xl border border-warn/40 bg-warn-surface p-4">
-          <dt className="eyebrow text-warn">Sent to a person</dt>
-          <dd className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-            Media, sensitive and interpretive requests get a case reference and a private status link instead.
-          </dd>
-        </div>
-      </dl>
-
-      <div className="mt-7">
-        <p className="eyebrow text-muted-foreground">Try one of these</p>
-        <div className="mt-2.5 flex flex-wrap gap-2">
-          {STARTERS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => onPick(s)}
-              className="rounded-full border border-hairline bg-surface/60 px-3.5 py-2 text-left text-xs font-medium text-muted-foreground transition-colors hover:border-accent/50 hover:text-foreground"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
