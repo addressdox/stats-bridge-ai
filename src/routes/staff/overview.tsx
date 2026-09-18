@@ -58,6 +58,7 @@ function OverviewPage() {
             />
             <StatCard label="Average length" value={duration(overview.data.averageSeconds)} />
             <StatCard label="Open cases" value={overview.data.openCases} />
+            <StatCard label="Overdue cases" value={overview.data.overdueCases} tone={overview.data.overdueCases > 0 ? "warn" : "good"} />
             <StatCard
               label="Coverage gaps (24 h)"
               value={overview.data.coverageGaps}
@@ -65,6 +66,9 @@ function OverviewPage() {
               hint="questions no approved publication covers"
             />
             <StatCard label="People on record" value={overview.data.visitors} />
+            <StatCard label="Pending publications" value={overview.data.pendingSources} tone={overview.data.pendingSources > 0 ? "warn" : "default"} />
+            <StatCard label="Failed ingestions" value={overview.data.failedIngestions} tone={overview.data.failedIngestions > 0 ? "warn" : "good"} />
+            <StatCard label="Stale approved sources" value={overview.data.staleSources} tone={overview.data.staleSources > 0 ? "warn" : "good"} />
           </div>
         ) : (
           <Empty>Nothing to show yet.</Empty>
@@ -115,6 +119,7 @@ function OverviewPage() {
               <StatCard label="Extracts" value={health.data.passages} />
               <StatCard label="Verified figures" value={health.data.observations} />
               <StatCard label="Meaning index entries" value={health.data.embeddings} />
+              {overview.data && <StatCard label="Index coverage" value={overview.data.passages ? `${Math.min(100, Math.round(overview.data.embeddings / overview.data.passages * 100))}%` : "—"} hint="embedding entries relative to extracts" />}
             </div>
           ) : (
             <Empty>No knowledge figures available.</Empty>
