@@ -372,6 +372,59 @@ function InsightsPage() {
                 </ul>
               )}
             </Panel>
+
+            {drillDown && (
+              <Panel heading="Every verified figure for this measure" note="Straight from the approved publication.">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-medium">{drillRows[0]?.measure ?? "Measure"}</p>
+                  <button
+                    type="button"
+                    onClick={() => setDrillDown(null)}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <X aria-hidden className="size-3.5" />
+                    Close
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[42rem] text-left text-sm">
+                    <thead className="text-xs uppercase tracking-wide text-muted-foreground">
+                      <tr>
+                        <th className="py-2 pr-3">Period</th>
+                        <th className="py-2 pr-3">Value</th>
+                        <th className="py-2 pr-3">Geography</th>
+                        <th className="py-2 pr-3">Publication</th>
+                        <th className="py-2">Verified</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {drillRows.map((row, index) => (
+                        <tr key={`${row.referencePeriod}-${index}`} className="border-t border-hairline">
+                          <td className="py-2 pr-3">{row.referencePeriod}</td>
+                          <td className="py-2 pr-3 font-semibold tabular-nums">{row.displayValue}</td>
+                          <td className="py-2 pr-3">{row.geography}</td>
+                          <td className="py-2 pr-3">
+                            {row.url ? (
+                              <a href={row.url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-2">
+                                {row.sourceTitle}
+                              </a>
+                            ) : (
+                              row.sourceTitle
+                            )}
+                            <span className="block text-xs text-muted-foreground">
+                              {row.publisher} · {row.versionLabel}
+                            </span>
+                          </td>
+                          <td className="py-2 text-xs text-muted-foreground">
+                            {row.verifiedAt ? new Date(row.verifiedAt).toLocaleDateString("en-ZA", { dateStyle: "medium" }) : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Panel>
+            )}
           </div>
         )}
       </main>
@@ -379,6 +432,42 @@ function InsightsPage() {
     </div>
   );
 }
+
+function Choice({
+  label,
+  value,
+  options,
+  labels,
+  allowAny = true,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  labels?: Record<string, string>;
+  allowAny?: boolean;
+  onChange: (value: string) => void;
+}) {
+  if (options.length === 0) return null;
+  return (
+    <label className="flex flex-col gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      {label}
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm font-normal normal-case tracking-normal text-foreground outline-none focus:border-accent"
+      >
+        {allowAny && <option value="">Any</option>}
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {labels?.[option] ?? option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
