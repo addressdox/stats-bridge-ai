@@ -22,6 +22,7 @@ const description =
   "A South Africa-only view of verified Stats SA trends, recent official announcements, emerging question topics, coverage gaps and likely follow-up questions.";
 
 export const Route = createFileRoute("/insights")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title },
