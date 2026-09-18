@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
@@ -18,6 +19,11 @@ import { Route as CaseRefRouteImport } from './routes/case.$ref'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmbedRoute = EmbedRouteImport.update({
@@ -43,6 +49,7 @@ const CaseRefRoute = CaseRefRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
@@ -65,14 +74,22 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/embed' | '/media' | '/case/$ref' | '/case/'
+  fullPaths: '/' | '/developers' | '/embed' | '/media' | '/case/$ref' | '/case/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/embed' | '/media' | '/case/$ref' | '/case'
-  id: '__root__' | '/' | '/embed' | '/media' | '/case/$ref' | '/case/'
+  to: '/' | '/developers' | '/embed' | '/media' | '/case/$ref' | '/case'
+  id:
+    | '__root__'
+    | '/'
+    | '/developers'
+    | '/embed'
+    | '/media'
+    | '/case/$ref'
+    | '/case/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DevelopersRoute: typeof DevelopersRoute
   EmbedRoute: typeof EmbedRoute
   MediaRoute: typeof MediaRoute
   CaseRefRoute: typeof CaseRefRoute
@@ -86,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/embed': {
@@ -121,6 +145,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DevelopersRoute: DevelopersRoute,
   EmbedRoute: EmbedRoute,
   MediaRoute: MediaRoute,
   CaseRefRoute: CaseRefRoute,
