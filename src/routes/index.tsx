@@ -67,11 +67,28 @@ function EntryGate() {
         >
           <span aria-hidden className="entry-door-glow entry-door-glow-neutral" />
           <h2 className="relative flex items-center gap-3 text-3xl font-semibold sm:text-4xl">
-            Enter StatBridge
+            Enter the desk
             <ArrowRight aria-hidden className="size-7 text-official transition-transform duration-500 group-hover:translate-x-2" />
           </h2>
-          <p className="relative mt-2 text-sm text-muted-foreground sm:text-base">Media, cases, tools and staff</p>
+          <p className="relative mt-2 text-sm text-muted-foreground sm:text-base">Media, tracking and tools</p>
+
+          <ul className="relative mt-8 grid w-full max-w-sm gap-3 text-left sm:max-w-md">
+            {deskLinks.map((link) => (
+              <li
+                key={link.label}
+                className="entry-door-link flex items-baseline gap-3 rounded-md border border-hairline px-4 py-3"
+              >
+                <span className="text-sm font-medium sm:text-base">{link.label}</span>
+                <span className="text-xs text-muted-foreground sm:text-sm">{link.hint}</span>
+              </li>
+            ))}
+          </ul>
         </motion.button>
+
+        <p className="relative px-6 pb-6 text-center text-xs text-muted-foreground md:absolute md:bottom-4 md:left-0 md:right-0 md:pb-0">
+          Demonstration build. Content shown here is loaded for demonstration and is not an official
+          Statistics South Africa endorsement.
+        </p>
       </div>
     </main>
   );
