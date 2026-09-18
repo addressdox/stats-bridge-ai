@@ -32,9 +32,13 @@ export const Route = createFileRoute("/api/voice/token")({
         }
 
         const body = (await upstream.json()) as { signed_url?: string };
-        return new Response(JSON.stringify({ signedUrl: body.signed_url ?? null, agentId }), {
-          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-        });
+        if (!body.signed_url) return Response.json({ error: "voice_unavailable" }, { status: 502 });
+        return new Response(
+          JSON.stringify({ signedUrl: body.signed_url, agentId, liveLanguages: ["en", "af"] }),
+          {
+            headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+          },
+        );
       },
     },
   },

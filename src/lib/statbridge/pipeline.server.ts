@@ -14,10 +14,17 @@ import { createHash, randomBytes } from "node:crypto";
 
 import type { PublicAnswer, PublicRenderBlock, PublicSourceReference } from "./contract";
 import { API_VERSION } from "./contract";
+import { languageInstruction, normalizeLanguage } from "./languages";
+import { interpretQuestion, localizeServiceText, readQuestionContext } from "./question.server";
 import { AssistantUnavailable, getAssistant, parseModelJson } from "./provider.server";
-import { isAcknowledgementOnly, mustGoToHuman, routeQuestion, type ReviewReason } from "./routing.server";
+import {
+  isAcknowledgementOnly,
+  mustGoToHuman,
+  routeQuestion,
+  type ReviewReason,
+} from "./routing.server";
 
-const PROMPT_VERSION = "ask-2026-09-1";
+const PROMPT_VERSION = "ask-2026-09-2";
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
@@ -191,6 +198,9 @@ export type AskInput = {
   channel: "web" | "widget" | "api";
   siteKey?: string | null;
   parentAnswerRef?: string | null;
+  /** Internal interpretation metadata, never caller-provided evidence. */
+  resolvedQuestion?: string;
+  parentAnswerId?: string | null;
   clientKey: string;
 };
 
@@ -208,7 +218,10 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
 
   const allowed = await checkRateLimit(db, input.clientKey, 20);
   if (!allowed) {
-    throw new PipelineError("Too many questions from this connection. Please try again shortly.", 429);
+    throw new PipelineError(
+      "Too many questions from this connection. Please try again shortly.",
+      429,
+    );
   }
 
   let siteId: string | null = null;
@@ -224,14 +237,58 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
 
   const { data: guideline } = await db
     .from("guidelines")
-    .select("id, title, terminology, style_rules, number_rules")
+    .select(
+      "id, title, terminology, style_rules, number_rules, media_policy, sensitive_topic_policy, escalation_policy, multilingual_rules, forbidden_phrases, prohibited_claims",
+    )
     .eq("status", "active")
     .maybeSingle();
 
-  const routing = routeQuestion(input.question);
+  const mandatory = routeQuestion(input.question);
+  const previous = await readQuestionContext(db, input.parentAnswerRef).catch(() => null);
+  let interpretation;
+  try {
+    interpretation = await interpretQuestion(
+      input.question,
+      input.language,
+      guideline,
+      undefined,
+      previous?.context ?? null,
+    );
+  } catch {
+    // Unknown language or unclassified policy is not a licence to send an
+    // unchecked substantive answer. Keep the original enquiry for an official.
+    return escalateToCase({
+      db,
+      input: {
+        ...input,
+        language: normalizeLanguage(input.language) === "auto" ? "en" : input.language,
+      },
+      reasons: [...new Set([...mandatory.reasons, "complex" as const])],
+      siteId,
+      guidelineId: guideline?.id ?? null,
+      startedAt: started,
+    });
+  }
+  input = {
+    ...input,
+    language: interpretation.language,
+    resolvedQuestion: interpretation.englishQuestion,
+    parentAnswerId: previous?.answerId ?? null,
+  };
+  const routing = { reasons: interpretation.reviewReasons };
+  if (input.language === "sfs") {
+    return escalateToCase({
+      db,
+      input,
+      reasons: ["complex"],
+      siteId,
+      guidelineId: guideline?.id ?? null,
+      startedAt: started,
+    });
+  }
 
   // Media, sensitive, official-position, causal and complex requests never
-  // receive AI-written wording. They go straight to a human.
+  // receive unapproved substantive wording. Drafts stay inside staff review.
   if (mustGoToHuman(routing.reasons)) {
     return await escalateToCase({
       db,
@@ -249,19 +306,39 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
 
   // The assistant chooses its own evidence-gathering tools first. Every tool
   // runs on the server against approved South African material only.
-  const toolCalls = await planRetrieval(planner, input.question);
+  const toolCalls = await planRetrieval(planner, interpretation.englishQuestion);
   const toolResult = toolCalls.length
-    ? await runRetrievalTools(db, toolCalls, input.question).catch(() => null)
+    ? await runRetrievalTools(db, toolCalls, interpretation.englishQuestion).catch(() => null)
     : null;
 
-  const [passagesResult, observationsResult, semanticHits] = await Promise.all([
-    db.rpc("search_passages", { _q: input.question, _limit: 10 }),
-    db.rpc("search_observations", { _q: input.question, _limit: 12 }),
-    semanticSearch(db, input.question, 12).catch(() => []),
+  const [keywordResults, semanticHits] = await Promise.all([
+    Promise.all(
+      interpretation.searchQueries.map(async (query) => {
+        const [passages, observations] = await Promise.all([
+          db.rpc("search_passages", { _q: query, _limit: 10 }),
+          db.rpc("search_observations", { _q: query, _limit: 16 }),
+        ]);
+        if (passages.error || observations.error)
+          throw new PipelineError(
+            "The approved source search could not be completed. Please try again.",
+            503,
+          );
+        return {
+          passages: (passages.data ?? []) as PassageRow[],
+          observations: (observations.data ?? []) as ObservationRow[],
+        };
+      }),
+    ),
+    semanticSearch(db, interpretation.englishQuestion, 12).catch(() => []),
   ]);
-
-  const passages = (passagesResult.data ?? []) as PassageRow[];
-  const observations = (observationsResult.data ?? []) as ObservationRow[];
+  const passages = [
+    ...new Map(keywordResults.flatMap((r) => r.passages).map((p) => [p.passage_id, p])).values(),
+  ];
+  const observations = [
+    ...new Map(
+      keywordResults.flatMap((r) => r.observations).map((o) => [o.observation_id, o]),
+    ).values(),
+  ];
 
   // Meaning-based hits fill in what the word search missed. Both paths only
   // ever return approved publications; the database enforces that, not the prompt.
@@ -305,8 +382,10 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
       followUps: [],
       references: [],
       clarification: null,
-      gapDescription:
+      gapDescription: await localizeServiceText(
         "No approved Stats SA source in StatBridge covers this yet, so there is nothing verified to quote. You can send the question to an official.",
+        input.language,
+      ),
       reviewReasons: ["gap"],
       evidence: [],
       provider: null,
@@ -338,8 +417,10 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
   let proposal: ModelProposal;
   try {
     const raw = await assistant.complete({
-      system: SYSTEM_PROMPT,
+      system: `${SYSTEM_PROMPT}\n\n${languageInstruction(input.language)}`,
       prompt: `QUESTION: ${input.question}
+REPLY LANGUAGE: ${input.language}
+ENGLISH SEARCH INTERPRETATION: ${interpretation.englishQuestion}
 READING LEVEL: ${input.readingLevel}
 ${guideline ? `HOUSE STYLE: ${guideline.style_rules ?? ""} ${guideline.number_rules ?? ""}` : ""}
 
@@ -365,7 +446,9 @@ ${extracts || "(none)"}`,
   const passageById = new Map(passages.map((p) => [p.passage_id, p]));
   const observationById = new Map(observations.map((o) => [o.observation_id, o]));
 
-  const usedPassages = (proposal.passageIds ?? []).map((id) => passageById.get(id)).filter(Boolean) as PassageRow[];
+  const usedPassages = (proposal.passageIds ?? [])
+    .map((id) => passageById.get(id))
+    .filter(Boolean) as PassageRow[];
   const usedObservations = (proposal.observationIds ?? [])
     .map((id) => observationById.get(id))
     .filter(Boolean) as ObservationRow[];
@@ -410,7 +493,8 @@ ${extracts || "(none)"}`,
 
   const noEvidence = usedPassages.length === 0 && usedObservations.length === 0;
   if (proposal.decision === "gap" || noEvidence || lowConfidence) {
-    validation["gap_cause"] = proposal.decision === "gap" ? "model_gap" : noEvidence ? "no_valid_ids" : "low_confidence";
+    validation["gap_cause"] =
+      proposal.decision === "gap" ? "model_gap" : noEvidence ? "no_valid_ids" : "low_confidence";
     return await storeAnswer({
       db,
       input,
@@ -426,7 +510,10 @@ ${extracts || "(none)"}`,
       clarification: null,
       gapDescription:
         proposal.gapReason?.slice(0, 500) ??
-        "The approved Stats SA material in StatBridge does not answer this directly, so no figure can be quoted for it.",
+        (await localizeServiceText(
+          "The approved Stats SA material in StatBridge does not answer this directly, so no figure can be quoted for it.",
+          input.language,
+        )),
       reviewReasons: lowConfidence ? ["low_confidence", "gap"] : ["gap"],
       evidence: [],
       provider: providerInfo,
@@ -439,7 +526,12 @@ ${extracts || "(none)"}`,
   const wanted = new Set(proposal.blocks ?? []);
   const blocks: PublicRenderBlock[] = [];
   const references: PublicSourceReference[] = [];
-  const evidence: Array<{ statement: string; sourceVersionId: string; passageId?: string; observationId?: string }> = [];
+  const evidence: Array<{
+    statement: string;
+    sourceVersionId: string;
+    passageId?: string;
+    observationId?: string;
+  }> = [];
   const seenReference = new Set<string>();
 
   const addReference = (ref: PublicSourceReference) => {
@@ -483,7 +575,9 @@ ${extracts || "(none)"}`,
     }
     const series = [...groups.values()].find((rows) => rows.length >= 3);
     if (series) {
-      const ordered = [...series].sort((a, b) => (a.period_end ?? "").localeCompare(b.period_end ?? ""));
+      const ordered = [...series].sort((a, b) =>
+        (a.period_end ?? "").localeCompare(b.period_end ?? ""),
+      );
       const first = ordered[0]!;
       blocks.push({
         type: "chart",
@@ -603,14 +697,21 @@ ${extracts || "(none)"}`,
         url: p.original_url,
       });
     }
-    evidence.push({ statement: quote.slice(0, 300), sourceVersionId: p.source_version_id, passageId: p.passage_id });
+    evidence.push({
+      statement: quote.slice(0, 300),
+      sourceVersionId: p.source_version_id,
+      passageId: p.passage_id,
+    });
   }
 
   const caveats = (proposal.caveats ?? []).map((c) => String(c).slice(0, 300)).slice(0, 4);
   for (const o of usedObservations) {
-    if (o.comparability_note && !caveats.includes(o.comparability_note)) caveats.push(o.comparability_note);
+    if (o.comparability_note && !caveats.includes(o.comparability_note))
+      caveats.push(o.comparability_note);
     if (o.value_state !== "reported") {
-      caveats.push(`${o.measure} for ${o.reference_period} is recorded as ${o.value_state.replace("_", " ")}.`);
+      caveats.push(
+        `${o.measure} for ${o.reference_period} is recorded as ${o.value_state.replace("_", " ")}.`,
+      );
     }
   }
 
@@ -653,7 +754,12 @@ type StoreArgs = {
   clarification: PublicAnswer["clarification"];
   gapDescription: string | null;
   reviewReasons: ReviewReason[];
-  evidence: Array<{ statement: string; sourceVersionId: string; passageId?: string; observationId?: string }>;
+  evidence: Array<{
+    statement: string;
+    sourceVersionId: string;
+    passageId?: string;
+    observationId?: string;
+  }>;
   provider: { name: string; model: string } | null;
   latency: number;
   validation: Record<string, unknown>;
@@ -675,6 +781,7 @@ async function storeAnswer(args: StoreArgs): Promise<PublicAnswer> {
       channel: input.channel,
       language: input.language,
       question_text: input.question,
+      parent_answer_id: input.parentAnswerId ?? null,
       topic: args.topic,
       outcome: args.outcome,
       reading_level: input.readingLevel,
@@ -687,7 +794,10 @@ async function storeAnswer(args: StoreArgs): Promise<PublicAnswer> {
       review_reasons: args.reviewReasons,
       case_id: args.caseId ?? null,
       guideline_id: args.guidelineId,
-      validation_result: args.validation as never,
+      validation_result: {
+        ...args.validation,
+        ...(input.resolvedQuestion ? { resolved_question: input.resolvedQuestion } : {}),
+      } as never,
       ai_provider: args.provider?.name ?? null,
       ai_model: args.provider?.model ?? null,
       prompt_version: PROMPT_VERSION,
@@ -715,6 +825,7 @@ async function storeAnswer(args: StoreArgs): Promise<PublicAnswer> {
     apiVersion: API_VERSION,
     answerRef: publicRef,
     question: input.question,
+    language: input.language,
     outcome: args.outcome,
     readingLevel: input.readingLevel,
     officialBlocks: args.officialBlocks,
@@ -745,15 +856,28 @@ type EscalateArgs = {
 };
 
 export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> {
-  const { db, input } = args;
+  const { db } = args;
+  let input = args.input;
+  if (normalizeLanguage(input.language) === "auto") {
+    try {
+      const interpreted = await interpretQuestion(input.question, input.language);
+      input = { ...input, language: interpreted.language };
+    } catch {
+      input = { ...input, language: "en" };
+    }
+  }
   const { token, hash } = makeStatusToken();
   // A media case can only be opened once the newsroom's name, outlet and
   // contact details are on hand. Without them the request is still routed to a
   // person and still receives no written answer — it is simply logged as a
   // public escalation carrying the media reason.
-  const hasRequesterDetails = Boolean(args.requester?.name && args.requester?.outlet && args.requester?.contact);
-  const wantsMedia = (args.kind ?? (args.reasons.includes("media") ? "media" : "public_escalation")) === "media";
-  const kind: "media" | "public_escalation" = wantsMedia && hasRequesterDetails ? "media" : "public_escalation";
+  const hasRequesterDetails = Boolean(
+    args.requester?.name && args.requester?.outlet && args.requester?.contact,
+  );
+  const wantsMedia =
+    (args.kind ?? (args.reasons.includes("media") ? "media" : "public_escalation")) === "media";
+  const kind: "media" | "public_escalation" =
+    wantsMedia && hasRequesterDetails ? "media" : "public_escalation";
 
   const { data, error } = await db.rpc("open_case", {
     _kind: kind,
@@ -774,6 +898,23 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
     throw new PipelineError("The request could not be logged. Please try again.", 500);
   }
 
+  // Every review case gets a private AI draft; the public receives only an
+  // acknowledgement. Approval and release remain separate official actions.
+  try {
+    const { ensureCaseDraft } = await import("./case-drafting.server");
+    await ensureCaseDraft(db, opened.id, { language: input.language });
+  } catch {
+    // Preserve the valid case and private tracking link if draft preparation
+    // needs a staff retry. Never expose an internal drafting error or wording.
+    await db.from("audit_events").insert({
+      action: "automatic_draft_failed",
+      entity_kind: "case",
+      entity_id: opened.id,
+      case_id: opened.id,
+      origin: "api",
+      detail: { retry: "staff_review" },
+    });
+  }
   const acknowledgementOnly = isAcknowledgementOnly(args.reasons);
   const statusUrl = `/case/${opened.reference}?token=${token}`;
 
@@ -789,9 +930,12 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
         type: "case_acknowledgement",
         reference: opened.reference,
         statusUrl,
-        message: acknowledgementOnly
-          ? "This request goes to a Stats SA communications official. StatBridge does not write a reply to media or sensitive requests. Keep the reference and private link below to follow progress."
-          : "This request needs a person to answer it. A communications official will prepare a reply. Keep the reference and private link below to follow progress.",
+        message: await localizeServiceText(
+          acknowledgementOnly
+            ? "Your enquiry has been received for a Stats SA communications official to review. Any AI draft stays private until an official approves and releases the response. Keep the reference and private link below to follow progress."
+            : "Your request has been received for official review. Keep the reference and private link below to follow progress; the response will appear after approval and release.",
+          input.language,
+        ),
       },
     ],
     aiExplanation: null,

@@ -33,7 +33,10 @@ async function embedWithGoogle(key: string, inputs: string[]): Promise<number[][
   }
 
   const body = (await response.json()) as { embeddings?: Array<{ values?: number[] }> };
-  return inputs.map((_, i) => body.embeddings?.[i]?.values ?? []);
+  return validateVectors(
+    body.embeddings?.map((row) => row.values),
+    inputs.length,
+  );
 }
 
 /** Managed gateway fallback, used only when no project key is configured. */
@@ -55,7 +58,43 @@ async function embedWithGateway(key: string, inputs: string[]): Promise<number[]
 
   const body = (await response.json()) as { data?: Array<{ embedding: number[]; index?: number }> };
   const rows = body.data ?? [];
-  return inputs.map((_, i) => rows[i]?.embedding ?? rows.find((r) => r.index === i)?.embedding ?? []);
+  if (rows.some((row) => row.index !== undefined)) {
+    if (
+      rows.length !== inputs.length ||
+      rows.some(
+        (row) => !Number.isInteger(row.index) || row.index! < 0 || row.index! >= inputs.length,
+      ) ||
+      new Set(rows.map((row) => row.index)).size !== inputs.length
+    ) {
+      throw new Error("Embedding provider returned invalid response indices.");
+    }
+    return validateVectors(
+      [...rows].sort((a, b) => a.index! - b.index!).map((row) => row.embedding),
+      inputs.length,
+    );
+  }
+  return validateVectors(
+    rows.map((row) => row.embedding),
+    inputs.length,
+  );
+}
+
+function validateVectors(vectors: unknown, expectedCount: number): number[][] {
+  if (
+    !Array.isArray(vectors) ||
+    vectors.length !== expectedCount ||
+    vectors.some(
+      (vector) =>
+        !Array.isArray(vector) ||
+        vector.length !== EMBEDDING_DIMENSIONS ||
+        vector.some((value) => typeof value !== "number" || !Number.isFinite(value)),
+    )
+  ) {
+    throw new Error(
+      `Embedding provider must return ${expectedCount} finite ${EMBEDDING_DIMENSIONS}-dimensional vectors.`,
+    );
+  }
+  return vectors as number[][];
 }
 
 export async function embedTexts(inputs: string[]): Promise<number[][]> {
@@ -84,49 +123,93 @@ type PendingRow = {
 };
 
 async function collectPending(db: Admin, limit: number): Promise<PendingRow[]> {
-  const [passages, observations, existing] = await Promise.all([
-    db
+  if (!Number.isSafeInteger(limit) || limit < 0)
+    throw new Error("Embedding limit must be a non-negative integer.");
+  const pending: PendingRow[] = [];
+  if (limit === 0) return pending;
+
+  // Scope each existence lookup to one source page; never truncate a global
+  // embedding list. Keyset traversal remains stable as completed rows accumulate.
+  async function existingIds(kind: PendingRow["owner_kind"], ids: string[]) {
+    // UUID filters travel in a URL; a 500-ID filter can exceed gateway limits.
+    const done = new Set<string>();
+    for (let start = 0; start < ids.length; start += 100) {
+      const { data, error } = await db
+        .from("kb_embeddings")
+        .select("owner_id")
+        .eq("owner_kind", kind)
+        .in("owner_id", ids.slice(start, start + 100));
+      if (error) throw new Error(`Reading ${kind} embeddings failed: ${error.message}`);
+      for (const row of data ?? []) done.add(row.owner_id);
+    }
+    return done;
+  }
+
+  let after: string | undefined;
+  while (pending.length < limit) {
+    let query = db
       .from("passages")
       .select("id, content, section_label, source_version_id, source_versions!inner(status)")
       .eq("source_versions.status", "approved")
-      .limit(500),
-    db
+      .order("id", { ascending: true })
+      .limit(500);
+    if (after) query = query.gt("id", after);
+    const { data, error } = await query;
+    if (error) throw new Error(`Reading passages for embeddings failed: ${error.message}`);
+    if (!data?.length) break;
+    const done = await existingIds(
+      "passage",
+      data.map((row) => row.id),
+    );
+    for (const p of data) {
+      if (done.has(p.id)) continue;
+      pending.push({
+        owner_kind: "passage",
+        owner_id: p.id,
+        source_version_id: p.source_version_id,
+        content: `${p.section_label ?? ""}\n${p.content}`.trim().slice(0, 4000),
+      });
+      if (pending.length === limit) return pending;
+    }
+    after = data[data.length - 1]!.id;
+  }
+
+  after = undefined;
+  while (pending.length < limit) {
+    let query = db
       .from("observations")
       .select(
         "id, measure, unit, geography, population, reference_period, display_value, source_version_id, source_versions!inner(status)",
       )
       .eq("source_versions.status", "approved")
-      .limit(500),
-    db.from("kb_embeddings").select("owner_kind, owner_id").limit(2000),
-  ]);
-
-  const done = new Set((existing.data ?? []).map((r) => `${r.owner_kind}:${r.owner_id}`));
-  const pending: PendingRow[] = [];
-
-  for (const p of passages.data ?? []) {
-    if (done.has(`passage:${p.id}`)) continue;
-    pending.push({
-      owner_kind: "passage",
-      owner_id: p.id,
-      source_version_id: p.source_version_id,
-      content: `${p.section_label ?? ""}\n${p.content}`.trim().slice(0, 4000),
-    });
+      .not("verified_at", "is", null)
+      .order("id", { ascending: true })
+      .limit(500);
+    if (after) query = query.gt("id", after);
+    const { data, error } = await query;
+    if (error) throw new Error(`Reading observations for embeddings failed: ${error.message}`);
+    if (!data?.length) break;
+    const done = await existingIds(
+      "observation",
+      data.map((row) => row.id),
+    );
+    for (const o of data) {
+      if (done.has(o.id)) continue;
+      pending.push({
+        owner_kind: "observation",
+        owner_id: o.id,
+        source_version_id: o.source_version_id,
+        content:
+          `${o.measure} for ${o.geography}${o.population ? ` (${o.population})` : ""}, ${o.reference_period}: ${o.display_value} ${o.unit}`.slice(
+            0,
+            2000,
+          ),
+      });
+      if (pending.length === limit) return pending;
+    }
+    after = data[data.length - 1]!.id;
   }
-  for (const o of observations.data ?? []) {
-    if (done.has(`observation:${o.id}`)) continue;
-    pending.push({
-      owner_kind: "observation",
-      owner_id: o.id,
-      source_version_id: o.source_version_id,
-      content:
-        `${o.measure} for ${o.geography}${o.population ? ` (${o.population})` : ""}, ${o.reference_period}: ${o.display_value} ${o.unit}`.slice(
-          0,
-          2000,
-        ),
-    });
-  }
-
-  return pending.slice(0, limit);
+  return pending;
 }
 
 /** Generates any missing embeddings. Safe to run repeatedly. */
@@ -138,20 +221,18 @@ export async function backfillEmbeddings(db: Admin, limit = 120) {
   for (let i = 0; i < pending.length; i += 32) {
     const batch = pending.slice(i, i + 32);
     const vectors = await embedTexts(batch.map((row) => row.content));
-    const rows = batch
-      .map((row, index) => ({ row, vector: vectors[index] }))
-      .filter((entry): entry is { row: PendingRow; vector: number[] } => Boolean(entry.vector?.length))
-      .map(({ row, vector }) => ({
-        owner_kind: row.owner_kind,
-        owner_id: row.owner_id,
-        source_version_id: row.source_version_id,
-        content: row.content,
-        embedding: JSON.stringify(vector),
-        model: EMBEDDING_MODEL,
-      }));
+    const rows = batch.map((row, index) => ({
+      owner_kind: row.owner_kind,
+      owner_id: row.owner_id,
+      source_version_id: row.source_version_id,
+      content: row.content,
+      embedding: JSON.stringify(vectors[index]),
+      model: EMBEDDING_MODEL,
+    }));
 
-    if (rows.length === 0) continue;
-    const { error } = await db.from("kb_embeddings").upsert(rows, { onConflict: "owner_kind,owner_id" });
+    const { error } = await db
+      .from("kb_embeddings")
+      .upsert(rows, { onConflict: "owner_kind,owner_id" });
     if (error) throw new Error(error.message);
     created += rows.length;
   }
@@ -169,7 +250,11 @@ export type SemanticHit = {
 };
 
 /** Meaning-based lookup, restricted to approved publications inside the database. */
-export async function semanticSearch(db: Admin, question: string, limit = 12): Promise<SemanticHit[]> {
+export async function semanticSearch(
+  db: Admin,
+  question: string,
+  limit = 12,
+): Promise<SemanticHit[]> {
   const vector = await embedOne(question);
   if (!vector) return [];
   const { data, error } = await db.rpc("search_knowledge_semantic", {

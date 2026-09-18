@@ -1,52 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-/**
- * Speaks a checked answer in a South African woman's voice.
- *
- * Only wording the assistant has already produced is ever sent here; the
- * credential stays on the server.
- */
-const VOICE_ID = "QrziN6Een025PRsTUEHI"; // Kaya — native Cape Town South African English
-
+/** Speak the already checked answer in the detected/requested language. Credentials stay server-side. */
 export const Route = createFileRoute("/api/speak")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env["ELEVENLABS_API_KEY"];
-        if (!key) return new Response("Voice is not available", { status: 503 });
-
-        let text = "";
+        const { synthesizeVoice, VoiceError } = await import("@/lib/statbridge/voice.server");
         try {
-          const body = (await request.json()) as { text?: unknown };
-          text = typeof body.text === "string" ? body.text.trim() : "";
-        } catch {
-          return new Response("Bad request", { status: 400 });
+          const body = (await request.json()) as { text?: unknown; language?: unknown };
+          const text = typeof body.text === "string" ? body.text.trim().slice(0, 2500) : "";
+          if (text.length < 2) return new Response("Nothing to say", { status: 400 });
+          const result = await synthesizeVoice(
+            text,
+            typeof body.language === "string" ? body.language : "auto",
+          );
+          return new Response(result.body as BodyInit, {
+            headers: {
+              "Content-Type": result.contentType,
+              "Cache-Control": "no-store",
+              "X-Speech-Preview": String(result.preview),
+            },
+          });
+        } catch (error) {
+          return new Response(error instanceof VoiceError ? error.message : "Voice unavailable", {
+            status: error instanceof VoiceError ? error.status : 400,
+          });
         }
-        if (text.length < 2) return new Response("Nothing to say", { status: 400 });
-        text = text.slice(0, 2500);
-
-        const upstream = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream?output_format=mp3_44100_128`,
-          {
-            method: "POST",
-            headers: { "xi-api-key": key, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              text,
-              model_id: "eleven_multilingual_v2",
-              voice_settings: { stability: 0.42, similarity_boost: 0.82, style: 0.2, use_speaker_boost: true, speed: 0.97 },
-            }),
-          },
-        );
-
-        if (!upstream.ok || !upstream.body) {
-          const detail = await upstream.text().catch(() => "");
-          console.error(`Speech failed [${upstream.status}]: ${detail}`);
-          return new Response("Voice unavailable", { status: 502 });
-        }
-
-        return new Response(upstream.body, {
-          headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
-        });
       },
     },
   },

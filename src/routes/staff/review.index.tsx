@@ -1,6 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, Clock, Inbox, Loader2 } from "lucide-react";
+
+import { useState } from "react";
+import { beginPressRelease } from "@/lib/staff/draft.functions";
+import { useStaff } from "@/lib/staff/useStaff";
 
 import { StaffShell } from "@/components/statbridge/StaffShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,10 +45,17 @@ function deadlineTone(deadline: string | null) {
 }
 
 function ReviewQueuePage() {
+  const { can } = useStaff();
+  const navigate = useNavigate();
+  const [topic, setTopic] = useState("");
+  const pressDraft = useMutation({
+    mutationFn: () => beginPressRelease({ data: { topic } }),
+    onSuccess: (result) => navigate({ to: "/staff/review/$id", params: { id: result.caseId } }),
+  });
   const query = useQuery({
     queryKey: ["review-queue"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("review_queue").select("*");
+      const { data, error } = await supabase.rpc("staff_review_queue");
       if (error) throw new Error(error.message);
       return data ?? [];
     },
@@ -52,6 +63,35 @@ function ReviewQueuePage() {
 
   return (
     <StaffShell title="Review queue">
+      {can.review && (
+        <section className="surface-panel mb-5 p-4">
+          <h2 className="text-sm font-semibold">Draft a press release</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Start from approved sources. The draft stays internal until an official reviews and
+            releases it.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              aria-label="Press release topic"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="Topic, reference period and geography"
+              maxLength={1200}
+              className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm"
+            />
+            <button
+              disabled={pressDraft.isPending || topic.trim().length < 10}
+              onClick={() => pressDraft.mutate()}
+              className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            >
+              {pressDraft.isPending ? "Preparing draft…" : "Prepare private draft"}
+            </button>
+          </div>
+          {pressDraft.isError && (
+            <p className="mt-2 text-sm text-destructive">{pressDraft.error.message}</p>
+          )}
+        </section>
+      )}
       {query.isPending && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden className="size-4 animate-spin" />
@@ -63,9 +103,13 @@ function ReviewQueuePage() {
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           <p className="font-medium">The queue could not be loaded.</p>
           <p className="mt-1">
-            If this keeps happening, your account may not have permission to see cases. Ask a communications manager.
+            If this keeps happening, your account may not have permission to see cases. Ask a
+            communications manager.
           </p>
-          <button onClick={() => query.refetch()} className="mt-2 font-semibold underline underline-offset-2">
+          <button
+            onClick={() => query.refetch()}
+            className="mt-2 font-semibold underline underline-offset-2"
+          >
             Try again
           </button>
         </div>
@@ -100,8 +144,7 @@ function ReviewQueuePage() {
                   </span>
                   {row.source_changed && (
                     <span className="inline-flex items-center gap-1 rounded bg-warn-surface px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">
-                      <AlertTriangle aria-hidden className="size-3" />
-                      A source changed
+                      <AlertTriangle aria-hidden className="size-3" />A source changed
                     </span>
                   )}
                   {row.is_demo_seed && (
@@ -114,7 +157,9 @@ function ReviewQueuePage() {
                 <p className="mt-2 line-clamp-2 text-sm text-foreground">{row.question_text}</p>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-                  <span className={`inline-flex items-center gap-1 ${deadlineTone(row.deadline_at as string | null)}`}>
+                  <span
+                    className={`inline-flex items-center gap-1 ${deadlineTone(row.deadline_at as string | null)}`}
+                  >
                     <Clock aria-hidden className="size-3" />
                     {row.deadline_at
                       ? `Deadline ${new Date(row.deadline_at as string).toLocaleString("en-ZA")}`
@@ -124,11 +169,15 @@ function ReviewQueuePage() {
                     {row.assigned_to_name ? `Assigned to ${row.assigned_to_name}` : "Unassigned"}
                   </span>
                   <span className="text-muted-foreground">
-                    {(row.draft_count as number) > 0 ? `${row.draft_count} draft versions` : "No draft yet"}
+                    {(row.draft_count as number) > 0
+                      ? `${row.draft_count} draft versions`
+                      : "No draft yet"}
                   </span>
                   {(row.review_reasons as string[] | null)?.length ? (
                     <span className="text-muted-foreground">
-                      {(row.review_reasons as string[]).map((r) => REVIEW_REASON_LABELS[r] ?? r).join(", ")}
+                      {(row.review_reasons as string[])
+                        .map((r) => REVIEW_REASON_LABELS[r] ?? r)
+                        .join(", ")}
                     </span>
                   ) : null}
                 </div>

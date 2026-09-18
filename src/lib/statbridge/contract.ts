@@ -172,6 +172,7 @@ export const publicAnswerSchema = z.object({
   apiVersion: z.literal(API_VERSION),
   answerRef: z.string(),
   question: z.string(),
+  language: z.string().optional(),
   outcome: z.enum(answerOutcomes),
   readingLevel: z.enum(["short", "detailed"]),
   /** Official Stats SA material. Verified, never written by the model. */
@@ -196,7 +197,7 @@ export type PublicAnswer = z.infer<typeof publicAnswerSchema>;
 export const askRequestSchema = z.object({
   question: z.string().trim().min(3, "Please type a question.").max(1000),
   readingLevel: z.enum(["short", "detailed"]).default("short"),
-  language: z.string().default("en"),
+  language: z.string().trim().max(40).default("auto"),
   channel: z.enum(["web", "widget", "api"]).default("web"),
   siteKey: z.string().nullish(),
   parentAnswerRef: z.string().nullish(),
@@ -207,6 +208,7 @@ export type AskRequest = z.infer<typeof askRequestSchema>;
 
 export const escalateRequestSchema = z.object({
   answerRef: z.string().nullish(),
+  language: z.string().trim().max(40).default("auto"),
   question: z.string().trim().min(3).max(1000),
   contact: z.string().trim().max(200).nullish(),
   consent: z.boolean().default(false),
@@ -214,6 +216,7 @@ export const escalateRequestSchema = z.object({
 });
 
 export const mediaQueryRequestSchema = z.object({
+  language: z.string().trim().max(40).default("auto"),
   name: z.string().trim().min(2, "Please give your name.").max(120),
   outlet: z.string().trim().min(2, "Please give your media outlet.").max(160),
   contact: z.string().trim().min(5, "Please give an email address or phone number.").max(200),

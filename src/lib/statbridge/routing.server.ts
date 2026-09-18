@@ -68,6 +68,11 @@ const ADVERSARIAL_SIGNALS = [
   /\bapi key\b/i,
 ];
 
+const HUMAN_REQUEST_SIGNALS = [
+  /\b(speak|talk|connect|transfer|refer)\b.{0,50}\b(human|person|official|staff member|agent)\b/i,
+  /\b(i want|i need|please get)\b.{0,30}\b(human|real person)\b/i,
+];
+
 export type RoutingVerdict = {
   reasons: ReviewReason[];
   adversarial: boolean;
@@ -81,10 +86,20 @@ export function routeQuestion(question: string): RoutingVerdict {
   const reasons = new Set<ReviewReason>();
   const text = question.trim();
 
-  if (matchAny(text, MEDIA_SIGNALS)) reasons.add("media");
+  // Reading an existing publication is public retrieval; a journalist's
+  // identity, request for comment or other media signal still requires review.
+  const publishedReleaseLookup =
+    /\b(find|show|read|download|locate|where|access)\b/i.test(text) &&
+    /\b(published|existing|released)\b/i.test(text) &&
+    /\bpress releases?\b/i.test(text);
+  const mediaText = publishedReleaseLookup
+    ? text.replace(/\bpress releases?\b/gi, "release")
+    : text;
+  if (matchAny(mediaText, MEDIA_SIGNALS)) reasons.add("media");
   if (matchAny(text, SENSITIVE_SIGNALS)) reasons.add("sensitive");
   if (matchAny(text, OFFICIAL_POSITION_SIGNALS)) reasons.add("formal_approval");
   if (matchAny(text, INTERPRETATION_SIGNALS)) reasons.add("interpretation");
+  if (matchAny(text, HUMAN_REQUEST_SIGNALS)) reasons.add("complex");
 
   const adversarial = matchAny(text, ADVERSARIAL_SIGNALS);
   if (adversarial) reasons.add("sensitive");

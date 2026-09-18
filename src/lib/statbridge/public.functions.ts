@@ -14,6 +14,7 @@ import {
   type CaseStatus,
   type PublicAnswer,
 } from "./contract";
+import { spokenAnswer } from "./voice";
 
 function clientKey() {
   try {
@@ -48,12 +49,32 @@ export const askQuestion = createServerFn({ method: "POST" })
         const { getAdminClient } = await import("./pipeline.server");
         const { recordTurn } = await import("./visitors.server");
         const db = await getAdminClient();
-        await recordTurn(db, { conversationId: data.conversationId, author: "visitor", body: data.question });
+        const [{ data: identifier }, { data: conversation }, { data: stored }] = await Promise.all([
+          db
+            .from("visitor_identifiers")
+            .select("visitor_id")
+            .eq("kind", "browser_token")
+            .eq("value", data.browserToken ?? "")
+            .maybeSingle(),
+          db.from("conversations").select("visitor_id").eq("id", data.conversationId).maybeSingle(),
+          db.from("answers").select("id").eq("public_ref", answer.answerRef).single(),
+        ]);
+        if (!identifier || identifier.visitor_id !== conversation?.visitor_id) return answer;
+        await db
+          .from("conversations")
+          .update({ language: answer.language ?? "en" })
+          .eq("id", data.conversationId);
+        await recordTurn(db, {
+          conversationId: data.conversationId,
+          author: "visitor",
+          body: data.question,
+        });
         await recordTurn(db, {
           conversationId: data.conversationId,
           author: "assistant",
-          body: answer.aiExplanation ?? answer.clarification?.question ?? answer.gapDescription ?? "(no wording)",
+          body: spokenAnswer(answer) || "No public response wording was available.",
           outcome: answer.outcome,
+          answerId: stored?.id ?? null,
         });
       } catch {
         // A failed history write must never withhold a checked answer.
@@ -73,7 +94,7 @@ export const sendToOfficial = createServerFn({ method: "POST" })
       input: {
         question: data.question,
         readingLevel: "short",
-        language: "en",
+        language: data.language,
         channel: data.channel,
         clientKey: clientKey(),
       },
@@ -96,7 +117,7 @@ export const submitMediaQuery = createServerFn({ method: "POST" })
       input: {
         question: data.question,
         readingLevel: "short",
-        language: "en",
+        language: data.language,
         channel: data.channel,
         clientKey: clientKey(),
       },
@@ -127,7 +148,9 @@ export const readCaseStatus = createServerFn({ method: "POST" })
 
     const { data: row } = await db
       .from("cases")
-      .select("reference, status, received_at, deadline_at, released_at, closed_reason, status_token_hash")
+      .select(
+        "reference, status, received_at, deadline_at, released_at, closed_reason, status_token_hash",
+      )
       .eq("reference", data.reference.trim().toUpperCase())
       .maybeSingle();
 

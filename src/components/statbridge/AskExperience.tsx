@@ -49,7 +49,7 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const { session } = useVisitorSession(compact ? "widget" : "chat");
 
   const ask = useMutation({
-    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
+    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "auto", channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
     onSuccess: (answer) => {
       setTurns((current) => [...current, { id: uid(), role: "assistant", answer }]);
       setCanvasOpen(true);

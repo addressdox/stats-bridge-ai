@@ -13,10 +13,17 @@
  */
 import type { AssistantProvider } from "./provider.server";
 import { parseModelJson } from "./provider.server";
+import { localizeServiceText } from "./question.server";
+import { normalizeLanguage } from "./languages";
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
-export type RetrievalToolCall = { tool: string; query?: string; measure?: string; geography?: string };
+export type RetrievalToolCall = {
+  tool: string;
+  query?: string;
+  measure?: string;
+  geography?: string;
+};
 
 export type RetrievalResult = {
   passageIds: string[];
@@ -27,17 +34,20 @@ export type RetrievalResult = {
 export const RETRIEVAL_TOOLS = [
   {
     name: "search_statistics",
-    description: "Find human-verified South African figures (values, periods, geographies) for a phrase.",
+    description:
+      "Find human-verified South African figures (values, periods, geographies) for a phrase.",
     arguments: { query: "the measure, period and place in plain words" },
   },
   {
     name: "find_publications",
-    description: "Find passages of approved Stats SA or other official South African publications for a phrase.",
+    description:
+      "Find passages of approved Stats SA or other official South African publications for a phrase.",
     arguments: { query: "the subject in plain words" },
   },
   {
     name: "compare_measure",
-    description: "Gather the same measure across several periods or provinces so a trend or comparison can be shown.",
+    description:
+      "Gather the same measure across several periods or provinces so a trend or comparison can be shown.",
     arguments: { measure: "the measure name", geography: "province, metro or South Africa" },
   },
 ] as const;
@@ -57,9 +67,15 @@ Rules:
 - If the question is not about South African official statistics, reply {"calls":[]}.`;
 
 /** Asks the assistant which retrieval tools to run. Failure is never fatal. */
-export async function planRetrieval(assistant: AssistantProvider, question: string): Promise<RetrievalToolCall[]> {
+export async function planRetrieval(
+  assistant: AssistantProvider,
+  question: string,
+): Promise<RetrievalToolCall[]> {
   try {
-    const raw = await assistant.complete({ system: PLANNER_SYSTEM, prompt: `QUESTION: ${question}` });
+    const raw = await assistant.complete({
+      system: PLANNER_SYSTEM,
+      prompt: `QUESTION: ${question}`,
+    });
     const parsed = parseModelJson(raw) as { calls?: RetrievalToolCall[] };
     const calls = Array.isArray(parsed.calls) ? parsed.calls : [];
     return calls
@@ -134,7 +150,29 @@ const str = (values: Record<string, unknown>, key: string) => {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 };
 
-export async function runVisitorTool(input: VisitorToolInput): Promise<Record<string, unknown> | null> {
+export async function runVisitorTool(
+  input: VisitorToolInput,
+): Promise<Record<string, unknown> | null> {
+  const result = await runVisitorAction(input);
+  if (!result || input.tool === "answer") return result;
+  let language = normalizeLanguage(str(input.values, "language"));
+  if (language === "auto" && input.conversationId) {
+    const { getAdminClient } = await import("./pipeline.server");
+    const db = await getAdminClient();
+    const { data } = await db
+      .from("conversations")
+      .select("language")
+      .eq("id", input.conversationId)
+      .maybeSingle();
+    language = normalizeLanguage(data?.language);
+  }
+  if (typeof result["spoken"] === "string" && language !== "auto") {
+    result["spoken"] = await localizeServiceText(result["spoken"], language);
+  }
+  return { ...result, language: language === "auto" ? "en" : language };
+}
+
+async function runVisitorAction(input: VisitorToolInput): Promise<Record<string, unknown> | null> {
   const { values } = input;
   const conversationId = input.conversationId ?? null;
   const browserToken = input.browserToken ?? "assistant-anonymous";
@@ -150,7 +188,7 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
       const answer = await runAsk({
         question,
         readingLevel: "short",
-        language: (str(values, "language") ?? "en") as never,
+        language: str(values, "language") ?? "auto",
         channel: input.channel ?? "web",
         siteKey: null,
         parentAnswerRef: null,
@@ -161,12 +199,23 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
         try {
           const { recordTurn } = await import("./visitors.server");
           const db = await getAdminClient();
+          const { data: stored } = await db
+            .from("answers")
+            .select("id")
+            .eq("public_ref", answer.answerRef)
+            .single();
+          await db
+            .from("conversations")
+            .update({ language: answer.language ?? "en" })
+            .eq("id", conversationId);
           await recordTurn(db, { conversationId, author: "visitor", body: question, spoken });
           await recordTurn(db, {
             conversationId,
             author: "assistant",
-            body: answer.aiExplanation ?? answer.clarification?.question ?? answer.gapDescription ?? "",
+            body:
+              answer.aiExplanation ?? answer.clarification?.question ?? answer.gapDescription ?? "",
             outcome: answer.outcome,
+            answerId: stored?.id ?? null,
             spoken,
           });
         } catch {
@@ -178,14 +227,18 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
         answer.outcome === "answered"
           ? (answer.aiExplanation ?? "")
           : answer.outcome === "clarification"
-            ? (answer.clarification?.question ?? "Could you tell me a little more about what you need?")
+            ? (answer.clarification?.question ??
+              "Could you tell me a little more about what you need?")
             : answer.outcome === "gap"
               ? (answer.gapDescription ??
                 "I have no approved Stats SA publication covering that, so I cannot give you a figure.")
-              : "I have logged that for a Stats SA official; you will be given a reference.";
+              : (answer.officialBlocks.find((b) => b.type === "case_acknowledgement")?.message ??
+                "Your enquiry is awaiting official review.");
 
       return {
         outcome: answer.outcome,
+        language: answer.language ?? "en",
+        answer_ref: answer.answerRef,
         spoken: line,
         citations: [...new Set(answer.references.map((r) => r.title).filter(Boolean))].slice(0, 4),
         case_reference: answer.caseReference ?? null,
@@ -207,7 +260,9 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
         },
       });
       return {
-        spoken: visitor.returning ? "Thank you, I have your details on file." : "Thank you, I have noted your details.",
+        spoken: visitor.returning
+          ? "Thank you, I have your details on file."
+          : "Thank you, I have noted your details.",
         returning: visitor.returning,
         known_name: visitor.knownName,
       };
@@ -216,9 +271,13 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
     case "human": {
       if (!conversationId) return { spoken: "I cannot reach an official on this line just now." };
       const { resolveVisitor, requestHandoff } = await import("./visitors.server");
-      const { readDeskSettings, callerPhoneOffer, speakableNumber } = await import("./settings.server");
+      const { readDeskSettings, callerPhoneOffer, speakableNumber } =
+        await import("./settings.server");
       const db = await getAdminClient();
-      const [visitor, settings] = await Promise.all([resolveVisitor(db, { browserToken }), readDeskSettings(db)]);
+      const [visitor, settings] = await Promise.all([
+        resolveVisitor(db, { browserToken }),
+        readDeskSettings(db),
+      ]);
       const offer = callerPhoneOffer(settings);
 
       await requestHandoff(db, {
@@ -258,12 +317,17 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
       if (!row || row.status_token_hash !== hashToken(token)) {
         return { spoken: "That reference and token do not match a request I can see." };
       }
-      return { spoken: `Request ${row.reference} is currently ${row.status.replace(/_/g, " ")}.`, status: row.status };
+      return {
+        spoken: `Request ${row.reference} is currently ${row.status.replace(/_/g, " ")}.`,
+        status: row.status,
+      };
     }
 
     case "media": {
-      const question = str(values, "question");
-      if (!question) return { spoken: "What is the media enquiry about?" };
+      const { validateMediaIntake } = await import("./media-intake");
+      const intake = validateMediaIntake({ ...values, channel: input.channel ?? "web" });
+      if (!intake.ready) return intake.reply;
+      const { question, name, outlet, contact, consent, deadline, language } = intake.data;
       const { escalateToCase } = await import("./pipeline.server");
       const db = await getAdminClient();
       const result = await escalateToCase({
@@ -271,7 +335,7 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
         input: {
           question,
           readingLevel: "short",
-          language: "en",
+          language,
           channel: input.channel ?? "web",
           clientKey: spoken ? "voice-agent" : "assistant-tool",
         },
@@ -280,12 +344,12 @@ export async function runVisitorTool(input: VisitorToolInput): Promise<Record<st
         guidelineId: null,
         startedAt: Date.now(),
         kind: "media",
-        deadline: str(values, "deadline"),
+        deadline: deadline ?? null,
         requester: {
-          name: str(values, "name") ?? "Caller",
-          outlet: str(values, "outlet") ?? "Not given",
-          contact: str(values, "contact") ?? "Not given",
-          consent: true,
+          name,
+          outlet,
+          contact,
+          consent,
         },
       });
       return {

@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/public/v1/escalate")({
           input: {
             question: parsed.data.question,
             readingLevel: "short",
-            language: "en",
+            language: parsed.data.language,
             channel: "api",
             clientKey: callerKey(request),
           },

@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 
 import { StaffShell } from "@/components/statbridge/StaffShell";
 import { supabase } from "@/integrations/supabase/client";
-import { suggestDraft } from "@/lib/staff/draft.functions";
+import { suggestDraft, saveReviewedDraft } from "@/lib/staff/draft.functions";
+import type { DraftEvidence } from "@/lib/statbridge/draft.contract";
 import { useStaff } from "@/lib/staff/useStaff";
 import { REVIEW_REASON_LABELS } from "@/lib/statbridge/contract";
 
 const title = "Review workbench — StatBridge staff";
-const description = "Draft, approve and release a Stats SA communications response against verified evidence.";
+const description =
+  "Draft, approve and release a Stats SA communications response against verified evidence.";
 
 export const Route = createFileRoute("/staff/review/$id")({
   head: () => ({
@@ -44,8 +46,19 @@ function WorkbenchPage() {
   const [format, setFormat] = useState<Format>("general_reply");
   const [instruction, setInstruction] = useState("");
   const [gaps, setGaps] = useState<string[]>([]);
+  const [suggestedEvidence, setSuggestedEvidence] = useState<DraftEvidence[] | null>(null);
   const [notice, setNotice] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [loadedVersion, setLoadedVersion] = useState<number | null>(null);
+
+  useEffect(() => {
+    setBody("");
+    setFormat("general_reply");
+    setInstruction("");
+    setGaps([]);
+    setSuggestedEvidence(null);
+    setLoadedVersion(null);
+    setNotice(null);
+  }, [id]);
 
   const caseQuery = useQuery({
     queryKey: ["case", id],
@@ -67,7 +80,9 @@ function WorkbenchPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drafts")
-        .select("id, version_number, body, format, gaps, author_kind, ai_provider, ai_model, instruction, fingerprint, created_at, guideline_id")
+        .select(
+          "id, version_number, body, format, gaps, author_kind, instruction, fingerprint, created_at, guideline_id",
+        )
         .eq("case_id", id)
         .order("version_number", { ascending: false });
       if (error) throw new Error(error.message);
@@ -80,7 +95,9 @@ function WorkbenchPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("approvals")
-        .select("id, draft_id, status, fingerprint, approved_at, void_reason, voided_at, source_version_ids")
+        .select(
+          "id, draft_id, status, fingerprint, approved_at, void_reason, voided_at, source_version_ids",
+        )
         .eq("case_id", id)
         .order("approved_at", { ascending: false });
       if (error) throw new Error(error.message);
@@ -127,13 +144,14 @@ function WorkbenchPage() {
         _limit: 4,
       });
       if (error) throw new Error(error.message);
-      return data ?? [];
+      return (data ?? []).filter((item) => item.reuse_status === "reusable");
     },
   });
 
   useEffect(() => {
     if (!latest) return;
     if (loadedVersion === latest.version_number) return;
+    setSuggestedEvidence(null);
     setBody(latest.body);
     setFormat(latest.format as Format);
     setGaps(latest.gaps ?? []);
@@ -146,6 +164,7 @@ function WorkbenchPage() {
     queryClient.invalidateQueries({ queryKey: ["case-approvals", id] });
     queryClient.invalidateQueries({ queryKey: ["case-release", id] });
     queryClient.invalidateQueries({ queryKey: ["review-queue"] });
+    queryClient.invalidateQueries({ queryKey: ["draft-evidence"] });
   }
 
   function act<T>(fn: () => Promise<T>, okText: string) {
@@ -156,7 +175,10 @@ function WorkbenchPage() {
         refresh();
       })
       .catch((e: unknown) => {
-        setNotice({ tone: "bad", text: e instanceof Error ? e.message : "That could not be done." });
+        setNotice({
+          tone: "bad",
+          text: e instanceof Error ? e.message : "That could not be done.",
+        });
       });
   }
 
@@ -180,9 +202,10 @@ function WorkbenchPage() {
     onSuccess: (result) => {
       setBody(result.body);
       setGaps(result.gaps);
+      setSuggestedEvidence(result.evidence);
       setNotice({
         tone: "ok",
-        text: `Suggested wording from ${result.provider.name} (${result.provider.model}). Nothing is saved until you save a version.`,
+        text: "Suggested wording and supporting references are ready. Save a version before approving it.",
       });
     },
     onError: (e: Error) => setNotice({ tone: "bad", text: e.message }),
@@ -190,13 +213,9 @@ function WorkbenchPage() {
 
   const saveDraft = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("save_draft", {
-        _case_id: id,
-        _body: body,
-        _format: format,
-        _gaps: gaps,
+      await saveReviewedDraft({
+        data: { caseId: id, body, format, gaps, evidence: suggestedEvidence },
       });
-      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       setLoadedVersion(null);
@@ -206,10 +225,15 @@ function WorkbenchPage() {
     onError: (e: Error) => setNotice({ tone: "bad", text: e.message }),
   });
 
-  const pending =
-    startReview.isPending || askAssistant.isPending || saveDraft.isPending;
+  const pending = startReview.isPending || askAssistant.isPending || saveDraft.isPending;
 
-  const dirty = latest ? body !== latest.body : body.trim().length > 0;
+  const dirty = latest
+    ? body !== latest.body ||
+      format !== latest.format ||
+      JSON.stringify(gaps) !== JSON.stringify(latest.gaps ?? []) ||
+      suggestedEvidence !== null
+    : body.trim().length > 0;
+  const closed = ["released", "rejected"].includes(caseQuery.data?.status ?? "");
 
   return (
     <StaffShell title="Review workbench">
@@ -235,7 +259,9 @@ function WorkbenchPage() {
       )}
 
       {caseQuery.isSuccess && !caseQuery.data && (
-        <div className="surface-panel p-6 text-sm text-muted-foreground">No case with that reference exists.</div>
+        <div className="surface-panel p-6 text-sm text-muted-foreground">
+          No case with that reference exists.
+        </div>
       )}
 
       {caseQuery.data && (
@@ -256,7 +282,9 @@ function WorkbenchPage() {
                   </span>
                 )}
               </div>
-              <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">{caseQuery.data.question_text}</p>
+              <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">
+                {caseQuery.data.question_text}
+              </p>
               <p className="mt-3 text-xs text-muted-foreground">
                 Received {new Date(caseQuery.data.received_at).toLocaleString("en-ZA")}
                 {caseQuery.data.deadline_at
@@ -266,7 +294,7 @@ function WorkbenchPage() {
                   ? ` · ${caseQuery.data.review_reasons.map((r) => REVIEW_REASON_LABELS[r] ?? r).join(", ")}`
                   : ""}
               </p>
-              {!caseQuery.data.assigned_to && can.review && (
+              {caseQuery.data.status === "draft_prepared" && can.review && (
                 <button
                   onClick={() => startReview.mutate()}
                   disabled={pending}
@@ -290,10 +318,11 @@ function WorkbenchPage() {
               </p>
             )}
 
-            {!can.review ? (
+            {!can.review || closed ? (
               <div className="surface-panel p-4 text-sm text-muted-foreground">
-                Drafting and approval are limited to communications officials and managers. The server refuses these
-                actions for other accounts whether or not the controls are shown.
+                {closed
+                  ? "This case is closed. Its saved versions and decision record remain available below."
+                  : "Your account needs case-review permission to edit and approve a response."}
               </div>
             ) : (
               <section className="surface-panel p-4">
@@ -361,10 +390,23 @@ function WorkbenchPage() {
 
                 {gaps.length > 0 && (
                   <div className="mt-4 rounded-md border border-warn/40 bg-warn-surface p-3">
-                    <p className="text-xs font-semibold text-warn-foreground">Still to be decided by a person</p>
+                    <p className="text-xs font-semibold text-warn-foreground">
+                      Still to be decided by a person
+                    </p>
                     <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-foreground">
                       {gaps.map((g) => (
-                        <li key={g}>{g}</li>
+                        <li key={g} className="flex items-start justify-between gap-2">
+                          <span>{g}</span>
+                          <button
+                            type="button"
+                            className="shrink-0 text-xs font-medium underline"
+                            onClick={() =>
+                              setGaps((current) => current.filter((item) => item !== g))
+                            }
+                          >
+                            Mark resolved
+                          </button>
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -379,8 +421,11 @@ function WorkbenchPage() {
               </section>
             )}
 
-            {can.review && latest && (
+            {can.review && latest && !closed && (
               <DecisionPanel
+                inReview={caseQuery.data.status === "in_review"}
+                hasUnsavedChanges={dirty}
+                hasGaps={Boolean(latest.gaps?.length)}
                 caseId={id}
                 draftId={latest.id}
                 canRelease={can.release}
@@ -392,7 +437,9 @@ function WorkbenchPage() {
 
             <section className="surface-panel p-4">
               <h2 className="text-sm font-semibold">Draft versions</h2>
-              {draftsQuery.isPending && <p className="mt-2 text-sm text-muted-foreground">Loading versions…</p>}
+              {draftsQuery.isPending && (
+                <p className="mt-2 text-sm text-muted-foreground">Loading versions…</p>
+              )}
               {draftsQuery.isSuccess && draftsQuery.data.length === 0 && (
                 <p className="mt-2 text-sm text-muted-foreground">No version has been saved yet.</p>
               )}
@@ -404,16 +451,40 @@ function WorkbenchPage() {
                       <span className="text-muted-foreground">
                         {d.author_kind === "ai" ? "Assistant suggestion" : "Written by a person"}
                       </span>
-                      <span className="text-muted-foreground">{new Date(d.created_at).toLocaleString("en-ZA")}</span>
+                      <span className="text-muted-foreground">
+                        {new Date(d.created_at).toLocaleString("en-ZA")}
+                      </span>
                       <span className="font-mono text-[10px] text-muted-foreground">
                         {d.fingerprint.slice(0, 12)}
                       </span>
                     </div>
                     <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{d.body}</p>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
+                        const savedEvidence = await supabase
+                          .from("evidence_links")
+                          .select("statement,source_version_id,passage_id,observation_id")
+                          .eq("owner_kind", "draft")
+                          .eq("owner_id", d.id);
+                        if (savedEvidence.error) {
+                          setNotice({
+                            tone: "bad",
+                            text: "The references for this version could not be loaded.",
+                          });
+                          return;
+                        }
                         setBody(d.body);
-                        setLoadedVersion(d.version_number);
+                        setFormat(d.format as Format);
+                        setGaps(d.gaps ?? []);
+                        setSuggestedEvidence(
+                          (savedEvidence.data ?? []).map((e) => ({
+                            statement: e.statement ?? "",
+                            sourceVersionId: e.source_version_id,
+                            ...(e.passage_id ? { passageId: e.passage_id } : {}),
+                            ...(e.observation_id ? { observationId: e.observation_id } : {}),
+                          })),
+                        );
+                        setLoadedVersion(latest?.version_number ?? null);
                       }}
                       className="mt-2 text-xs font-medium text-accent underline underline-offset-2"
                     >
@@ -440,7 +511,8 @@ function WorkbenchPage() {
                 .filter((a) => a.status !== "active")
                 .map((a) => (
                   <p key={a.id} className="mt-1 text-xs text-muted-foreground">
-                    Voided {a.voided_at ? new Date(a.voided_at).toLocaleString("en-ZA") : ""} — {a.void_reason}
+                    Voided {a.voided_at ? new Date(a.voided_at).toLocaleString("en-ZA") : ""} —{" "}
+                    {a.void_reason}
                   </p>
                 ))}
             </section>
@@ -457,7 +529,9 @@ function WorkbenchPage() {
                   </p>
                 </>
               ) : (
-                <p className="mt-2 text-sm text-muted-foreground">Nothing has been released for this case.</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Nothing has been released for this case.
+                </p>
               )}
             </section>
 
@@ -473,7 +547,8 @@ function WorkbenchPage() {
                     <li key={e.id} className="rounded border border-border p-2">
                       <p className="text-foreground">{e.statement}</p>
                       <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-                        {e.observation_id ? "figure" : "extract"} · {e.source_version_id.slice(0, 8)}
+                        {e.observation_id ? "figure" : "extract"} ·{" "}
+                        {e.source_version_id.slice(0, 8)}
                       </p>
                     </li>
                   ))}
@@ -484,7 +559,9 @@ function WorkbenchPage() {
             <section className="surface-panel p-4">
               <h2 className="text-sm font-semibold">Similar approved wording</h2>
               {(memoryQuery.data ?? []).length === 0 ? (
-                <p className="mt-2 text-sm text-muted-foreground">Nothing similar has been approved before.</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Nothing similar has been approved before.
+                </p>
               ) : (
                 <ul className="mt-2 space-y-2">
                   {(memoryQuery.data ?? []).map((m) => (
@@ -512,6 +589,9 @@ function WorkbenchPage() {
 function DecisionPanel({
   caseId,
   draftId,
+  hasUnsavedChanges,
+  inReview,
+  hasGaps,
   canRelease,
   hasActiveApproval,
   alreadyReleased,
@@ -519,6 +599,9 @@ function DecisionPanel({
 }: {
   caseId: string;
   draftId: string;
+  hasUnsavedChanges: boolean;
+  inReview: boolean;
+  hasGaps: boolean;
   canRelease: boolean;
   hasActiveApproval: boolean;
   alreadyReleased: boolean;
@@ -537,10 +620,20 @@ function DecisionPanel({
     <section className="surface-panel p-4">
       <h2 className="text-sm font-semibold">Decision</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        Approval applies to the exact saved version. Release is a separate step and is refused if the version changed
-        or a supporting source was corrected or withdrawn.
+        Approval applies to the exact saved version. Release is a separate step and is refused if
+        the version changed or a supporting source was corrected or withdrawn.
       </p>
 
+      {hasUnsavedChanges && (
+        <p className="mt-2 text-xs text-warn-foreground">
+          Save your edited wording, references and resolved gaps before approving or releasing.
+        </p>
+      )}
+      {hasGaps && (
+        <p className="mt-2 text-xs text-warn-foreground">
+          Resolve the recorded gaps in the editor and save a new version before approval.
+        </p>
+      )}
       <input
         value={reason}
         onChange={(e) => setReason(e.target.value)}
@@ -551,10 +644,13 @@ function DecisionPanel({
 
       <div className="mt-3 flex flex-wrap gap-2">
         <button
-          disabled={busy || !reason.trim()}
+          disabled={busy || !inReview || !reason.trim()}
           onClick={() =>
             run(async () => {
-              const { error } = await supabase.rpc("request_changes", { _case_id: caseId, _instruction: reason });
+              const { error } = await supabase.rpc("request_changes", {
+                _case_id: caseId,
+                _instruction: reason,
+              });
               if (error) throw new Error(error.message);
             }, "Changes requested.")
           }
@@ -563,10 +659,13 @@ function DecisionPanel({
           Request changes
         </button>
         <button
-          disabled={busy || !reason.trim()}
+          disabled={busy || !inReview || !reason.trim()}
           onClick={() =>
             run(async () => {
-              const { error } = await supabase.rpc("reject_case", { _case_id: caseId, _reason: reason });
+              const { error } = await supabase.rpc("reject_case", {
+                _case_id: caseId,
+                _reason: reason,
+              });
               if (error) throw new Error(error.message);
             }, "Case rejected.")
           }
@@ -575,7 +674,7 @@ function DecisionPanel({
           Reject
         </button>
         <button
-          disabled={busy}
+          disabled={busy || !inReview || hasUnsavedChanges || hasGaps || hasActiveApproval}
           onClick={() =>
             run(async () => {
               const { error } = await supabase.rpc("approve_draft", { _draft_id: draftId });
@@ -587,7 +686,14 @@ function DecisionPanel({
           Approve this version
         </button>
         <button
-          disabled={busy || !canRelease || !hasActiveApproval || alreadyReleased}
+          disabled={
+            busy ||
+            hasUnsavedChanges ||
+            hasGaps ||
+            !canRelease ||
+            !hasActiveApproval ||
+            alreadyReleased
+          }
           onClick={() =>
             run(async () => {
               const { error } = await supabase.rpc("release_draft", { _case_id: caseId });
@@ -603,7 +709,8 @@ function DecisionPanel({
 
       {!canRelease && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Only a communications manager may release. The server enforces this regardless of this page.
+          Your account needs response-release permission. The server enforces this regardless of
+          this page.
         </p>
       )}
     </section>
