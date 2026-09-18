@@ -42,7 +42,6 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const [draft, setDraft] = useState(initialDraft);
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
-  const [micLevel, setMicLevel] = useState(0);
   const reduce = useReducedMotion();
 
   const ask = useMutation({
