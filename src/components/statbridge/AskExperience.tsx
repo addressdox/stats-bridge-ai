@@ -13,8 +13,10 @@ import { AssistantPortrait, type AssistantState } from "@/components/statbridge/
 import { EvidenceCanvas } from "@/components/statbridge/EvidenceCanvas";
 import { RenderBlock } from "@/components/statbridge/RenderBlock";
 import { type VoiceStatus } from "@/components/statbridge/VoiceInput";
+import { ContactCard, TalkToPerson } from "@/components/statbridge/VisitorPanel";
 import { REVIEW_REASON_LABELS, type PublicAnswer } from "@/lib/statbridge/contract";
 import { askQuestion, sendToOfficial } from "@/lib/statbridge/public.functions";
+import { useVisitorSession } from "@/lib/statbridge/useVisitor";
 
 type Turn =
   | { id: string; role: "user"; text: string }
@@ -42,10 +44,12 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const [draft, setDraft] = useState(initialDraft);
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
+  const [contactSaved, setContactSaved] = useState(false);
   const reduce = useReducedMotion();
+  const { session } = useVisitorSession(compact ? "widget" : "chat");
 
   const ask = useMutation({
-    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web" } }),
+    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
     onSuccess: (answer) => {
       setTurns((current) => [...current, { id: uid(), role: "assistant", answer }]);
       setCanvasOpen(true);
@@ -106,6 +110,19 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
                 ))}
                 {ask.isPending && <div className="flex items-center gap-3 text-sm text-muted-foreground"><AssistantPortrait state="checking" size="small" className="!size-12" /><Shimmer>Checking approved sources…</Shimmer></div>}
               </AnimatePresence>
+            )}
+
+            {session && turns.length > 0 && (
+              <div className="mt-6 space-y-3">
+                {!session.hasContact && !contactSaved && (
+                  <ContactCard session={session} onSaved={() => setContactSaved(true)} />
+                )}
+                <TalkToPerson
+                  session={session}
+                  compact={compact}
+                  summary={lastQuestion?.role === "user" ? lastQuestion.text : "A visitor asked to speak with a person."}
+                />
+              </div>
             )}
           </ConversationContent>
           <ConversationScrollButton />

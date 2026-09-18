@@ -16,6 +16,7 @@ import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as MediaRouteImport } from './routes/media'
+import { Route as WidgetDemoRouteImport } from './routes/widget-demo'
 import { Route as ApiSpeakRouteImport } from './routes/api/speak'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
@@ -33,6 +34,11 @@ import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowled
 import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
 import { Route as StaffReviewIndexRouteImport } from './routes/staff/review.index'
 import { Route as StaffReviewIdRouteImport } from './routes/staff/review.$id'
+import { Route as ApiPublicV1AskRouteImport } from './routes/api/public/v1/ask'
+import { Route as ApiPublicV1CaseStatusRouteImport } from './routes/api/public/v1/case-status'
+import { Route as ApiPublicV1EscalateRouteImport } from './routes/api/public/v1/escalate'
+import { Route as ApiPublicV1MediaQueryRouteImport } from './routes/api/public/v1/media-query'
+import { Route as ApiPublicV1OpenapiRouteImport } from './routes/api/public/v1/openapi'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +73,11 @@ const InsightsRoute = InsightsRouteImport.update({
 const MediaRoute = MediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WidgetDemoRoute = WidgetDemoRouteImport.update({
+  id: '/widget-demo',
+  path: '/widget-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSpeakRoute = ApiSpeakRouteImport.update({
@@ -155,6 +166,31 @@ const StaffReviewIdRoute = StaffReviewIdRouteImport.update({
   path: '/staff/review/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1AskRoute = ApiPublicV1AskRouteImport.update({
+  id: '/api/public/v1/ask',
+  path: '/api/public/v1/ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1CaseStatusRoute = ApiPublicV1CaseStatusRouteImport.update({
+  id: '/api/public/v1/case-status',
+  path: '/api/public/v1/case-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1EscalateRoute = ApiPublicV1EscalateRouteImport.update({
+  id: '/api/public/v1/escalate',
+  path: '/api/public/v1/escalate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1MediaQueryRoute = ApiPublicV1MediaQueryRouteImport.update({
+  id: '/api/public/v1/media-query',
+  path: '/api/public/v1/media-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1OpenapiRoute = ApiPublicV1OpenapiRouteImport.update({
+  id: '/api/public/v1/openapi',
+  path: '/api/public/v1/openapi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -164,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/embed': typeof EmbedRoute
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
+  '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/conversations': typeof StaffConversationsRoute
@@ -181,6 +218,11 @@ export interface FileRoutesByFullPath {
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
+  '/api/public/v1/ask': typeof ApiPublicV1AskRoute
+  '/api/public/v1/case-status': typeof ApiPublicV1CaseStatusRoute
+  '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
+  '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
+  '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -190,6 +232,7 @@ export interface FileRoutesByTo {
   '/embed': typeof EmbedRoute
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
+  '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/conversations': typeof StaffConversationsRoute
@@ -207,6 +250,11 @@ export interface FileRoutesByTo {
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review': typeof StaffReviewIndexRoute
+  '/api/public/v1/ask': typeof ApiPublicV1AskRoute
+  '/api/public/v1/case-status': typeof ApiPublicV1CaseStatusRoute
+  '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
+  '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
+  '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -217,6 +265,7 @@ export interface FileRoutesById {
   '/embed': typeof EmbedRoute
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
+  '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/conversations': typeof StaffConversationsRoute
@@ -234,6 +283,11 @@ export interface FileRoutesById {
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
+  '/api/public/v1/ask': typeof ApiPublicV1AskRoute
+  '/api/public/v1/case-status': typeof ApiPublicV1CaseStatusRoute
+  '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
+  '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
+  '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -245,6 +299,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/insights'
     | '/media'
+    | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
     | '/staff/conversations'
@@ -262,6 +317,11 @@ export interface FileRouteTypes {
     | '/staff/knowledge/sources'
     | '/staff/review/$id'
     | '/staff/review/'
+    | '/api/public/v1/ask'
+    | '/api/public/v1/case-status'
+    | '/api/public/v1/escalate'
+    | '/api/public/v1/media-query'
+    | '/api/public/v1/openapi'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -271,6 +331,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/insights'
     | '/media'
+    | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
     | '/staff/conversations'
@@ -288,6 +349,11 @@ export interface FileRouteTypes {
     | '/staff/knowledge/sources'
     | '/staff/review/$id'
     | '/staff/review'
+    | '/api/public/v1/ask'
+    | '/api/public/v1/case-status'
+    | '/api/public/v1/escalate'
+    | '/api/public/v1/media-query'
+    | '/api/public/v1/openapi'
   id:
     | '__root__'
     | '/'
@@ -297,6 +363,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/insights'
     | '/media'
+    | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
     | '/staff/conversations'
@@ -314,6 +381,11 @@ export interface FileRouteTypes {
     | '/staff/knowledge/sources'
     | '/staff/review/$id'
     | '/staff/review/'
+    | '/api/public/v1/ask'
+    | '/api/public/v1/case-status'
+    | '/api/public/v1/escalate'
+    | '/api/public/v1/media-query'
+    | '/api/public/v1/openapi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,6 +396,7 @@ export interface RootRouteChildren {
   EmbedRoute: typeof EmbedRoute
   InsightsRoute: typeof InsightsRoute
   MediaRoute: typeof MediaRoute
+  WidgetDemoRoute: typeof WidgetDemoRoute
   ApiSpeakRoute: typeof ApiSpeakRoute
   CaseRefRoute: typeof CaseRefRoute
   StaffConversationsRoute: typeof StaffConversationsRoute
@@ -341,6 +414,11 @@ export interface RootRouteChildren {
   StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
   StaffReviewIdRoute: typeof StaffReviewIdRoute
   StaffReviewIndexRoute: typeof StaffReviewIndexRoute
+  ApiPublicV1AskRoute: typeof ApiPublicV1AskRoute
+  ApiPublicV1CaseStatusRoute: typeof ApiPublicV1CaseStatusRoute
+  ApiPublicV1EscalateRoute: typeof ApiPublicV1EscalateRoute
+  ApiPublicV1MediaQueryRoute: typeof ApiPublicV1MediaQueryRoute
+  ApiPublicV1OpenapiRoute: typeof ApiPublicV1OpenapiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -392,6 +470,13 @@ declare module '@tanstack/react-router' {
       path: '/media'
       fullPath: '/media'
       preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/widget-demo': {
+      id: '/widget-demo'
+      path: '/widget-demo'
+      fullPath: '/widget-demo'
+      preLoaderRoute: typeof WidgetDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/speak': {
@@ -513,6 +598,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffReviewIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/ask': {
+      id: '/api/public/v1/ask'
+      path: '/api/public/v1/ask'
+      fullPath: '/api/public/v1/ask'
+      preLoaderRoute: typeof ApiPublicV1AskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/case-status': {
+      id: '/api/public/v1/case-status'
+      path: '/api/public/v1/case-status'
+      fullPath: '/api/public/v1/case-status'
+      preLoaderRoute: typeof ApiPublicV1CaseStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/escalate': {
+      id: '/api/public/v1/escalate'
+      path: '/api/public/v1/escalate'
+      fullPath: '/api/public/v1/escalate'
+      preLoaderRoute: typeof ApiPublicV1EscalateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/media-query': {
+      id: '/api/public/v1/media-query'
+      path: '/api/public/v1/media-query'
+      fullPath: '/api/public/v1/media-query'
+      preLoaderRoute: typeof ApiPublicV1MediaQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/openapi': {
+      id: '/api/public/v1/openapi'
+      path: '/api/public/v1/openapi'
+      fullPath: '/api/public/v1/openapi'
+      preLoaderRoute: typeof ApiPublicV1OpenapiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -524,6 +644,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbedRoute: EmbedRoute,
   InsightsRoute: InsightsRoute,
   MediaRoute: MediaRoute,
+  WidgetDemoRoute: WidgetDemoRoute,
   ApiSpeakRoute: ApiSpeakRoute,
   CaseRefRoute: CaseRefRoute,
   StaffConversationsRoute: StaffConversationsRoute,
@@ -541,6 +662,11 @@ const rootRouteChildren: RootRouteChildren = {
   StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,
   StaffReviewIdRoute: StaffReviewIdRoute,
   StaffReviewIndexRoute: StaffReviewIndexRoute,
+  ApiPublicV1AskRoute: ApiPublicV1AskRoute,
+  ApiPublicV1CaseStatusRoute: ApiPublicV1CaseStatusRoute,
+  ApiPublicV1EscalateRoute: ApiPublicV1EscalateRoute,
+  ApiPublicV1MediaQueryRoute: ApiPublicV1MediaQueryRoute,
+  ApiPublicV1OpenapiRoute: ApiPublicV1OpenapiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
