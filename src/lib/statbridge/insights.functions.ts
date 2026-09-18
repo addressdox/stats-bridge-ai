@@ -71,14 +71,14 @@ export const getPublicInsights = createServerFn({ method: "GET" }).handler(async
     db
       .from("observations")
       .select(
-        "measure, measure_key, unit, geography, display_value, value, value_state, reference_period, period_end, verified_at, source_versions!inner(version_label, original_url, published_on, status, sources!inner(title, publisher, topic))",
+        "measure, measure_key, unit, geography, display_value, value, value_state, reference_period, period_end, verified_at, source_versions!observations_source_version_id_fkey!inner(version_label, original_url, published_on, status, sources!source_versions_source_id_fkey!inner(title, publisher, topic))",
       )
       .eq("source_versions.status", "approved")
       .not("verified_at", "is", null)
       .limit(500),
     db
       .from("source_versions")
-      .select("version_label, published_on, reference_period, original_url, status, sources!inner(title, publisher, topic)")
+      .select("version_label, published_on, reference_period, original_url, status, sources!source_versions_source_id_fkey!inner(title, publisher, topic)")
       .eq("status", "approved")
       .order("published_on", { ascending: false, nullsFirst: false })
       .limit(12),
