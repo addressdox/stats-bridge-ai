@@ -1,8 +1,10 @@
-/** Immersive Ask room with persistent safe evidence rendering. */
+/** Immersive Ask room: a voice call first, with a separate typed room. */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, PhoneCall } from "lucide-react";
+import { useState } from "react";
 
 import { AskExperience } from "@/components/statbridge/AskExperience";
+import { VoiceCall } from "@/components/statbridge/VoiceCall";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
