@@ -39,7 +39,7 @@ function EmbedPage() {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="light flex h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between border-b border-border bg-surface px-3 py-2">
         <StatBridgeMark className="text-sm" />
         <button
