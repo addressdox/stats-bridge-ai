@@ -2,6 +2,7 @@
 -- PostgreSQL database dump
 --
 
+\restrict u1eK1RRSNfiSSCZeObyEcsT9Rxfr5IEm8EAzjC4xWVS9m49MKoFq38ctyI1BI8K
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.9
@@ -564,4 +565,5 @@ INSERT INTO public.visitor_identifiers (id, visitor_id, kind, value, created_at)
 -- PostgreSQL database dump complete
 --
 
+\unrestrict u1eK1RRSNfiSSCZeObyEcsT9Rxfr5IEm8EAzjC4xWVS9m49MKoFq38ctyI1BI8K
 
