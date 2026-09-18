@@ -52,7 +52,7 @@ export const askQuestion = createServerFn({ method: "POST" })
         await recordTurn(db, {
           conversationId: data.conversationId,
           author: "assistant",
-          body: answer.explanation ?? answer.clarification?.question ?? answer.gapDescription ?? "(no wording)",
+          body: answer.aiExplanation ?? answer.clarification?.question ?? answer.gapDescription ?? "(no wording)",
           outcome: answer.outcome,
         });
       } catch {
