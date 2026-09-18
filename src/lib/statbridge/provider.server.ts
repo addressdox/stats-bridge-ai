@@ -6,22 +6,22 @@
  * wording. Swapping provider means implementing `AssistantProvider` and
  * returning it from `getAssistant()`.
  */
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { generateText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { streamText } from "ai";
 
 export type AssistantProvider = {
   name: string;
   model: string;
   /** Returns raw model text. Callers parse and validate it themselves. */
-  complete(input: { system: string; prompt: string; maxTokens?: number }): Promise<string>;
+  complete(input: { system: string; prompt: string }): Promise<string>;
 };
 
-const GEMINI_MODEL = "google/gemini-3.8-flash";
+const GATEWAY_MODEL = "openai/gpt-6-astra";
 
 function lovableGateway(apiKey: string): AssistantProvider {
-  const provider = createOpenAICompatible({
-    name: "lovable",
+  const provider = createOpenAI({
     baseURL: "https://ai.gateway.lovable.dev/v1",
+    apiKey, // satisfies the SDK; the gateway authenticates on the header below
     headers: {
       "Lovable-API-Key": apiKey,
       "X-Lovable-AIG-SDK": "vercel-ai-sdk",
@@ -29,15 +29,26 @@ function lovableGateway(apiKey: string): AssistantProvider {
   });
 
   return {
-    name: "Google Gemini (via Lovable AI Gateway)",
-    model: GEMINI_MODEL,
+    name: "Lovable AI",
+    model: GATEWAY_MODEL,
     async complete({ system, prompt }) {
-      const result = await generateText({
-        model: provider(GEMINI_MODEL),
+      // Reasoning models can run for minutes: stream and consume server-side
+      // so the request is never severed mid-generation by a silent buffer.
+      const result = streamText({
+        model: provider.responses(GATEWAY_MODEL),
         system,
         prompt,
+        providerOptions: {
+          openai: {
+            forceReasoning: true,
+            reasoningEffort: "low",
+            reasoningSummary: "auto",
+            store: false,
+            include: ["reasoning.encrypted_content"],
+          },
+        },
       });
-      return result.text;
+      return await result.text;
     },
   };
 }
