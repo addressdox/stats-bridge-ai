@@ -18,7 +18,7 @@
 4. **Real-data evaluation and test-data cleanup** — all evaluation cases run against real crawled South African data only, never fabricated test rows; once complete, every test/demo record is deleted so only genuine fetched data remains. South Africa-only rule: the entire AI — voice, chat and every other surface in the app — may only fetch and feed data related to South Africa alone.
 5. **Widget rebuild — Tawk-style live-chat embed** — a compact launcher bubble that sites drop into their pages; tapping it opens a properly proportioned live-chat panel (widget-sized, like a telecom live chat, not a full page) that works perfectly responsively for both chat and voice call; a clean expand control opens the panel full screen, and a link lets visitors jump to the main standalone app; plus the independently hosted demo page.
 6. **Public API documentation completion** — `/developers` page exists; full endpoint reference and usage examples to finish.
-7. **Chart support** — Recharts only where a verified observation justifies it (contract supports it; no charts shipped yet).
+7. **AI tool calling with rich dynamic output** — the assistant queries the knowledge base through server-side tools and can render any supported medium inline, not just charts: statistics charts (Recharts, justified by verified observations), data tables, images, videos, documents and Excel/CSV data — all sourced from approved South African data. The renderer stays safe (evidence-backed blocks only), dynamic and scalable so new media types can be added without reworking the pipeline.
 8. **Final compliance report** — what is implemented vs planned, exact routes, demo accounts, region, AI provider/model, known limitations, reset instructions.
 
 ## Proposed next step
