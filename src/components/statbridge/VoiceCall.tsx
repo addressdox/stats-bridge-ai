@@ -6,7 +6,7 @@
  * comes back from the approved-source pipeline through a server tool, so the
  * evidence rule holds on the line exactly as it does in writing.
  */
-import { useConversation } from "@elevenlabs/react";
+import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, Keyboard, Mic, PhoneOff, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,6 +28,14 @@ const STATE_LABEL: Record<CallState, string> = {
 type Spoken = { who: "you" | "naledi"; text: string };
 
 export function VoiceCall({ onTypeInstead }: { onTypeInstead: (draft?: string) => void }) {
+  return (
+    <ConversationProvider>
+      <VoiceCallRoom onTypeInstead={onTypeInstead} />
+    </ConversationProvider>
+  );
+}
+
+function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => void }) {
   const reduce = useReducedMotion();
   const { session } = useVisitorSession("voice");
   const [state, setState] = useState<CallState>("connecting");
