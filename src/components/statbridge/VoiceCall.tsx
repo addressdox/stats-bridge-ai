@@ -6,7 +6,8 @@
  * comes back from the approved-source pipeline through a server tool, so the
  * evidence rule holds on the line exactly as it does in writing.
  */
-import { ConversationProvider, useConversation } from "@elevenlabs/react";
+import { useLiveVoiceConversation } from "@/lib/statbridge/useLiveVoiceConversation";
+import type { LiveVoiceCredentials } from "@/lib/statbridge/live-voice-client";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, Mic, PhoneOff, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,14 +29,10 @@ const STATE_LABEL: Record<CallState, string> = {
   unavailable: "Voice is not available here",
 };
 
-type Spoken = { who: "you" | "kaya"; text: string };
+type Spoken = { who: "you" | "kaya"; text: string; id: string };
 
 export function VoiceCall() {
-  return (
-    <ConversationProvider>
-      <VoiceCallRoom />
-    </ConversationProvider>
-  );
+  return <VoiceCallRoom />;
 }
 
 function VoiceCallRoom() {
@@ -61,7 +58,7 @@ function VoiceCallRoom() {
   const sessionRef = useRef(session);
   sessionRef.current = session;
 
-  const conversation = useConversation({
+  const conversation = useLiveVoiceConversation({
     onConnect: () => {
       if (mountedRef.current && requestedRef.current) setState("live");
       else void Promise.resolve(conversationRef.current.endSession()).catch(() => undefined);
@@ -70,22 +67,25 @@ function VoiceCallRoom() {
       if (mountedRef.current)
         setState((current) => (current === "unavailable" ? current : "ended"));
     },
-    onError: () => {
+    onError: (message) => {
       if (!mountedRef.current || !requestedRef.current) return;
-      setProblem("The voice line could not be opened. Please try again.");
+      setProblem(message || "The voice line could not be opened. Please try again.");
       setState("unavailable");
     },
-    onMessage: (message: unknown) => {
+    onMessage: (payload) => {
       if (!mountedRef.current || !requestedRef.current) return;
-      const payload = message as { source?: string; message?: string };
       const text = (payload.message ?? "").trim();
       if (!text) return;
-      setTurns((existing) =>
-        [
-          ...existing,
-          { who: payload.source === "user" ? ("you" as const) : ("kaya" as const), text },
-        ].slice(-6),
-      );
+      setTurns((existing) => {
+        const next: Spoken = {
+          id: payload.id,
+          who: payload.source === "user" ? "you" : "kaya",
+          text,
+        };
+        return existing.some((turn) => turn.id === payload.id)
+          ? existing.map((turn) => (turn.id === payload.id ? next : turn))
+          : [...existing, next].slice(-6);
+      });
     },
   });
 
@@ -174,19 +174,25 @@ function VoiceCallRoom() {
       const controller = new AbortController();
       tokenRequestRef.current = controller;
       try {
-        const response = await fetch("/api/voice/token", { signal: controller.signal });
+        const response = await fetch("/api/voice/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversationId: visitor.conversationId,
+            browserToken: visitor.browserToken,
+          }),
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error(String(response.status));
-        const body = (await response.json()) as { signedUrl?: string | null };
-        if (!body.signedUrl) throw new Error("no signed url");
+        const body = (await response.json()) as LiveVoiceCredentials;
+        if (!body.token || !body.model) throw new Error("no voice token");
         if (!current()) return;
         await conversationRef.current.startSession({
-          signedUrl: body.signedUrl,
-          connectionType: "websocket",
-          dynamicVariables: {
-            conversation_id: visitor.conversationId,
-            browser_token: visitor.browserToken,
-            known_name: visitor.knownName ?? "unknown",
-          },
+          token: body.token,
+          model: body.model,
+          config: body.config,
+          conversationId: visitor.conversationId,
+          browserToken: visitor.browserToken,
         });
         if (!current()) await closeSession();
       } catch {

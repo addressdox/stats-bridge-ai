@@ -7,6 +7,10 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/voice/token")({
   server: {
     handlers: {
+      POST: async ({ request }) => {
+        const { handleLiveVoiceToken } = await import("@/lib/statbridge/live-voice.server");
+        return handleLiveVoiceToken(request);
+      },
       GET: async () => {
         const key = process.env["ELEVENLABS_API_KEY"];
         const agentId = process.env["ELEVENLABS_AGENT_ID"];

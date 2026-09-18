@@ -34,7 +34,9 @@ import { Route as StaffWidgetsRouteImport } from './routes/staff/widgets'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
 import { Route as ApiPublicEmbeddingsRouteImport } from './routes/api/public/embeddings'
 import { Route as ApiPublicSnapshotRouteImport } from './routes/api/public/snapshot'
+import { Route as ApiVoiceSpeakRouteImport } from './routes/api/voice/speak'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice/token'
+import { Route as ApiVoiceToolRouteImport } from './routes/api/voice/tool'
 import { Route as ApiVoiceTranscribeRouteImport } from './routes/api/voice/transcribe'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
@@ -173,9 +175,19 @@ const ApiPublicSnapshotRoute = ApiPublicSnapshotRouteImport.update({
   path: '/api/public/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVoiceSpeakRoute = ApiVoiceSpeakRouteImport.update({
+  id: '/api/voice/speak',
+  path: '/api/voice/speak',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVoiceTokenRoute = ApiVoiceTokenRouteImport.update({
   id: '/api/voice/token',
   path: '/api/voice/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVoiceToolRoute = ApiVoiceToolRouteImport.update({
+  id: '/api/voice/tool',
+  path: '/api/voice/tool',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVoiceTranscribeRoute = ApiVoiceTranscribeRouteImport.update({
@@ -266,7 +278,9 @@ export interface FileRoutesByFullPath {
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/api/public/snapshot': typeof ApiPublicSnapshotRoute
+  '/api/voice/speak': typeof ApiVoiceSpeakRoute
   '/api/voice/token': typeof ApiVoiceTokenRoute
+  '/api/voice/tool': typeof ApiVoiceToolRoute
   '/api/voice/transcribe': typeof ApiVoiceTranscribeRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
@@ -306,7 +320,9 @@ export interface FileRoutesByTo {
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/api/public/snapshot': typeof ApiPublicSnapshotRoute
+  '/api/voice/speak': typeof ApiVoiceSpeakRoute
   '/api/voice/token': typeof ApiVoiceTokenRoute
+  '/api/voice/tool': typeof ApiVoiceToolRoute
   '/api/voice/transcribe': typeof ApiVoiceTranscribeRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
@@ -347,7 +363,9 @@ export interface FileRoutesById {
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/api/public/snapshot': typeof ApiPublicSnapshotRoute
+  '/api/voice/speak': typeof ApiVoiceSpeakRoute
   '/api/voice/token': typeof ApiVoiceTokenRoute
+  '/api/voice/tool': typeof ApiVoiceToolRoute
   '/api/voice/transcribe': typeof ApiVoiceTranscribeRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
@@ -389,7 +407,9 @@ export interface FileRouteTypes {
     | '/api/public/crawl'
     | '/api/public/embeddings'
     | '/api/public/snapshot'
+    | '/api/voice/speak'
     | '/api/voice/token'
+    | '/api/voice/tool'
     | '/api/voice/transcribe'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
@@ -429,7 +449,9 @@ export interface FileRouteTypes {
     | '/api/public/crawl'
     | '/api/public/embeddings'
     | '/api/public/snapshot'
+    | '/api/voice/speak'
     | '/api/voice/token'
+    | '/api/voice/tool'
     | '/api/voice/transcribe'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
@@ -469,7 +491,9 @@ export interface FileRouteTypes {
     | '/api/public/crawl'
     | '/api/public/embeddings'
     | '/api/public/snapshot'
+    | '/api/voice/speak'
     | '/api/voice/token'
+    | '/api/voice/tool'
     | '/api/voice/transcribe'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
@@ -510,7 +534,9 @@ export interface RootRouteChildren {
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
   ApiPublicEmbeddingsRoute: typeof ApiPublicEmbeddingsRoute
   ApiPublicSnapshotRoute: typeof ApiPublicSnapshotRoute
+  ApiVoiceSpeakRoute: typeof ApiVoiceSpeakRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
+  ApiVoiceToolRoute: typeof ApiVoiceToolRoute
   ApiVoiceTranscribeRoute: typeof ApiVoiceTranscribeRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
   StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
@@ -702,11 +728,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSnapshotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/voice/speak': {
+      id: '/api/voice/speak'
+      path: '/api/voice/speak'
+      fullPath: '/api/voice/speak'
+      preLoaderRoute: typeof ApiVoiceSpeakRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/voice/token': {
       id: '/api/voice/token'
       path: '/api/voice/token'
       fullPath: '/api/voice/token'
       preLoaderRoute: typeof ApiVoiceTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice/tool': {
+      id: '/api/voice/tool'
+      path: '/api/voice/tool'
+      fullPath: '/api/voice/tool'
+      preLoaderRoute: typeof ApiVoiceToolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/voice/transcribe': {
@@ -822,7 +862,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,
   ApiPublicEmbeddingsRoute: ApiPublicEmbeddingsRoute,
   ApiPublicSnapshotRoute: ApiPublicSnapshotRoute,
+  ApiVoiceSpeakRoute: ApiVoiceSpeakRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
+  ApiVoiceToolRoute: ApiVoiceToolRoute,
   ApiVoiceTranscribeRoute: ApiVoiceTranscribeRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
   StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,

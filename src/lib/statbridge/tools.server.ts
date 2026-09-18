@@ -15,6 +15,7 @@ import type { AssistantProvider } from "./provider.server";
 import { parseModelJson } from "./provider.server";
 import { localizeServiceText } from "./question.server";
 import { normalizeLanguage } from "./languages";
+import { spokenAnswer } from "./voice";
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
@@ -145,6 +146,10 @@ export type VisitorToolInput = {
   values: Record<string, unknown>;
 };
 
+type VisitorToolDependencies = Partial<
+  Pick<typeof import("./pipeline.server"), "getAdminClient" | "runAsk">
+>;
+
 const str = (values: Record<string, unknown>, key: string) => {
   const value = values[key];
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
@@ -152,12 +157,14 @@ const str = (values: Record<string, unknown>, key: string) => {
 
 export async function runVisitorTool(
   input: VisitorToolInput,
+  dependencies: VisitorToolDependencies = {},
 ): Promise<Record<string, unknown> | null> {
-  const result = await runVisitorAction(input);
+  const result = await runVisitorAction(input, dependencies);
   if (!result || input.tool === "answer") return result;
   let language = normalizeLanguage(str(input.values, "language"));
   if (language === "auto" && input.conversationId) {
-    const { getAdminClient } = await import("./pipeline.server");
+    const getAdminClient =
+      dependencies.getAdminClient ?? (await import("./pipeline.server")).getAdminClient;
     const db = await getAdminClient();
     const { data } = await db
       .from("conversations")
@@ -172,33 +179,65 @@ export async function runVisitorTool(
   return { ...result, language: language === "auto" ? "en" : language };
 }
 
-async function runVisitorAction(input: VisitorToolInput): Promise<Record<string, unknown> | null> {
+async function runVisitorAction(
+  input: VisitorToolInput,
+  dependencies: VisitorToolDependencies,
+): Promise<Record<string, unknown> | null> {
   const { values } = input;
   const conversationId = input.conversationId ?? null;
   const browserToken = input.browserToken ?? "assistant-anonymous";
   const spoken = input.spoken ?? false;
-  const { getAdminClient } = await import("./pipeline.server");
+  const getAdminClient =
+    dependencies.getAdminClient ?? (await import("./pipeline.server")).getAdminClient;
 
   switch (input.tool) {
     case "answer": {
       const question = str(values, "question");
       if (!question) return { spoken: "I did not catch the question. Could you say it again?" };
 
-      const { runAsk } = await import("./pipeline.server");
+      const runAsk = dependencies.runAsk ?? (await import("./pipeline.server")).runAsk;
+      const db = conversationId ? await getAdminClient() : null;
+      const { readConversationVisitor } = await import("./visitor-contact.server");
+      const owned = Boolean(
+        db && (await readConversationVisitor(db, { conversationId, browserToken })),
+      );
+      let parentAnswerRef: string | null = null;
+      if (owned && db && conversationId) {
+        const { data: turn } = await db
+          .from("conversation_turns")
+          .select("answer_id")
+          .eq("conversation_id", conversationId)
+          .eq("author", "assistant")
+          .not("answer_id", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (turn?.answer_id) {
+          const { data: previous } = await db
+            .from("answers")
+            .select("public_ref")
+            .eq("id", turn.answer_id)
+            .in("outcome", ["answered", "clarification"])
+            .is("case_id", null)
+            .eq("review_flag", "none")
+            .maybeSingle();
+          parentAnswerRef = previous?.public_ref ?? null;
+        }
+      }
       const answer = await runAsk({
         question,
         readingLevel: "short",
         language: str(values, "language") ?? "auto",
         channel: input.channel ?? "web",
         siteKey: null,
-        parentAnswerRef: null,
+        parentAnswerRef,
         clientKey: spoken ? "voice-agent" : "assistant-tool",
       });
 
-      if (conversationId) {
+      const line = spokenAnswer(answer) || "No public response wording was available.";
+      if (owned && conversationId && db) {
         try {
           const { recordTurn } = await import("./visitors.server");
-          const db = await getAdminClient();
           const { data: stored } = await db
             .from("answers")
             .select("id")
@@ -212,8 +251,7 @@ async function runVisitorAction(input: VisitorToolInput): Promise<Record<string,
           await recordTurn(db, {
             conversationId,
             author: "assistant",
-            body:
-              answer.aiExplanation ?? answer.clarification?.question ?? answer.gapDescription ?? "",
+            body: line,
             outcome: answer.outcome,
             answerId: stored?.id ?? null,
             spoken,
@@ -222,18 +260,6 @@ async function runVisitorAction(input: VisitorToolInput): Promise<Record<string,
           // A history fault must never withhold a checked answer.
         }
       }
-
-      const line =
-        answer.outcome === "answered"
-          ? (answer.aiExplanation ?? "")
-          : answer.outcome === "clarification"
-            ? (answer.clarification?.question ??
-              "Could you tell me a little more about what you need?")
-            : answer.outcome === "gap"
-              ? (answer.gapDescription ??
-                "I have no approved Stats SA publication covering that, so I cannot give you a figure.")
-              : (answer.officialBlocks.find((b) => b.type === "case_acknowledgement")?.message ??
-                "Your enquiry is awaiting official review.");
 
       return {
         outcome: answer.outcome,
