@@ -111,7 +111,7 @@ function DevelopersPage() {
             />
             <Endpoint
               method="GET"
-              path="/api/public/v1/openapi.json"
+              path="/api/public/v1/openapi"
               summary="The machine-readable contract for everything on this page."
               body="—"
               returns="OpenAPI 3.1 document"
@@ -200,17 +200,17 @@ if (answer.outcome === "escalated") {
           <h2 className="text-xl font-semibold tracking-tight">Widget</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Drop one script tag onto any page. It adds a button, opens StatBridge in an isolated iframe and leaks no
-            React or styles into the host page.
+            React or styles into the host page. The panel opens at live-chat size, can be made full screen, and can hand the
+            visitor over to the full site. See it running on the{" "}
+            <a href="/widget-demo" className="text-accent underline underline-offset-2">widget demonstration page</a>.
           </p>
           <div className="mt-3">
             <Code>{`<script
   src="https://YOUR-STATBRIDGE-HOST/widget.js"
-  data-site-key="demo-site"
-  data-position="bottom-right"
-  data-accent="#2b7f86"
-  data-language="en"
-  data-opening-text="Ask about official statistics"
-  defer
+  data-statbridge
+  data-position="right"
+  data-label="Ask about official statistics"
+  async
 ></script>`}</Code>
           </div>
         </section>
