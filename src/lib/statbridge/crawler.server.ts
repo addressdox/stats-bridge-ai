@@ -217,6 +217,8 @@ export async function runCrawl(): Promise<CrawlResult> {
           publisher: item.publisher,
           topic: item.topic,
           canonical_url: item.url,
+          last_checked_at: result.ranAt,
+          last_changed_at: result.ranAt,
         })
         .select("id")
         .single();
