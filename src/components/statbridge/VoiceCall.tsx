@@ -51,7 +51,8 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
   const conversation = useConversation({
     onConnect: () => setState("live"),
     onDisconnect: () => setState((current) => (current === "unavailable" ? current : "ended")),
-    onError: () => {
+    onError: (message: unknown, context?: unknown) => {
+      console.error("voice error", message, context);
       setProblem("The voice line could not be opened. You can still ask in writing.");
       setState("unavailable");
     },
@@ -97,7 +98,8 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
           known_name: session?.knownName ?? "unknown",
         },
       });
-    } catch {
+    } catch (error) {
+      console.error("voice start failed", error);
       setProblem("The voice line is not available just now. You can still ask in writing.");
       setState("unavailable");
     }
