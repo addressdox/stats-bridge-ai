@@ -2,6 +2,7 @@
 -- PostgreSQL database dump
 --
 
+\restrict GMcTfJyeunMm1myBDQG5IhLT9i332K3KdQdTjuXdWyIOxgrda3QwEM7k21ahr6T
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.9
@@ -22,12 +23,20 @@ SET row_security = off;
 -- Data for Name: profiles; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+SET SESSION AUTHORIZATION DEFAULT;
+
+ALTER TABLE public.profiles DISABLE TRIGGER ALL;
+
 INSERT INTO public.profiles (id, full_name, role, is_demo, is_active, created_by, created_at) VALUES ('5276c2c5-ac56-44d1-b8c7-cd94fa60e21e', 'StatBridge super administrator', 'administrator', false, true, NULL, '2026-09-18 07:46:53.659231+00');
 
+
+ALTER TABLE public.profiles ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: cases; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.cases DISABLE TRIGGER ALL;
 
 INSERT INTO public.cases (id, reference, kind, status, review_reasons, question_text, origin_answer_id, follow_up_of_case_id, channel, requester_name, requester_outlet, requester_contact, contact_consent, notice_version, deadline_at, status_token_hash, assigned_to, routing_corrected_by, routing_note, closed_reason, received_at, first_draft_at, approved_at, released_at, contact_erase_after, is_demo_seed, created_at) VALUES ('32d6c663-a241-402d-93c4-aa32e6d333d6', 'SB-2026-0001', 'public_escalation', 'received', '{interpretation}', 'Why is unemployment rising in South Africa?', NULL, NULL, 'api', NULL, NULL, NULL, false, 'statbridge-privacy-v1', NULL, '26b64c21330f6f0496b617afcc97b515ccebc7388f88ba0937f9a2600df1664b', NULL, NULL, NULL, NULL, '2026-09-18 08:48:12.044692+00', NULL, NULL, NULL, '2026-12-17', false, '2026-09-18 08:48:12.044692+00');
 INSERT INTO public.cases (id, reference, kind, status, review_reasons, question_text, origin_answer_id, follow_up_of_case_id, channel, requester_name, requester_outlet, requester_contact, contact_consent, notice_version, deadline_at, status_token_hash, assigned_to, routing_corrected_by, routing_note, closed_reason, received_at, first_draft_at, approved_at, released_at, contact_erase_after, is_demo_seed, created_at) VALUES ('1b3889cb-cd92-4e9f-8f30-418a005f2e05', 'SB-2026-0002', 'public_escalation', 'received', '{interpretation}', 'Why is unemployment rising in South Africa?', NULL, NULL, 'api', NULL, NULL, NULL, false, 'statbridge-privacy-v1', NULL, 'af8caf72ea00ddff4a1861ef8a7962d282383468ba43da68416870be39e6254d', NULL, NULL, NULL, NULL, '2026-09-18 08:49:33.248505+00', NULL, NULL, NULL, '2026-12-17', false, '2026-09-18 08:49:33.248505+00');
@@ -36,22 +45,34 @@ INSERT INTO public.cases (id, reference, kind, status, review_reasons, question_
 INSERT INTO public.cases (id, reference, kind, status, review_reasons, question_text, origin_answer_id, follow_up_of_case_id, channel, requester_name, requester_outlet, requester_contact, contact_consent, notice_version, deadline_at, status_token_hash, assigned_to, routing_corrected_by, routing_note, closed_reason, received_at, first_draft_at, approved_at, released_at, contact_erase_after, is_demo_seed, created_at) VALUES ('db26a080-4b17-495e-9bcd-7921f6b6953e', 'SB-2026-0005', 'public_escalation', 'received', '{interpretation}', 'Is government failing on poverty?', NULL, NULL, 'api', NULL, NULL, NULL, false, 'statbridge-privacy-v1', NULL, '2d965fab68621b25fb9eff6896283a6f4612491bf09c08f3f41f3641381724a2', NULL, NULL, NULL, NULL, '2026-09-18 08:50:33.424866+00', NULL, NULL, NULL, '2026-12-17', false, '2026-09-18 08:50:33.424866+00');
 
 
+ALTER TABLE public.cases ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: guidelines; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.guidelines DISABLE TRIGGER ALL;
+
 INSERT INTO public.guidelines (id, version_number, title, terminology, style_rules, number_rules, branding_rules, messaging_rules, status, approval_basis, activated_by, activated_at, retired_at, created_by, created_at, identity_rules, evidence_rules, prohibited_claims, required_phrases, forbidden_phrases, media_policy, sensitive_topic_policy, escalation_policy, voice_rules, multilingual_rules, channel_rules, example_responses, change_summary) VALUES ('f949a04b-4301-40bf-b601-1d8c4865d253', 1, 'StatBridge demonstration house style', '[{"use": "Statistics South Africa", "avoid": "StatsSA (without space)"}, {"use": "the survey shows", "avoid": "the survey proves"}, {"use": "unemployed persons", "avoid": "jobless people"}]', 'Plain language. One idea per sentence. Say what the figure is, who it covers and the period it belongs to. Never explain why a figure moved, never forecast, never take a policy position.', 'Give percentages to one decimal place. Write millions as "63.1 million", never "63,100,000". Always attach the reference period to the figure.', 'Neutral, factual, courteous. No slogans. Do not imply Statistics South Africa endorsement of this demonstration.', 'If the evidence does not support the answer, say so and offer the human route. Never fill a gap with a guess.', 'active', 'demonstration', NULL, '2026-09-18 06:02:13.880645+00', NULL, NULL, '2026-09-18 06:02:13.880645+00', NULL, NULL, '{}', '{}', '{}', NULL, NULL, NULL, NULL, NULL, '{}', '[]', NULL);
 
+
+ALTER TABLE public.guidelines ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: widget_sites; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.widget_sites DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.widget_sites ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: answers; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.answers DISABLE TRIGGER ALL;
 
 INSERT INTO public.answers (id, public_ref, api_version, site_id, channel, language, question_text, parent_answer_id, topic, outcome, reading_level, official_blocks, ai_explanation, caveats, follow_ups, clarification, gap_description, review_reasons, case_id, guideline_id, validation_result, ai_provider, ai_model, prompt_version, latency_ms, review_flag, review_flag_reason, is_demo_seed, created_at) VALUES ('cd5f5296-12c6-4229-b92a-6afbb56f41f6', 'ANS-821q6LG3gvQ', 'v1', NULL, 'web', 'en', 'What was the unemployment rate in the latest Quarterly Labour Force Survey?', NULL, NULL, 'gap', 'short', '[]', NULL, '{}', '{}', NULL, 'No approved Stats SA source in StatBridge covers this yet, so there is nothing verified to quote. You can send the question to an official.', '{gap}', NULL, NULL, '{"reason": "no_matching_evidence"}', NULL, NULL, 'ask-2026-09-1', 798, 'none', NULL, false, '2026-09-18 04:49:59.64815+00');
 INSERT INTO public.answers (id, public_ref, api_version, site_id, channel, language, question_text, parent_answer_id, topic, outcome, reading_level, official_blocks, ai_explanation, caveats, follow_ups, clarification, gap_description, review_reasons, case_id, guideline_id, validation_result, ai_provider, ai_model, prompt_version, latency_ms, review_flag, review_flag_reason, is_demo_seed, created_at) VALUES ('0423eea0-774f-4850-b8df-29a41a8b0419', 'ANS-aw-UsYvw_BY', 'v1', NULL, 'web', 'en', 'what is the birth rate in sa?', NULL, NULL, 'gap', 'short', '[]', NULL, '{}', '{}', NULL, 'No approved Stats SA source in StatBridge covers this yet, so there is nothing verified to quote. You can send the question to an official.', '{gap}', NULL, NULL, '{"reason": "no_matching_evidence"}', NULL, NULL, 'ask-2026-09-1', 364, 'none', NULL, false, '2026-09-18 05:07:38.324765+00');
@@ -93,27 +114,43 @@ INSERT INTO public.answers (id, public_ref, api_version, site_id, channel, langu
 INSERT INTO public.answers (id, public_ref, api_version, site_id, channel, language, question_text, parent_answer_id, topic, outcome, reading_level, official_blocks, ai_explanation, caveats, follow_ups, clarification, gap_description, review_reasons, case_id, guideline_id, validation_result, ai_provider, ai_model, prompt_version, latency_ms, review_flag, review_flag_reason, is_demo_seed, created_at) VALUES ('45a0cd86-c964-4447-96a0-d262c00083c7', 'ANS-FXzJNPuPQEU', 'v1', NULL, 'api', 'en', 'How many people live in Gauteng?', NULL, 'gauteng population', 'answered', 'short', '[{"type": "metric", "unit": "people", "label": "Population of Gauteng", "source": {"url": "https://www.statssa.gov.za/publications/P0302/P03022025.pdf", "title": "Mid-year population estimates, 2025 (P0302)", "publisher": "Statistics South Africa", "pageNumber": 1, "publishedOn": "2025-07-28", "sectionLabel": null, "versionLabel": "P0302 · 2025", "referencePeriod": "Mid-2025", "sourceVersionId": "b5145c82-6f45-445c-a754-8bab12ea529a"}, "geography": "Gauteng", "adjustment": null, "population": "All residents", "valueState": "reported", "displayValue": "16.1 million", "reportedChange": null, "referencePeriod": "Mid-2025", "comparabilityNote": null}, {"type": "metric", "unit": "percent", "label": "Gauteng share of national population", "source": {"url": "https://www.statssa.gov.za/publications/P0302/P03022025.pdf", "title": "Mid-year population estimates, 2025 (P0302)", "publisher": "Statistics South Africa", "pageNumber": 1, "publishedOn": "2025-07-28", "sectionLabel": null, "versionLabel": "P0302 · 2025", "referencePeriod": "Mid-2025", "sourceVersionId": "b5145c82-6f45-445c-a754-8bab12ea529a"}, "geography": "Gauteng", "adjustment": null, "population": "All residents", "valueState": "reported", "displayValue": "25.5%", "reportedChange": null, "referencePeriod": "Mid-2025", "comparabilityNote": null}, {"text": "Gauteng remains the most populous province with about 16.1 million people, roughly 25.5% of the national total, at mid-2025.", "type": "official_quote", "source": {"url": "https://www.statssa.gov.za/publications/P0302/P03022025.pdf", "title": "Mid-year population estimates, 2025 (P0302)", "publisher": "Statistics South Africa", "pageNumber": 1, "publishedOn": "2025-07-28", "sectionLabel": "Provincial distribution", "versionLabel": "P0302 · 2025", "referencePeriod": "Mid-2025", "sourceVersionId": "b5145c82-6f45-445c-a754-8bab12ea529a"}}]', 'At mid-2025, Gauteng had an estimated population of 16.1 million people. This covers all residents living in the province. This made up 25.5% of South Africa''s total population.', '{}', '{"What was the total population of South Africa at mid-2025?","What percentage of South Africa''s population lived in Gauteng at mid-2025?"}', NULL, NULL, '{}', NULL, 'f949a04b-4301-40bf-b601-1d8c4865d253', '{"evidence_count": 3, "proposal_decision": "answer"}', 'Google Gemini (direct API key)', 'gemini-3.8-flash', 'ask-2026-09-1', 3843, 'none', NULL, false, '2026-09-18 08:50:32.657912+00');
 
 
+ALTER TABLE public.answers ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: memory_items; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.memory_items DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.memory_items ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: drafts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.drafts DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.drafts ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: approvals; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.approvals DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.approvals ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: audit_events; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.audit_events DISABLE TRIGGER ALL;
 
 INSERT INTO public.audit_events (id, occurred_at, actor_id, actor_role, action, entity_kind, entity_id, case_id, from_state, to_state, detail, origin) VALUES ('a7f95424-112b-4a52-84ca-a528b541ebe0', '2026-09-18 06:02:13.880645+00', NULL, 'system', 'knowledge_base_seeded', 'knowledge_base', NULL, NULL, NULL, NULL, '{"note": "Real published South African statistics seeded as approved demonstration sources; the crawler proposes further publications for human approval.", "basis": "demonstration", "sources": 8}', 'system');
 INSERT INTO public.audit_events (id, occurred_at, actor_id, actor_role, action, entity_kind, entity_id, case_id, from_state, to_state, detail, origin) VALUES ('c06cfb61-71e1-4eab-b30e-f5d0f4b0f3d4', '2026-09-18 07:50:37.260101+00', '5276c2c5-ac56-44d1-b8c7-cd94fa60e21e', 'administrator', 'desk_settings_saved', 'desk_settings', NULL, NULL, '{"id": true, "desk_name": "StatBridge — Statistics South Africa information desk", "time_zone": "Africa/Johannesburg", "updated_at": "2026-09-18T07:42:46.554513+00:00", "updated_by": null, "notify_email": null, "office_hours": "Monday to Friday, 08:00–16:30", "officer_phone": null, "support_email": null, "voice_enabled": true, "widget_enabled": true, "crawler_enabled": true, "public_api_enabled": true, "media_auto_escalate": true, "officer_phone_label": "Stats SA communications desk", "phone_handover_enabled": false, "visitor_retention_days": 365, "handover_response_minutes": 5}', '{"id": true, "desk_name": "StatBridge — Statistics South Africa information desk", "time_zone": "Africa/Johannesburg", "updated_at": "2026-09-18T07:50:37.260101+00:00", "updated_by": "5276c2c5-ac56-44d1-b8c7-cd94fa60e21e", "notify_email": null, "office_hours": "Monday to Friday, 08:00–16:30", "officer_phone": "+27 12 310 8911", "support_email": null, "voice_enabled": true, "widget_enabled": true, "crawler_enabled": true, "public_api_enabled": true, "media_auto_escalate": true, "officer_phone_label": "Stats SA communications desk", "phone_handover_enabled": true, "visitor_retention_days": 365, "handover_response_minutes": 5}', '{"fields": ["officer_phone", "phone_handover_enabled"]}', 'screen');
@@ -124,9 +161,13 @@ INSERT INTO public.audit_events (id, occurred_at, actor_id, actor_role, action, 
 INSERT INTO public.audit_events (id, occurred_at, actor_id, actor_role, action, entity_kind, entity_id, case_id, from_state, to_state, detail, origin) VALUES ('ece2221e-b640-4116-aab6-84370bb2aa29', '2026-09-18 08:50:33.424866+00', NULL, NULL, 'case_opened', 'case', 'db26a080-4b17-495e-9bcd-7921f6b6953e', 'db26a080-4b17-495e-9bcd-7921f6b6953e', NULL, 'received', '{"kind": "public_escalation", "channel": "api"}', 'api');
 
 
+ALTER TABLE public.audit_events ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: visitors; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.visitors DISABLE TRIGGER ALL;
 
 INSERT INTO public.visitors (id, full_name, email, phone, address, organisation, preferred_language, consent_given, consent_at, notes, is_demo, first_seen_at, last_seen_at, conversation_count, created_at, updated_at) VALUES ('1fb3979c-bb70-47f8-a023-2030de610adc', NULL, NULL, NULL, NULL, NULL, 'en', false, NULL, NULL, false, '2026-09-18 07:34:01.920246+00', '2026-09-18 07:34:02.34+00', 1, '2026-09-18 07:34:01.920246+00', '2026-09-18 07:34:02.396824+00');
 INSERT INTO public.visitors (id, full_name, email, phone, address, organisation, preferred_language, consent_given, consent_at, notes, is_demo, first_seen_at, last_seen_at, conversation_count, created_at, updated_at) VALUES ('2a9ad53b-6f71-45c2-8138-1b78985fc4b0', NULL, NULL, NULL, NULL, NULL, 'en', false, NULL, NULL, false, '2026-09-18 07:34:26.040592+00', '2026-09-18 07:34:26.516+00', 1, '2026-09-18 07:34:26.040592+00', '2026-09-18 07:34:26.589155+00');
@@ -140,9 +181,13 @@ INSERT INTO public.visitors (id, full_name, email, phone, address, organisation,
 INSERT INTO public.visitors (id, full_name, email, phone, address, organisation, preferred_language, consent_given, consent_at, notes, is_demo, first_seen_at, last_seen_at, conversation_count, created_at, updated_at) VALUES ('f5a25ac0-87e0-4df3-893f-d97ec4976ee8', NULL, NULL, NULL, NULL, NULL, 'en', false, NULL, NULL, false, '2026-09-18 07:41:55.963085+00', '2026-09-18 08:54:35.664+00', 11, '2026-09-18 07:41:55.963085+00', '2026-09-18 08:54:35.725992+00');
 
 
+ALTER TABLE public.visitors ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: conversations; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.conversations DISABLE TRIGGER ALL;
 
 INSERT INTO public.conversations (id, visitor_id, channel, state, language, device, page_url, started_at, ended_at, duration_seconds, turn_count, is_demo, created_at, updated_at) VALUES ('19df87d7-470b-4645-9eba-3ef075576414', '1fb3979c-bb70-47f8-a023-2030de610adc', 'voice', 'active', 'en', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36', 'http://localhost:8080/ask', '2026-09-18 07:34:02.246402+00', NULL, NULL, 0, false, '2026-09-18 07:34:02.246402+00', '2026-09-18 07:34:02.246402+00');
 INSERT INTO public.conversations (id, visitor_id, channel, state, language, device, page_url, started_at, ended_at, duration_seconds, turn_count, is_demo, created_at, updated_at) VALUES ('d9f0afc7-02f4-4f86-901c-5283c5731fa1', '2a9ad53b-6f71-45c2-8138-1b78985fc4b0', 'voice', 'active', 'en', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36', 'http://localhost:8080/ask', '2026-09-18 07:34:26.442311+00', NULL, NULL, 0, false, '2026-09-18 07:34:26.442311+00', '2026-09-18 07:34:26.442311+00');
@@ -167,29 +212,45 @@ INSERT INTO public.conversations (id, visitor_id, channel, state, language, devi
 INSERT INTO public.conversations (id, visitor_id, channel, state, language, device, page_url, started_at, ended_at, duration_seconds, turn_count, is_demo, created_at, updated_at) VALUES ('cc6fc0ea-2b52-4746-ba1f-7ed802c53e24', 'f5a25ac0-87e0-4df3-893f-d97ec4976ee8', 'voice', 'active', 'en', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'https://id-preview--a027beda-91da-4f1d-8078-5856beb67d46.lovable.app/ask', '2026-09-18 08:54:35.627864+00', NULL, NULL, 0, false, '2026-09-18 08:54:35.627864+00', '2026-09-18 08:54:35.627864+00');
 
 
+ALTER TABLE public.conversations ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: conversation_analysis; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.conversation_analysis DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.conversation_analysis ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: conversation_turns; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.conversation_turns DISABLE TRIGGER ALL;
+
 INSERT INTO public.conversation_turns (id, conversation_id, author, author_profile_id, body, answer_id, outcome, tools_used, spoken, created_at) VALUES ('216ab11f-b171-4d59-b371-c1f7646ffa1c', '5cc5ee7f-8004-4e9a-96bc-cad1cc584744', 'system', NULL, 'Handed over to a Stats SA official. Someone will join this conversation.', NULL, NULL, '{}', false, '2026-09-18 07:51:07.838984+00');
 
+
+ALTER TABLE public.conversation_turns ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: desk_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.desk_settings DISABLE TRIGGER ALL;
+
 INSERT INTO public.desk_settings (id, desk_name, support_email, officer_phone, officer_phone_label, phone_handover_enabled, office_hours, time_zone, notify_email, handover_response_minutes, visitor_retention_days, voice_enabled, widget_enabled, public_api_enabled, crawler_enabled, media_auto_escalate, updated_by, updated_at) VALUES (true, 'StatBridge — Statistics South Africa information desk', NULL, '+27 12 310 8911', 'Stats SA communications desk', true, 'Monday to Friday, 08:00–16:30', 'Africa/Johannesburg', NULL, 5, 365, true, true, true, true, true, '5276c2c5-ac56-44d1-b8c7-cd94fa60e21e', '2026-09-18 07:50:37.260101+00');
 
+
+ALTER TABLE public.desk_settings ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: sources; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.sources DISABLE TRIGGER ALL;
 
 INSERT INTO public.sources (id, title, source_type, publisher, audience, topic, canonical_url, current_version_id, created_by, created_at, last_checked_at, last_changed_at) VALUES ('5682b56b-648f-47ea-a0b9-7ba2e52530b6', 'Mid-year population estimates, 2025 (P0302)', 'statistical_release', 'Statistics South Africa', 'public', 'population', 'https://www.statssa.gov.za/publications/P0302/P03022025.pdf', NULL, NULL, '2026-09-18 06:02:13.880645+00', NULL, '2026-09-18 06:02:13.880645+00');
 INSERT INTO public.sources (id, title, source_type, publisher, audience, topic, canonical_url, current_version_id, created_by, created_at, last_checked_at, last_changed_at) VALUES ('c4311509-f1a7-4460-a0dd-482ce4f448c6', 'Census 2022 statistical release (P0301.4)', 'statistical_release', 'Statistics South Africa', 'public', 'population', 'https://census.statssa.gov.za/assets/documents/2022/P03014_Census_2022_Statistical_Release.pdf', NULL, NULL, '2026-09-18 06:02:13.880645+00', NULL, '2026-09-18 06:02:13.880645+00');
@@ -201,9 +262,13 @@ INSERT INTO public.sources (id, title, source_type, publisher, audience, topic, 
 INSERT INTO public.sources (id, title, source_type, publisher, audience, topic, canonical_url, current_version_id, created_by, created_at, last_checked_at, last_changed_at) VALUES ('0084f649-a342-4d39-915f-57009beff16e', 'Budget Overview, May 2025', 'other', 'National Treasury', 'public', 'public finances', 'https://www.treasury.gov.za/documents/National%20Budget/2025May/review/May%202025%20Budget%20Overview.pdf', NULL, NULL, '2026-09-18 06:02:13.880645+00', NULL, '2026-09-18 06:02:13.880645+00');
 
 
+ALTER TABLE public.sources ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: source_versions; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.source_versions DISABLE TRIGGER ALL;
 
 INSERT INTO public.source_versions (id, source_id, version_label, published_on, reference_period, file_path, original_url, file_fingerprint, page_count, ingest_state, ingest_note, status, approval_basis, approved_by, approved_at, supersedes_version_id, change_note, withdrawn_by, withdrawn_at, withdrawal_reason, created_by, created_at) VALUES ('b5145c82-6f45-445c-a754-8bab12ea529a', '5682b56b-648f-47ea-a0b9-7ba2e52530b6', 'P0302 · 2025', '2025-07-28', 'Mid-2025', NULL, 'https://www.statssa.gov.za/publications/P0302/P03022025.pdf', NULL, NULL, 'done', NULL, 'approved', 'demonstration', NULL, '2026-09-18 06:02:13.880645+00', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-18 06:02:13.880645+00');
 INSERT INTO public.source_versions (id, source_id, version_label, published_on, reference_period, file_path, original_url, file_fingerprint, page_count, ingest_state, ingest_note, status, approval_basis, approved_by, approved_at, supersedes_version_id, change_note, withdrawn_by, withdrawn_at, withdrawal_reason, created_by, created_at) VALUES ('683c5465-3de9-421c-8743-074fba10b5ff', 'c4311509-f1a7-4460-a0dd-482ce4f448c6', 'P0301.4 · 2023', '2023-10-10', 'Census night 2 February 2022', NULL, 'https://census.statssa.gov.za/assets/documents/2022/P03014_Census_2022_Statistical_Release.pdf', NULL, NULL, 'done', NULL, 'approved', 'demonstration', NULL, '2026-09-18 06:02:13.880645+00', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-18 06:02:13.880645+00');
@@ -215,9 +280,13 @@ INSERT INTO public.source_versions (id, source_id, version_label, published_on, 
 INSERT INTO public.source_versions (id, source_id, version_label, published_on, reference_period, file_path, original_url, file_fingerprint, page_count, ingest_state, ingest_note, status, approval_basis, approved_by, approved_at, supersedes_version_id, change_note, withdrawn_by, withdrawn_at, withdrawal_reason, created_by, created_at) VALUES ('111f0f90-6b12-4b0e-bd2c-5d4c8520c680', '0084f649-a342-4d39-915f-57009beff16e', 'Budget Overview · May 2025', '2025-05-21', '2025/26 fiscal year', NULL, 'https://www.treasury.gov.za/documents/National%20Budget/2025May/review/May%202025%20Budget%20Overview.pdf', NULL, NULL, 'done', NULL, 'approved', 'demonstration', NULL, '2026-09-18 06:02:13.880645+00', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-18 06:02:13.880645+00');
 
 
+ALTER TABLE public.source_versions ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: passages; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.passages DISABLE TRIGGER ALL;
 
 INSERT INTO public.passages (id, source_version_id, "position", page_number, section_label, content, created_at) VALUES ('549ecdcc-c3f5-4c6c-a1d1-0c4599573232', 'b5145c82-6f45-445c-a754-8bab12ea529a', 1, 1, 'Key findings', 'South Africa''s population is estimated at 63.1 million people at mid-2025, according to the Mid-year population estimates release (P0302).', '2026-09-18 06:02:13.880645+00');
 INSERT INTO public.passages (id, source_version_id, "position", page_number, section_label, content, created_at) VALUES ('6330904d-9650-49eb-9797-64957c261c63', 'b5145c82-6f45-445c-a754-8bab12ea529a', 2, 1, 'Provincial distribution', 'Gauteng remains the most populous province with about 16.1 million people, roughly 25.5% of the national total, at mid-2025.', '2026-09-18 06:02:13.880645+00');
@@ -233,9 +302,13 @@ INSERT INTO public.passages (id, source_version_id, "position", page_number, sec
 INSERT INTO public.passages (id, source_version_id, "position", page_number, section_label, content, created_at) VALUES ('8e2b07a5-f876-4454-9af1-8cbbf9faaac4', '111f0f90-6b12-4b0e-bd2c-5d4c8520c680', 1, NULL, 'Consolidated fiscal framework', 'The May 2025 Budget projects a consolidated budget deficit of 4.8% of GDP for 2025/26, narrowing to 3.4% of GDP by 2027/28.', '2026-09-18 06:02:13.880645+00');
 
 
+ALTER TABLE public.passages ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: observations; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.observations DISABLE TRIGGER ALL;
 
 INSERT INTO public.observations (id, source_version_id, passage_id, measure, measure_key, value, value_state, display_value, unit, population, geography, reference_period, period_start, period_end, adjustment, reported_change, comparability_note, page_number, table_label, verified_by, verified_at, created_at) VALUES ('63381058-ce3a-4b5d-bb19-1ef08ff6b52f', 'b5145c82-6f45-445c-a754-8bab12ea529a', '549ecdcc-c3f5-4c6c-a1d1-0c4599573232', 'Total population', 'population_total', 63100000, 'reported', '63.1 million', 'people', 'All residents', 'South Africa', 'Mid-2025', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-09-18 06:02:13.880645+00', '2026-09-18 06:02:13.880645+00');
 INSERT INTO public.observations (id, source_version_id, passage_id, measure, measure_key, value, value_state, display_value, unit, population, geography, reference_period, period_start, period_end, adjustment, reported_change, comparability_note, page_number, table_label, verified_by, verified_at, created_at) VALUES ('711a42c0-975a-478e-a843-0365ec384de6', 'b5145c82-6f45-445c-a754-8bab12ea529a', '6330904d-9650-49eb-9797-64957c261c63', 'Population of Gauteng', 'population_province', 16100000, 'reported', '16.1 million', 'people', 'All residents', 'Gauteng', 'Mid-2025', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-09-18 06:02:13.880645+00', '2026-09-18 06:02:13.880645+00');
@@ -252,9 +325,13 @@ INSERT INTO public.observations (id, source_version_id, passage_id, measure, mea
 INSERT INTO public.observations (id, source_version_id, passage_id, measure, measure_key, value, value_state, display_value, unit, population, geography, reference_period, period_start, period_end, adjustment, reported_change, comparability_note, page_number, table_label, verified_by, verified_at, created_at) VALUES ('4530f99f-97b7-41e0-8204-0b7a7b2e3007', '111f0f90-6b12-4b0e-bd2c-5d4c8520c680', '8e2b07a5-f876-4454-9af1-8cbbf9faaac4', 'Consolidated budget balance', 'budget_balance_gdp', -4.8, 'reported', '-4.8% of GDP', 'percent of GDP', 'Consolidated national and provincial government', 'South Africa', '2025/26 fiscal year', NULL, NULL, NULL, 'Projected to narrow to -3.4% of GDP by 2027/28', NULL, NULL, NULL, NULL, '2026-09-18 06:02:13.880645+00', '2026-09-18 06:02:13.880645+00');
 
 
+ALTER TABLE public.observations ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: evidence_links; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.evidence_links DISABLE TRIGGER ALL;
 
 INSERT INTO public.evidence_links (id, owner_kind, owner_id, source_version_id, passage_id, observation_id, statement, created_at) VALUES ('ddc2ea51-3c51-4a1c-83b5-c79f53900ceb', 'answer', 'c9daeea9-3c67-48f2-8793-ea4edff13999', '7f6529fe-625a-4ada-808e-78d62ccf97a1', NULL, 'fbc26fe6-0a0f-499a-8e20-96b6efb102c7', 'Official unemployment rate: 33.2% percent (South Africa, Q2 2025 (April–June 2025))', '2026-09-18 06:06:14.936583+00');
 INSERT INTO public.evidence_links (id, owner_kind, owner_id, source_version_id, passage_id, observation_id, statement, created_at) VALUES ('76d62338-99a0-4df4-a4f5-a8e96e798fa0', 'answer', 'c9daeea9-3c67-48f2-8793-ea4edff13999', '7f6529fe-625a-4ada-808e-78d62ccf97a1', NULL, 'f6a517ab-13ec-4f8d-bf5e-a26096638d5c', 'Expanded unemployment rate: 42.9% percent (South Africa, Q2 2025 (April–June 2025))', '2026-09-18 06:06:14.936583+00');
@@ -305,35 +382,55 @@ INSERT INTO public.evidence_links (id, owner_kind, owner_id, source_version_id, 
 INSERT INTO public.evidence_links (id, owner_kind, owner_id, source_version_id, passage_id, observation_id, statement, created_at) VALUES ('ad3b6c12-be26-41d3-aad8-542e0ebe35d6', 'answer', 'e98c067f-bf5c-4db6-80d8-0d9463b5898d', '096e9a56-dfea-409e-bec5-a5136ba922b4', '89e89e08-09f9-4bd6-a06f-1f50b892e5f3', NULL, 'Annual headline consumer price inflation was 3.4% in September 2025.', '2026-09-18 08:50:28.527859+00');
 
 
+ALTER TABLE public.evidence_links ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: handoffs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.handoffs DISABLE TRIGGER ALL;
+
 INSERT INTO public.handoffs (id, conversation_id, visitor_id, case_id, state, reason, urgency, topic, summary, requested_at, accepted_by, accepted_at, declined_by, declined_at, decline_reason, transferred_to, transferred_at, closed_at, is_demo, updated_at, channel, offered_phone, caller_phone, phone_connect_offered) VALUES ('35730b3b-2828-4b05-802d-99645c33d641', '5cc5ee7f-8004-4e9a-96bc-cad1cc584744', NULL, NULL, 'waiting', 'visitor_request', 'high', NULL, 'Caller wants an official about census figures', '2026-09-18 07:51:07.647323+00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, '2026-09-18 07:51:18.873724+00', 'voice', '+27 12 310 8911', '+27 82 000 1111', true);
 
+
+ALTER TABLE public.handoffs ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: handoff_events; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.handoff_events DISABLE TRIGGER ALL;
+
 INSERT INTO public.handoff_events (id, handoff_id, actor_profile_id, action, detail, created_at) VALUES ('822103ce-34fa-4b3d-97bf-0183e4f69113', '35730b3b-2828-4b05-802d-99645c33d641', NULL, 'requested', 'visitor_request', '2026-09-18 07:51:07.776514+00');
 
+
+ALTER TABLE public.handoff_events ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: insight_alerts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.insight_alerts DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.insight_alerts ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: insight_snapshots; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.insight_snapshots DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.insight_snapshots ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: kb_embeddings; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.kb_embeddings DISABLE TRIGGER ALL;
 
 INSERT INTO public.kb_embeddings (id, owner_kind, owner_id, source_version_id, content, embedding, model, created_at) VALUES ('af6ce746-05ea-4ec1-844c-594de5dff027', 'passage', '549ecdcc-c3f5-4c6c-a1d1-0c4599573232', 'b5145c82-6f45-445c-a754-8bab12ea529a', 'Key findings
 South Africa''s population is estimated at 63.1 million people at mid-2025, according to the Mid-year population estimates release (P0302).', '[0.02669046,0.024333669,-0.015888391,0.0053214952,0.011947046,0.012115476,-0.017600434,0.006547797,0.022364369,-0.055468567,-0.028177658,0.010138803,-0.0013685194,-0.020468868,0.0016355001,0.004860739,0.036517307,-0.054167744,-0.0074400553,-0.011407774,0.011019504,-0.020314615,0.024351167,0.001748468,-0.012837879,0.0052018566,-0.0041639707,-0.07061763,-0.021686943,0.14823918,-0.02765472,-0.014146029,-0.010700217,-0.001474038,0.012884872,0.01412369,0.021835761,-0.021073189,-0.035929326,-0.016519275,0.020861695,-0.029561708,-0.029231587,0.03474678,0.015035806,0.007625038,-0.00051114435,-0.004548465,0.00336909,-0.018299922,0.01842572,0.025441222,0.0027336355,-0.03981637,-0.019218396,0.008382452,-0.0077695963,-0.0396005,-0.024164176,-0.007675887,-0.018908622,0.025742542,-0.004132456,0.050264303,0.008770178,0.002448687,0.01454248,-0.027534451,-0.01029047,0.008009822,-0.013986774,-0.036361348,-0.0020116828,-0.044850413,-0.014874153,-0.035693504,-0.0374605,-0.00041175415,-0.007903658,0.015671177,-5.9248043e-05,-0.009123197,-0.00047968287,0.027555928,-0.027869413,-0.0066739963,0.012884335,-0.045679227,0.038028423,-0.016506301,-0.022435455,0.0029316924,0.021764813,0.0015876269,-0.011721983,0.014724379,-0.010409958,0.0066856765,0.012325517,-0.00030463887,-0.041349966,-0.019467631,0.008463075,0.00112788,0.027481694,0.020557994,-0.0036548183,-0.008931894,0.018373802,0.015441432,0.031256825,-0.23390567,-0.0033741756,-0.0086340895,-0.019164182,-0.04067048,-0.030269101,-0.008412984,-0.004786068,0.020735491,0.0070811426,5.4967662e-05,-0.0090181725,-0.012419306,-0.011689758,0.03461676,0.0023691016,-0.006078678,-0.018553644,0.044051062,0.019501412,0.010356252,0.039496735,0.004205834,0.0080177495,0.016961318,0.005187788,-0.014043425,0.029778445,0.024460968,0.0039448063,-0.047280323,-0.0051636533,0.008434235,0.0153173255,-0.025299426,-0.016111001,-0.011495853,0.017836854,0.008002234,-0.004651989,0.0032715548,0.03654674,-0.003479538,-0.013100618,-0.038994044,0.022730008,-0.0110116,-0.024487186,0.007765978,-0.021004869,0.0039580343,0.021038782,0.003414727,-0.016365174,0.0141050825,0.021463683,-0.038971327,0.0057687215,-0.040224634,-0.029253835,-0.011979043,0.0069642724,0.004862181,-0.026042633,-0.002543973,-0.0098744985,-0.009963443,0.0052323206,0.05552899,0.0014738141,-0.008018704,0.011907439,-0.0033930857,0.012668475,0.017157977,0.004269034,-0.0015104146,-0.03530507,-0.009694433,0.018486151,-0.004905169,-0.0028194208,-0.0040821973,-0.022381997,-0.01777184,-0.028809262,0.0159156,0.004556663,0.0031977214,-0.0056234403,0.029959751,-0.0026977346,-0.024397217,0.0020805772,0.036745276,-0.012177903,0.0307168,-0.029525777,-0.01955642,0.040762216,-0.017750701,-0.019065099,-0.0134248985,0.011985247,0.009627539,-0.014544352,0.034291595,-0.028606057,-0.030710232,0.010177342,-0.01875851,0.0027406353,-0.0070590824,0.0019007566,-0.021150226,0.043620482,0.029735738,0.0053303773,0.042137995,-0.025387997,0.013153692,0.003106409,-0.014640117,-0.028642775,-0.0126747405,0.02392648,-0.044746563,-0.0047271405,-0.0049759964,-0.030068653,-0.036428895,0.010227864,0.006153148,0.018834237,0.0024537675,-0.026502501,0.02962847,-0.005850901,-0.006193235,0.026347987,0.0046546715,-0.0015738573,0.009706682,0.0013308579,-0.032099914,-0.033680405,-0.020492598,-0.017493097,-0.008471703,-0.010683874,-0.020313207,0.026725782,0.027519856,0.009372798,-0.03633301,0.026729554,-0.04267523,-0.008365533,0.020636117,-0.014978869,0.027330695,0.0008302764,-0.009830851,0.00087272195,0.0041892636,-0.019109245,0.016391229,-0.02111378,-0.0151511505,-0.030906023,-0.01888675,-0.009322239,-0.006652612,0.007315645,0.01350709,-0.0017806884,-0.0019600757,0.01956315,0.023822702,0.0153443515,-0.0041565523,-0.00818066,0.013395958,-0.031045482,0.036434736,-0.012543318,-0.04874695,-0.032186285,0.030926565,-0.035123903,0.0013222413,-0.014860221,-0.0046947654,0.013236625,-0.00060329796,0.0036940374,-0.007468399,0.007565046,0.008489812,0.013491272,0.008363902,-0.02403562,0.01978437,0.031919923,0.0023554715,-0.0030747498,0.017172962,0.005424483,-0.14198452,0.0076475055,-0.028141866,-0.0024835432,-0.024289465,0.0076731094,0.041999217,0.0053996257,-0.02513921,-0.014087059,0.008299407,0.0007855304,0.030406177,0.0046862517,0.028309282,-0.0015694511,-0.0011950434,-0.022725588,-0.0070682094,-0.012568193,-0.005382629,-0.010600075,-0.24948213,-0.016550744,0.01831924,-0.007739612,0.0005645079,-0.015505328,0.030945182,-0.027031947,0.00013145639,-0.015793502,0.0064064367,-0.0364599,-0.030550407,0.0046923696,0.029947368,-0.031690355,-0.00878944,-0.04706539,-0.018925361,0.00031971993,-0.010946888,0.012547372,0.014718785,0.01507745,0.03749561,-0.017155943,-0.00068558514,0.009480615,-0.018605722,-0.00041808703,0.0019593788,0.03953145,0.025336254,-0.0113903,-0.008603883,-0.023235247,0.060747683,0.0070432536,-0.019240186,0.019168338,0.011148972,0.0017683161,-0.013756116,0.04759305,-0.019469457,0.024961649,-0.02146758,0.011865862,0.01304034,0.0026708702,0.044527125,-0.010273367,-0.02957393,-0.0032892043,-0.0036216262,-0.0075997952,0.0021621517,-0.005371485,-0.022351708,0.025006207,0.03619644,0.036172528,0.025920015,0.0028781404,-0.0072238673,0.010424436,0.02031202,0.022851115,-0.022867665,0.0016465682,0.00037222487,0.033502553,0.0038667507,0.0029903012,0.020932768,0.029974446,0.014152411,-0.014065391,-0.019966062,-0.031967957,-0.0077461265,0.010925672,0.00016588853,0.023832744,-0.04659627,0.0013429122,0.0073653995,-0.02152567,0.025530176,-0.008936424,-0.010131321,-0.020393416,0.0059650475,-0.007819461,0.003708708,-0.00459396,-0.030322839,-0.0038989827,0.046659503,0.010890766,0.052244633,-0.030603552,-0.013124796,0.069154836,2.8832785e-05,0.038283773,-0.022200784,0.016380725,0.00096632773,0.025460718,-0.021211028,-0.011635742,-0.00013666475,0.027199341,0.010783846,0.0071615647,0.020264423,-0.0274049,-0.0262131,-0.016756995,-0.011424518,-0.029826023,-0.023507308,0.004396908,-0.008064443,0.008908251,-0.027456177,0.015079995,0.000101092206,-0.0033328787,0.0056287986,-0.00023871713,0.015410425,0.024440281,0.04217502,-0.008869456,0.01988052,0.0043733884,0.013718911,0.017388158,0.009823029,0.021699026,0.004008156,0.009411854,0.0079300115,0.028375834,-0.011843857,-0.023395646,0.015595401,0.01716892,0.010895946,-0.020162685,-0.010094103,0.018540865,0.01255181,0.023344621,0.016242657,-0.004961018,-0.0018170549,0.030403793,-0.023335528,-0.023649676,0.01777332,0.02988984,0.021928849,-0.002560332,-0.24462275,0.0073039047,0.039513215,-0.0022332575,0.016960423,-0.027677998,-0.020973474,-0.020185297,-0.00833728,0.024148803,0.03136444,0.018478384,0.010139205,-0.004826003,-0.010328325,0.004882622,-0.022550555,-0.008288515,-0.0093467655,-0.006793488,-0.009894056,0.005534262,-0.024236267,-0.014016196,-0.01073362,-0.045423217,-0.016255328,-0.0020049007,-0.0030003812,0.0027845965,0.026827116,0.010162579,0.021747801,0.010289569,-0.014991659,0.018269446,0.016874122,-0.0071810815,0.0071514035,-0.007293402,-0.014941256,0.006127562,-0.016210841,0.014706594,0.013182405,-0.036389235,0.0152655225,-0.08988078,0.047107898,0.011055518,-0.0043437155,0.0093434565,0.0009888592,-0.011300337,0.006753964,0.030232562,0.0006647961,-0.019629398,-0.014317793,-0.01070391,0.009486975,0.019158369,-0.0024562003,-0.004823428,0.03261758,-0.034031935,0.017811498,0.1251312,0.0043752072,0.0020060423,0.04886805,-0.0053418856,0.044286504,-0.028910682,-0.017275646,0.009142405,0.010517569,-0.015738461,-0.032680035,0.018518042,0.010931998,-0.0068553896,0.026539251,0.014127959,0.02554573,0.03151632,0.0029151242,-0.01691804,-0.055718936,0.0050023883,0.027502095,0.00030279215,-0.002979607,-0.009096667,-0.024989547,0.009573499,-0.013218207,-0.018583748,-0.030310463,0.04502704,0.01385475,0.03762613,0.014890044,0.022074906,0.012754462,0.0014302592,-0.0025194786,-0.021304978,-0.009145679,0.024466718,-0.03243468,0.0017339699,-0.01975601,0.0025449584,0.013889885,-0.014807739,-0.017530162,-0.015234065,-0.034427065,0.010073618,-0.0070544113,-0.010128332,0.0010386197,-0.04774348,0.00083781057,0.012820472,-0.024303453,-0.014368135,-0.008844773,0.0052800253,0.0030996941,0.004933093,0.03179204,-0.0006023039,0.026196465,-0.009972414,0.023230739,0.008950951,0.04116051,-0.04628946,0.01123774,-0.018537778,-0.010137638,0.024274096,-0.034050144,0.019034583,-0.020910306,0.0010268185,0.008979341,0.0156163415,0.005264676,-0.017847326,-0.027226241,0.019679422,-0.010749571,-0.026373131,-0.023255138,-0.01758031,-0.024119988,0.01715432,-0.026262447,-0.01941263,-0.015939072,-0.013233028,-0.042074516,-0.01549773,-0.003146129,0.008208228,0.0007365522,-0.007555188,0.009681009,-0.0020195802,-0.049783416,0.0021173032,0.029917093,0.03466195,-0.022221323,0.018679712,0.02533294,0.0011222778,0.018476827,0.004322783,0.005250189,0.011771274,-0.012385221,-0.024464138,-0.009190688,0.030309968,-0.01239146,-0.015625957,-0.0014276841,0.030533042,0.018582474,0.07916491,0.018216874,0.0035500182,0.0072634337,0.017952837,-0.038302194,6.5572756e-05,-0.012938694,0.04354687,-0.0030024746,0.005577685,-0.016299816,0.008012612,0.019781275,-0.01642267,-0.011433031,0.035671175,0.009284288,0.017172687,-0.03546967,0.019354356,-0.007058599,0.040779058,0.0021309573,-0.009810549,-0.00604056,-0.055246044,0.013993658,-0.0030504724,-0.021967547,-0.01916718,-0.006964204,0.06735342,-0.016880644,0.0013367648,0.017882789,-0.0014545381,-0.0120450165,0.025124457,-0.036185637,0.0035075988,-0.05978889,-0.0004610825,-0.020999076,0.0010726292,-0.03318103,-0.016517008,-0.0063976976,0.00309094,0.013776221,0.014114068,0.02553437,-0.011529643,0.037085813,-0.00054558873,0.016410533,0.011204527,-0.014863571,-0.0068737236,-0.0066013057,-0.03075928,0.0030677253,0.01081343,0.019184869,0.00636406,0.0017461228,0.0093699135,-0.009277188,0.010433136,0.013898278,-0.02409706,-0.0091353785,-0.02025413,-0.028046861,-0.0025940086,0.024045534,-0.02998073,0.010098833,-0.011360205,0.022021065,0.009784353,-0.020719422,0.024606887,0.0353407,-0.024868125,0.026557062,-0.00036420295,-0.016004754,0.0006580043,0.02194997,0.015145493,0.0049030334,0.012522711,0.004370266,-0.0019005494,0.027903408,-0.0058217784,-0.020432925,0.012252532,0.021632986,0.014206275,0.027414024,0.005182531,0.033415485,0.0030545655,-0.0145644145,0.035759136,-0.016548844,-0.0023120448,-0.0004567137,-0.019570708,0.003645968,-0.031052269,0.0010645692,0.011622394,-0.0144521585,0.011739505,0.018447401,0.021703133,0.018273478,-0.016811565,-0.0058811475,0.009844263,0.002953408,0.0036753195,-0.008035693,-0.0072864103,-0.0058987024,0.0003864997,0.016935028,-0.0076429984,0.012534253,-0.0054953815,0.002458195,-0.010479496,-0.015140955,-0.0005972567,0.027607016,0.06346995,0.049243607,-0.016401166,-0.0061108978,-0.013320327,-0.04718683,-0.02666611,-0.004513961,-0.0054359646,-0.011854601,0.056128953,0.029875772,0.0144267855,0.0050514834,-0.004417638,0.0033614032,0.0020557814,-0.01288,0.040880118,0.016717669,0.0032869948,0.04101218,-0.0001737598,-0.00400198,-0.029274417,0.17778382,0.023161607,-0.016223736,0.011999907,-0.021751242,-0.017573452,-0.003806911,0.0065262713,-0.014450552,0.001995026,-0.014000022,0.010168378,0.025028484,0.0140368985,-0.020757556,-0.028934505,-0.00075555075,-0.0032094722,-0.008675454,0.0015237511,-0.0039555547,-0.009788696,-0.020509014,-0.0045796214,-0.01107059,0.018085886,-0.0003436345,-0.015415228,0.007375433,-0.00836277,-0.008518196,0.01933374,0.013964728,0.009394954,-0.022949059,-0.0033907427,0.010683162,-0.007276924,0.03210508,0.012400237,0.017972862,0.005113376,0.020265559,-0.008439971,0.028186427,-0.028865242,-0.020899128,0.0055534276,0.0033598086,0.0070067444,-0.012237887,0.0013193333,-0.00082275266,0.0018962208,0.032223955,-0.009894866,-0.00015771858,0.0014631404,-0.0015760658,0.0076647885,-0.17371938,0.039870415,-0.0047024386,0.015463674,-0.00030824495,-0.023700045,0.0031538247,0.0073531256,-0.022388592,-0.0025096703,0.011105675,-0.005026773,-0.005450431,-0.009824985,-0.00584082,-0.070030436,0.004117919,-0.000817704,0.002338309,0.0037230738,0.01811319,0.042871926,0.015455523,0.029761672,0.019116994,0.012542322,-0.027590355,0.0033961725,-0.0112335645,-0.020507442,0.012014753,-0.0011535445,-0.017819617,-0.013895264,0.0004138714,0.0235898,-0.004148496,-0.00756994,0.016719902,0.011851067,0.0069098347,-0.029842306,-0.008326021,-0.01289879,-0.028232545,-0.013166899,0.018674048,0.0061365548,-0.045866393,-0.031310517,-0.001539746,0.020065047,-0.010650433,0.02180952,-0.015748851,0.0024631075,-0.00045719885,0.009417802,0.040219586,0.004221506,0.13993831,0.007703891,-0.02529486,0.015774433,0.019260008,-0.0059597795,0.021503255,0.006353094,0.018305574,0.012759595,0.0034218023,-0.020673458,0.015112606,-0.012634758,0.03505693,0.02712754,0.005485793,-0.02942242,0.022815801,-0.0005578903,-0.010998316,0.01186802,-0.07647253,0.033650354,-0.007663467,0.0061851894,0.015967624,-0.0075604576,-0.0012728926,0.021367176,-0.029863928,-0.008095592,0.018526278,-0.005408134,-0.00870883,-0.021797767,-0.0072544706,-0.012631139,-0.003159514,0.0049762474,-0.0031287062,-0.022465672,0.0027889463,-0.049995832,-0.012911332,0.0029830395,0.033065006,-0.023095334,-0.02514576,0.026784312,-0.0005430581,0.007567399,-0.0048696385,0.0029721048,-0.0052807615,-0.009866078,0.017273813,0.012334596,0.015070395,0.011277737,-0.042491727,-0.01869037,-0.005794873,-0.016766433,-0.006582516,-0.04099048,0.0028640542,-0.021742623,-0.011303408,0.01241372,0.039661817,0.018939458,-0.019371113,0.011967491,0.0053851893,0.0072755665,-0.008447082,-0.021439364,-0.00172188,-0.012408483,0.020781329,0.019151807,0.011662378,0.015620727,0.050392106,-0.021318499,-0.026287088,-0.0242895,-0.013847203,-0.04027676,-0.0062883054,-0.008255312,-0.0034227446,0.0016856389,-0.008629655,0.14090778,0.022884142,-0.0068733157,0.016827919,-0.0048768776,-0.010294181,0.00043863885,0.015607289,-0.014855023,0.025366371,-0.0036595466,0.027938286,-0.039390653,-0.014028264,0.0010166834,-0.02095093,0.05358177,0.014101148,-0.00030310376,0.0074956683,-0.024643017,-0.0013273584,0.016817484,-0.010933056,-0.014920263,-0.007257224,-0.016106473,0.025256757,-0.010430582,0.033039816,-0.012877322,-0.014918904,0.01316688,-0.019017119,-0.009090536,0.030342488,0.0153049,0.014842856,0.00050033425,0.021076512,-0.00028852955,0.0034298212,-0.026203014,0.011123392,-0.025259893,-0.01595824,0.0035223556,-0.0021277328,-0.0031027591,-0.020190163,-0.0030025202,-0.00938184,0.032986447,0.0114625115,0.0059688054,0.006104313,0.00707483,-0.008941089,-0.0039580823,0.02214741,0.008817736,-0.014426396,0.0209346,0.018627709,-0.02729499,0.015893705,-0.016564691,0.034088932,0.01025242,-0.015119106,0.0006036392,0.029910075,0.025940673,0.012533215,0.010881425,-0.005947873,0.030941945,0.0095501365,-0.009424831,0.027157307,0.0024858713,0.0073387427,-0.016314384,0.020794977,-0.058446545,-0.008890955,0.002768304,0.013941083,0.009312835,0.013912957,-0.023614231,-0.012913334,0.0037760918,-0.007369618,0.0063757636,-0.022967624,0.012700385,-0.008509685,0.005684716,0.0138129,-0.021342674,-0.012771845,-0.0031687422,-0.019314496,0.018074514,-0.0009766216,-0.02266478,-0.020020615,-0.02199629,-0.01117765,0.021227144,0.0004513064,-0.006011073,-0.0025398745,0.0027502389,-0.007953376,-0.027041841,0.011855483,-0.015633462,0.023937674,-0.0077808644,0.006211271,0.0016265818,0.023046432,0.06910985,0.014438062,-0.0028271822,0.0018859045,-0.047502674,0.0013578865,0.0037174902,-0.0051683504,0.02176249,0.018436443,-0.0064722057,-0.0037528805,-0.021985373,0.014211845,0.02800276,-0.008627089,0.00051820703,-0.012228759,0.0016528233,-0.010088364,0.017082628,-0.0020906194,-0.0048343167,0.012143863,-0.0015856051,0.011989889,0.0042541465,-0.022800827,0.007202579,0.006048334,-0.0058233943,0.024264932,-0.004462445,-0.0058761016,-0.0033386063,0.016281908,0.0051451526,-0.0055330847,0.0027974737,0.040907465,0.036459,0.018464755,-0.02847426,-0.015860869,0.018482627,-0.0068557374,0.018283326,-0.019807188,-0.0013281985,0.0014267719,0.022428395,0.033673126,0.009985781,-0.014241688,0.0034064776,-0.019537102,0.0089156125,0.010526505,0.017422691,-0.0030518172,0.016971791,0.00768011,0.004742906,-0.0030749966,-0.0371304,0.01310431,-0.021875793,0.01856024,0.028518613,0.0049698786,0.028520396,-0.007745305,-0.023969097,0.006415033,-0.021444764,0.028988425,0.011102615,-0.015587897,0.0037487866,-0.014860671,0.0070922603,0.012703647,-0.020902488,-0.012560322,-0.0180767,-0.013476916,0.015611925,0.03378323,0.006844915,-0.014143299,0.03086949,0.022718918,-0.0069445483,-0.021708356,0.017858611,-0.033250235,0.0029943797,-0.0034959912,-0.023373138,0.0033067244,0.009267122,0.00042211355,-0.0032717183,-0.0022911124,0.06360574,0.0013309142,-0.015860995,0.01577011,0.011819742,0.00391172,0.08861654,0.0054557575,-0.019526988,0.00609323,-0.009173622,0.0024607135,0.018443977,-0.024831811,-0.0006114975,-0.010110428,-0.00541646,0.012072892,-0.022997351,0.05308858,0.038288135,-0.012013462,-0.0018972364,0.022451982,-0.0063396497,0.018747006,-0.042123687,-0.020563075,-0.0258097,-0.009761861,0.0036899305,-0.035614245,0.023233665,0.012426559,-0.0007899522,-0.020950314,0.012604091,0.014161479,-0.034708876,-0.008999702,0.0038732523,0.00021789664,-0.009295667,-0.019466002,-0.002659043,-0.00032076653,0.029089924,-0.005685294,-0.018143352,-0.020079903,0.0061650677,0.016612317,-0.016274698,-0.016645515,0.0050429944,0.015285611,0.007896653,-0.012513268,-0.0024606804,-0.028794186,-0.005125619,0.014529411,0.10830335,-0.015411873,0.026184276,0.04210404,-0.00057983916,-0.012910885,0.015155484,-0.0049418355,-0.016425993,0.0042737173,0.009583903,0.01235171,-0.028255172,0.029048778,0.004472373,0.006735725,0.021090193,0.01601024,0.0035756556,-0.0071491273,-0.033588074,-0.007049443,0.017885465,0.025326716,0.006029308,0.005729349,0.014663636,-0.018199623,-0.012905114,-0.028426884,-0.04772507,-0.02116477,0.0349912,0.003033424,0.020333022,-0.029188605,0.0028864108,-0.0072524394,-0.024928048,-0.0013640473,0.0065338598,0.008699304,-0.015298114,0.017399522,-0.015025431,0.007202366,0.0116596185,-0.006318483,0.025695771,-0.010360587,-0.014207364,0.012862497,0.016356468,-0.00086801004,0.012621862,-0.015151274,-0.011052808,0.025444636,0.16135974,-0.017547064,0.027424024,0.008388345,0.028840894,-0.009426372,-0.0047874507,-0.01420771,-0.0032401395,0.0030941553,-0.0041232514,-0.012229292,-0.026378486,0.02731526,-0.025745956,0.011110544,0.00829119,-0.0044864574,0.0045629493,-0.038527448,0.038381346,0.0479561,-0.0040225163,0.011936225,-0.01242693,0.010745119,0.02362113,-0.014160916,-0.026711375,-0.015293358,-0.002579206,-0.019093584,-0.026348105,0.033997,-0.007408803,-0.005990689,-0.013457778,-0.009000575,-0.004354327,0.012867665,-0.010556294,0.016190214,-0.007388257,0.015729098,0.026178371,-0.040861823,-0.008399097,-0.021774309,-0.00725283,0.043409165,-0.013791378,-0.014834184,0.006053614,-0.0110197095,0.011114349,0.013838351,0.0018788018,-0.027194766,-0.018285528,-0.014568442,-0.02762222,-0.002474898,-0.0075929067,-0.02420897,0.013036938,0.009420741,-0.0016146227,-0.025007214,0.010592531,0.021947488,0.0025864192,0.0052998597,0.025681809,-0.034086697,0.004274235,0.023568956,-0.0040252847,-0.0062565077,-0.00032890594,-0.024209807,-0.006427257,-0.014458426,0.008505342,-0.011360575,0.02998676,-0.0119441515,-0.0042461194,-0.017121172,-0.02368292,0.012993307,0.008739874,0.011184874,0.0028660467,-0.029185977,0.0031647298,0.012213072,-0.006038552,-0.003424252,0.019499224,0.00017843397,0.027293835,0.0011476323,0.013875926,0.009745133,0.020717984,0.03434042,-0.026363418,-0.0069930735,0.00044700713,-0.0039446005]', 'google/gemini-embedding-2', '2026-09-18 06:51:31.518803+00');
@@ -374,21 +471,33 @@ INSERT INTO public.kb_embeddings (id, owner_kind, owner_id, source_version_id, c
 INSERT INTO public.kb_embeddings (id, owner_kind, owner_id, source_version_id, content, embedding, model, created_at) VALUES ('0f8071dc-db66-4b33-ad60-81aa2a05968f', 'observation', '4530f99f-97b7-41e0-8204-0b7a7b2e3007', '111f0f90-6b12-4b0e-bd2c-5d4c8520c680', 'Consolidated budget balance for South Africa (Consolidated national and provincial government), 2025/26 fiscal year: -4.8% of GDP percent of GDP', '[0.008526562,-0.031648032,-0.015861604,0.012283466,-0.001159334,0.00032428847,-0.00022183768,-0.0012174076,0.0026974515,-0.07532033,-0.05538273,0.0075295954,-0.027870288,-0.01876527,-0.017141007,0.03413442,0.0087071275,-0.027291754,0.0021894944,0.005223618,0.01277798,-0.02289609,-0.004819852,-0.013993925,-0.026943441,0.02595712,-0.012787912,-0.027319798,0.0036914314,0.1844806,0.017497571,-0.0003613664,-0.017295444,0.008348131,0.007640413,-0.0005399454,0.010163153,-0.03151072,-0.014599407,0.039239924,0.00899913,0.0046568005,-0.01402331,0.036086038,0.053238817,-0.019335981,0.004036374,0.0022723447,-0.002553254,-0.018510928,0.009382449,0.013866996,0.023411795,-0.017578423,0.00950186,0.004048941,-0.011432672,-0.0045800717,0.0020315144,0.004051826,-0.034152217,0.013352753,0.006390457,0.019248836,0.02334463,-0.000587109,0.028999826,-0.022868544,0.0022552495,-0.009263764,-0.00045830398,-0.03552426,0.0055547394,0.005134637,0.026014151,-0.022272369,-0.00427481,-0.021230223,-0.00040917157,0.027885646,0.0010335452,-0.0232718,-0.03827394,0.028899292,-0.00441202,0.01849785,0.009969341,0.011659076,0.008807666,-0.004775918,-0.010054369,0.007484109,0.040455684,-0.007862447,0.006570089,0.029966198,-0.009833209,-0.015700005,0.04455014,-0.02324903,-0.034916293,0.016035674,0.0049331193,-0.007298846,-0.00035211022,0.021946656,-0.031451847,0.012850144,0.012887555,-0.019022854,-0.010504003,-0.2340189,-0.007689195,-0.026414784,-0.027852334,-0.054505605,0.008324142,0.01801582,-0.0074382415,0.045359865,-0.0050781956,-0.00046512883,-0.01139758,-0.02401263,0.018625632,0.031734105,0.010333242,0.0010919211,-0.014361334,0.04882522,0.00054243347,0.005473758,0.017942004,-0.013190966,0.029546145,0.020192778,-0.0015703901,-0.0041785864,-0.006861979,-0.0045455256,-0.009901001,-0.016667183,0.002063651,-0.024881026,0.0070761084,-0.025171677,0.007144097,-0.02137842,0.015688196,0.015021767,0.013780421,-0.012119653,0.017257882,0.00013790558,-0.0040863086,-0.01498058,-0.011856362,0.0036402186,-0.026649186,0.004067607,-0.023278605,0.004069318,0.031330515,-0.020375147,-0.009859617,0.0030448365,-0.017693007,0.021270085,-0.027684694,-0.014913632,-0.026383907,0.004383173,-0.019944245,-0.00032590306,-0.02214364,-0.025863748,0.020818535,-0.010061663,0.018189277,0.008419495,0.019935662,-0.014534878,0.0035950253,-0.019326145,0.020803321,0.030206505,0.01354831,0.03366787,-0.0135655375,-0.0011529014,0.042369045,0.0077598854,0.01857423,0.005685535,0.012612612,0.01241815,-0.016654268,0.011852779,0.011704853,0.0072823823,-0.031955395,0.016052086,0.025207624,0.010084239,0.037525263,0.0048504598,-0.034903843,0.037868395,-0.0058689187,-0.012648415,0.0074486732,-0.0033284232,-0.005074349,0.0090333335,-0.011924247,0.014929599,-0.021744765,0.008940639,0.0014547235,-0.0248273,0.0068896683,0.016629746,0.0134985,0.00013868892,-0.02468802,-0.0038117908,0.027376551,0.01827839,-0.011973848,0.0179145,-0.003737216,-0.03576882,0.0013207137,-0.015385893,0.002747269,-0.00022935812,0.013887918,-0.0069092005,-0.019978305,0.018161776,-0.00916594,-0.023924863,-0.007842091,-0.035983026,0.015035257,-0.022101576,0.011074643,0.020650074,-0.020451339,0.013362188,0.005612947,0.022968605,-0.006123458,-0.018949378,-0.026839808,-0.0054372945,-0.0040640347,-0.0012648822,-0.013981768,-0.0040658787,-0.029863369,0.008253643,-0.004603099,0.022067884,-0.01573826,0.008522227,0.023156114,-0.06351523,0.016217148,-0.009591238,0.0015580523,0.011814684,0.022618223,0.004359592,0.0060484526,-0.008688629,0.013744421,0.02608423,-0.022316404,-0.04302685,-0.0134794125,-0.019481275,-0.015009404,-0.015360908,-0.04906096,-0.02119117,-0.0045032757,0.007800523,0.014662163,0.013971423,0.028444404,0.008244277,-0.022434529,-0.0043679154,-0.03245122,0.009874822,-0.007732693,-0.05745284,0.004668513,-0.021764008,-0.032184195,0.03063396,-0.03995145,-0.0068397787,0.034358643,0.0011400086,0.020109085,-0.025541905,-0.0047603333,0.036638252,-0.019103892,-0.02392166,-0.02614452,0.019010654,-0.0070967567,-0.041857257,-0.014577309,-0.023327626,0.007423185,-0.13481566,0.024342747,0.013027773,0.0037758863,-0.030144367,0.0061917338,0.01585936,-0.0048707034,-0.043105785,-0.010703085,-0.007632587,0.0035558562,-0.0058393665,-0.011398562,-0.023316268,0.04423731,0.0016046728,-0.015697949,-0.0007225964,0.04541616,-0.02341775,-0.012500682,-0.2395757,-0.02226378,-0.00794561,0.0019625593,0.038092338,-0.043537617,-0.01370879,-0.040422827,0.018786915,-0.005751919,-0.016759928,-0.04508516,-0.054545656,0.011201446,-0.0054205456,-0.041993335,-0.023220526,-0.036742803,-0.030433258,-0.027732195,0.005365909,0.00082518207,0.007126954,-0.008856611,0.028536383,-0.02476587,0.04018895,0.017731784,-0.018179331,0.05108862,0.00791986,0.028393807,0.014781128,0.013439781,0.0033028165,-0.010977595,0.045355182,-0.03950621,-0.02287141,-0.008889194,0.020754345,-0.030781277,0.0051924298,0.055600334,-0.020477124,-0.0077035413,-0.000577638,0.021061959,0.0024240308,-0.010070179,0.04248578,-0.01694789,0.0032917885,0.014558125,-0.0026359106,0.026608076,-0.0027785767,-0.004589175,-0.019160477,0.021190967,0.0360836,0.0077136513,0.0039080223,-0.04234743,-0.0017372749,0.012859982,-0.009873048,-0.034005042,-0.03032178,0.0032368435,-0.028263602,0.008013949,-0.0161444,-0.006156473,-0.00012211365,-0.01735211,-0.018902088,-0.00836339,0.007964853,-0.040037066,0.010878822,0.045131646,-0.02219363,0.019203115,-0.012324376,0.0050909203,0.005616288,0.009811913,-0.035628814,-0.019832537,-0.02905747,-0.0047696545,0.027481105,-0.020161498,-0.010218703,0.006414316,-0.013801192,0.006339166,0.024971494,-0.0022648447,0.015214007,-0.012699528,-0.028451527,0.034397323,-0.03834467,-0.016183525,-0.011998647,-0.0024641075,-0.015826907,0.04610128,0.018304415,0.008865966,-0.027468806,0.006605212,0.015625909,-0.017382758,0.019948246,-0.04609922,0.024953082,-0.017574335,0.012615365,-0.035317384,-0.0357463,0.0067125144,0.0044563985,0.04152704,0.039484356,0.016971719,0.0073564765,-0.006237091,-0.034286804,-0.029078007,-0.020709798,-0.034209535,0.018174276,0.00011785079,0.013165287,0.026738776,0.005023804,0.0113229295,-0.0012808987,-0.011204788,0.0030365565,-0.024620447,-0.02958357,0.027164117,0.00031135365,-0.027254641,0.022267336,-0.023082484,-0.027203668,-0.027633362,0.026450431,0.033894036,0.018222379,0.025628284,-0.033212204,-0.018000083,0.0048673754,-0.000818257,-0.022538055,0.0002593965,-0.027976062,0.051696494,0.014687048,-0.0024830592,-0.24450718,-0.01034052,-0.00017750172,-0.03140439,0.046962466,-0.012647628,-0.021969933,0.0014035372,-0.028541591,0.050530132,0.023511654,0.006965348,-0.02875921,-0.0077421605,0.0035820089,0.021343417,-0.028987596,0.013277774,-0.031798773,0.0052952315,-0.021177009,-0.01722095,-0.034485836,-0.023655258,-0.022619843,0.003527764,-0.0023187164,-0.0019365387,-0.03612805,0.023492213,0.008230644,0.016151015,-0.017536528,-0.026554942,-0.021775959,-0.008959477,0.010578096,-0.0086625535,-0.034352284,-0.019836668,0.009885116,0.019304188,-0.04005603,-0.004009409,0.014720687,-0.018236393,0.0025393975,-0.08355174,0.04101811,-0.019870382,0.008865109,0.018921636,-0.011671083,0.014940184,-0.011063315,-0.0006106411,0.0018222205,-0.016199317,-0.026206685,-0.022966499,0.024191288,-0.00854411,-0.0049646962,0.014712579,0.028134722,-0.022766652,0.026906302,0.15222956,0.014411617,0.004311963,-0.0039583878,0.013693507,0.014346646,-0.013654222,-0.03620913,-0.0070083444,0.019566739,-0.030116208,-0.030085519,-0.0025648326,0.01135162,0.00331379,0.025662644,0.02276329,-0.0038002296,0.010755716,0.0057144794,0.0064919535,-0.035189174,0.0056061465,0.012144949,0.010636793,0.0034234494,-0.009435771,-0.025546936,0.027899807,0.004953903,0.010643193,0.029822567,0.046580136,-0.0006869576,0.020782411,0.02074216,-0.0031081736,-0.015322421,0.013851963,-0.0062110415,-0.041029725,0.00837132,0.0099242,-0.017368278,0.015386322,-0.009863406,0.007707357,0.012694245,-0.016240617,-0.00911824,0.02884571,-0.034334823,0.019512583,-9.875815e-06,-0.01838301,-0.013202348,-0.007719137,-0.024174996,-0.017664082,-0.027366536,0.014945722,0.011082453,0.006762004,0.017321557,-0.00040418576,0.029213397,-0.052380066,0.0039972896,0.020972604,0.025850471,0.027643224,0.0075368155,-0.031693622,0.0021260455,-0.011097183,-0.01115347,0.0050710905,-0.022560257,0.007871343,-0.019568771,0.017798506,0.02330333,0.0029139977,0.024977017,0.010510139,0.0008447992,0.002167216,-0.02543192,0.0035604741,0.0066946787,-0.01628827,-0.019791512,-0.0030929255,-0.026787773,-0.0012254263,0.0107451435,-0.0067451512,-0.014374786,0.013516111,-0.03116144,0.0066429623,-0.024121065,0.027871236,0.000629926,0.010191466,-0.01413232,-0.010272922,0.018754762,0.022829993,-0.011970921,0.017821003,0.007722772,0.0054113083,-0.013513286,0.022666689,0.0020157997,-0.00014354488,-0.030110497,-0.0019400748,-0.008859356,0.011191954,-0.013758512,-0.023492387,-0.0060299532,0.03708105,0.04008732,0.02772325,0.013136933,-0.009815024,0.022963643,0.02911736,-0.009873146,0.002503341,0.0081381155,-0.010676197,0.019124268,-0.003435411,-0.053643737,-0.003648429,0.0064413683,-0.019499535,-0.0029038296,0.0041463803,-0.0039276998,0.021858843,-0.011486311,0.032889225,0.01054177,0.039735064,0.025224086,-0.041667074,0.01036627,-0.032411575,0.027839867,0.0020144144,-0.015341261,-0.008508132,0.027523587,0.079432204,0.0136809265,-0.026264794,0.006043382,-0.00026305442,-0.03288246,-0.0019777024,0.006129956,0.013216931,-0.01778489,0.0180885,-0.002511134,0.0040666857,-0.04004703,-0.02334096,-0.0026690764,0.008080394,0.0014068383,0.008715422,-0.004804326,-0.005154978,-0.00469968,-0.012421541,0.005638093,0.010295599,-0.008200594,-0.010224069,-0.008924342,-0.022998402,0.03838755,0.002505235,0.017442057,-0.015322422,-0.0015502154,-0.00961454,-0.016943164,-0.0017351807,0.009701733,-0.02818881,0.0026863671,-0.030150272,-0.014490382,-0.008511396,0.010180983,-0.02869054,0.0046951654,-0.0016117478,0.019592155,0.02110707,-0.025792513,-0.037280127,0.0034794975,-0.008969257,0.033192474,-0.018771991,-0.004657353,0.025937818,0.00536783,0.026140794,-0.018726058,-0.0027610783,0.024355372,0.0030579688,0.0029407297,-0.008470015,0.020709578,-0.0023897034,-0.001552124,-0.0035670577,0.004418499,0.022698373,0.030703343,0.02647696,0.009070363,0.035182368,-0.02012564,0.00027258843,0.003217299,-0.028232245,0.001124984,-0.016343113,-0.030937277,-0.009783317,-0.013899427,-0.013339648,-0.0325808,-0.0017746534,-0.011869719,-0.02118638,0.001856534,-0.0061991825,-0.0061133923,0.02259217,-0.009918001,0.0060499725,-0.0046706875,0.023591477,0.013222158,-0.0013765488,-0.01725764,-0.005275602,-0.0023642338,0.008348649,-0.035589125,0.0067525418,0.019444073,0.05234597,0.013795754,0.0011652496,-0.0008290991,0.011119071,-0.02081884,-0.0058658873,-0.015046447,0.001181658,-0.0023627267,0.009664196,-0.00839823,0.013574141,0.047168806,-0.015629208,0.00096822775,-0.007783315,-0.0039560213,0.011665537,0.006726368,-0.0028920767,0.029717958,-0.0015666458,-0.0422975,-0.021280421,0.18007518,-0.005247072,-0.030382577,0.010910296,-0.0065590898,-0.0033832015,0.0035863288,0.00550529,0.00062036637,0.012838883,0.0013245327,0.01601061,-0.0025640125,-0.006699582,-0.013988872,-0.011119895,-0.019200552,0.018939108,0.026128154,0.0048485394,0.015661053,-0.018453164,0.00405599,-0.0062309084,-0.019942872,0.004987243,-0.0074887066,0.0118199745,0.026716214,0.023016274,0.0036070235,-0.0060659917,0.0015265795,0.0075340066,-0.002321028,-0.010360938,-0.027820338,-0.022882583,0.038604096,0.035217687,-0.008985878,-0.0154562825,0.005838235,-0.022688998,0.008261717,-0.0112406295,-0.015137155,0.00037565184,-0.0077749877,-0.02576383,-0.0019353135,0.010273869,-0.0099670105,0.024784243,0.012342086,0.018475644,-0.020131018,-0.01397612,-0.024247704,0.028287483,-0.15136991,0.008807024,-0.012458227,0.009276088,0.0017513976,-0.021676302,-0.00061388535,0.009039068,-0.014784481,0.013868756,-0.010765178,-0.009733367,-0.025979603,-0.024780024,-0.013953759,-0.08615844,-0.00066691305,0.019647675,-0.0045528635,0.00772809,-0.02817623,0.014882728,-0.00931331,0.0095128985,0.006337608,0.020476865,-0.0049417266,0.0017540945,0.007939363,-0.03390832,0.031895496,0.023097951,-0.013577808,-0.013936805,0.013349956,0.0151627045,-0.007926392,0.01812264,0.024262408,0.034703217,0.009244794,-0.020623324,-0.00451368,-0.034953035,0.002371493,-0.024207635,0.009012174,-0.011228881,-0.060378615,0.0038400544,-0.004088566,0.009822479,-0.023366034,0.014109884,-0.006604129,-0.0042077494,-0.015847526,0.0031865337,0.044947647,0.010370944,0.1552321,-0.0036719963,0.004943227,-0.007701386,0.046786543,-0.025721893,-0.0067987456,-0.0071177874,-0.0016966913,-0.0012029785,-0.016813453,-0.008592418,0.002923391,-0.002180496,0.033986323,0.027622884,0.0059385113,0.005392685,0.012989205,-0.0015498459,0.030675517,-0.015004829,-0.08114991,0.00861831,-0.010969276,0.0016127112,0.008175476,-0.002806114,-0.013039907,-0.023964435,-0.030267496,-0.0119482465,0.0017530666,-0.013276938,-0.0024087667,-0.009026731,0.007456492,-0.010703667,-0.016935552,-0.02563739,0.012580522,-0.012497117,0.013076922,-0.048155326,0.0021461442,0.016455539,0.023945099,-0.02930446,-0.0392104,0.027206186,-0.01991137,0.012936083,-0.010755789,-0.014881557,-0.0229612,-0.025051974,-0.0009547194,0.014559944,0.02006883,-0.009055445,-0.007076415,0.002190012,0.013658953,-0.012535165,0.011522984,-0.019839961,0.029233912,-0.006464388,0.0011162319,0.0490371,6.931101e-05,0.020345133,-0.011613681,-0.010592264,0.00935176,0.0012881916,-0.00013123911,0.018185692,0.015910888,-0.015205744,0.035586726,0.01642294,0.023937678,-0.01919294,0.008597072,-0.00707126,-0.007868412,0.0047874665,0.014066932,-0.04115773,0.015550019,0.00812098,0.0068514207,0.0008167296,-0.009404631,0.1509607,-0.000115779076,-0.001614341,0.004100104,-0.022866305,0.022648098,-0.004284716,0.0036183842,0.023001984,0.029821457,-0.014201054,0.0023793739,-0.025067527,-0.0078593,0.0017491097,0.012452123,0.0056606424,-0.005097998,-0.0042476426,0.010043189,0.016433021,-0.021658447,-0.018351028,-0.029299932,0.0010620251,0.012672694,0.007032554,0.004848842,0.00021113557,0.0031082388,0.004164968,0.022665773,-0.016686292,0.0021652556,0.027577851,-0.0004181763,-0.0037939893,0.01419351,-0.02176346,0.0012050711,-0.008052123,-0.028488692,0.0006612074,-0.031694878,-0.015933296,-0.05081171,0.0297053,0.02324636,-0.017534299,-0.03447266,-0.0029785193,-0.006600879,0.04352821,0.012591016,0.016211683,-0.00027436897,0.00037169727,0.0051329434,-0.017885203,0.039056767,0.002279343,-0.0053651994,0.00058572507,-0.0026283797,-0.015939638,-0.012762452,-0.007261865,0.01865246,0.022023175,-0.0021077166,0.00041562592,0.047365393,-0.0025984386,0.009598223,0.027858395,-0.01993306,0.0073293857,-0.013381842,-0.0018262251,0.00559068,0.001662649,0.00635732,-0.02332794,0.011706606,-0.055704217,-0.011640545,-0.0054303007,0.008992066,0.039518595,0.0008842814,0.0157501,0.0081097055,-0.0013180681,-0.012981609,-0.0042021885,-0.013678009,0.028078673,-0.023955667,-0.026826097,-0.0014781574,-0.00022620283,-0.0077229924,-0.009013004,-0.031327505,0.005706276,-0.013058321,-0.00433606,-0.0024388807,-0.028780434,-0.013333683,0.026974397,-0.007402093,-0.0038590538,-0.0023718993,0.020415513,-0.026636397,-0.0031234557,0.012301387,0.027116498,0.0041768276,-0.0133955665,-0.00032422433,0.01660629,0.045180086,0.05130555,-0.013163193,3.0717874e-05,0.004991421,-0.049092215,-0.02285327,-0.0033667644,-0.0031243581,0.010116274,0.02611998,-0.003077975,0.011807873,-0.015762767,0.016662939,0.017122094,0.020885965,-0.013130943,-0.03405793,0.014702898,0.003781628,0.030629665,-0.011797649,-0.019670937,0.026123347,-0.0047075385,0.029203046,0.0087146675,0.040335454,0.009392294,0.049213745,-0.0048515154,0.025149662,0.0032854874,-0.015995404,0.01843579,-0.0015759588,-0.0008475467,-0.027383296,-0.014656653,0.016101724,-0.007179578,0.010581841,-0.014976831,0.022721559,0.007289912,0.0040405113,-0.023156706,-0.0007513749,-0.011567392,-0.003928823,0.00840351,0.022355134,0.023812534,-0.012907817,0.007742944,-0.017359437,0.012980415,0.010429886,-0.0026354324,-0.0032232176,-0.008570091,-0.009367566,0.0043951864,-0.009982443,-0.0059291148,0.005440361,-0.01167833,0.021665663,-0.00017645456,0.008686001,-0.0063667786,-0.0047470615,-0.0046380446,0.019914059,0.01574551,0.02009527,-0.011080017,0.0001863244,-0.004860298,-0.0098720165,0.01538887,0.009563525,0.00786438,0.021111205,-0.00336489,-0.023522917,-0.00961713,0.05112413,-0.03200129,-0.021872235,-0.0046036895,0.02468391,0.012456251,-0.0238148,0.040660474,0.0008340468,-0.008450564,0.035429955,-0.008914397,0.016732432,0.008045706,0.0021337802,0.018601563,0.007597971,0.025371516,-0.0027238454,0.011410746,0.029607737,0.015540943,0.00765767,0.08467033,0.003096204,-0.012696857,0.017392328,0.01232874,-0.0064283693,0.012017098,-0.004597265,0.0061091376,-0.00083027873,-0.01739584,-0.029978676,-0.032528985,0.07082825,0.019498128,0.009568272,0.0034224635,-0.0013796708,-0.032733243,0.019624539,-0.018935136,0.0073752436,-0.027999472,-0.006326768,-0.0014279045,-0.014527733,-0.019026387,0.0113556,-0.0035549556,-0.004856375,0.0040092156,0.037470594,-0.032089483,0.00096046744,0.0020890809,-0.015625006,0.011226555,-0.013270302,0.014619503,-0.010680272,0.020962542,-0.015906878,-0.010450584,-0.018920984,-0.00044814998,0.006643379,0.010278992,-0.037583888,-0.006245945,0.002715541,-0.008501511,-0.026626937,0.010619448,-0.007811868,-0.01905659,-0.0026959036,0.11247083,0.016895767,0.033975538,0.03344979,-0.005787471,-0.022569146,0.006826015,-0.029401219,-0.020371908,-0.00818358,0.010414006,-0.0032805486,-0.021260258,0.02356556,0.007273616,-0.0019189928,0.022124564,0.004821489,0.012518068,0.0067814575,-0.0005566074,-0.017417554,0.006455505,0.012527985,0.004372798,0.006272333,-0.0027118074,-0.015020265,0.007330835,-0.0059014643,0.0010103958,-0.0104821455,0.040565934,0.0091651315,0.041197285,9.5503616e-05,-0.0030822456,0.034285586,-0.011897876,-0.031814307,-0.00796397,0.0055158907,-0.018154917,0.013957938,0.030849235,0.031215051,-0.012282464,-0.004598168,0.0028360712,-0.008123774,-0.021994404,0.0046334155,0.009253676,0.018801985,-0.0053203874,0.013646335,-0.0064252415,0.024292264,0.16041557,-0.02830991,0.017371656,0.012015437,0.010893588,-0.0153344665,0.010223147,-0.022177802,0.004264116,-0.0030762418,-0.021899533,-0.002108469,-0.0024244636,0.011899761,0.010662702,0.0023748185,-0.011821123,0.0030157436,0.037464038,-0.016670048,0.033515207,0.026429974,-0.015965708,-0.0055030887,-0.017169526,0.009760997,0.018375115,0.016716892,0.010000626,0.0060773212,-0.0042142654,-0.015964853,0.010967604,0.0033112785,-0.013435912,0.033322368,-0.0026623975,-0.0037541972,0.0073359404,0.011070733,-0.009450566,-0.01105327,-0.01935825,-0.02781318,0.021052737,0.017999941,-0.00016282726,-0.005562323,0.028401686,0.03882139,0.015047756,-0.007152445,-0.0016219312,-0.04283788,0.002859168,0.009480341,0.0065629384,0.0022357805,-0.009129108,-0.025273208,0.007817708,-0.0009179013,-0.01601608,-0.016940912,0.009829921,-0.021164581,-0.015047779,-0.040672462,-0.0015895806,0.021952808,0.0078113885,0.017309941,-0.007822231,-0.01874392,0.018947478,-0.0061198114,-0.026916077,-0.016119815,0.0110335825,-0.012745249,0.01796837,-0.023335373,-0.009638324,-0.00813671,0.013723427,-0.0026250656,-0.0071033128,-0.010527103,-0.03250737,0.006955907,0.010497383,0.0077385,0.005331514,0.0017776345,-0.019765487,0.03228288,0.008077662,-0.0067965603,0.02091251,-0.00084019493,0.0102304965,0.024961222,-0.0077082906,0.015021262,0.0076833973,0.015359582,-0.015730632,-0.012086131,-0.009684002,-0.026476638]', 'google/gemini-embedding-2', '2026-09-18 06:51:31.518803+00');
 
 
+ALTER TABLE public.kb_embeddings ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: knowledge_ingestion_jobs; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.knowledge_ingestion_jobs DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.knowledge_ingestion_jobs ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: knowledge_ingestion_events; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.knowledge_ingestion_events DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.knowledge_ingestion_events ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.permissions DISABLE TRIGGER ALL;
 
 INSERT INTO public.permissions (key, group_name, name, description, created_at) VALUES ('dashboard.view', 'Operations', 'View dashboard', 'View staff command centre', '2026-09-18 08:21:20.691895+00');
 INSERT INTO public.permissions (key, group_name, name, description, created_at) VALUES ('cases.review', 'Operations', 'Review cases', 'Review and route public and media cases', '2026-09-18 08:21:20.691895+00');
@@ -417,9 +526,13 @@ INSERT INTO public.permissions (key, group_name, name, description, created_at) 
 INSERT INTO public.permissions (key, group_name, name, description, created_at) VALUES ('widgets.manage', 'Administration', 'Manage widget sites', 'Register and configure websites allowed to embed the assistant', '2026-09-18 08:42:59.201978+00');
 
 
+ALTER TABLE public.permissions ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: rate_counters; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.rate_counters DISABLE TRIGGER ALL;
 
 INSERT INTO public.rate_counters (key_hash, window_start, count) VALUES ('a9cbe1d7b949b139475abfc93825a8efb8b059ec226faf65a5043c76e1b50d8d', '2026-09-18 07:00:00+00', 1);
 INSERT INTO public.rate_counters (key_hash, window_start, count) VALUES ('67297cb5e887be97d5c6f903ded7e123798b915ec73c8112e332590b182a8403', '2026-09-18 07:10:00+00', 2);
@@ -429,15 +542,23 @@ INSERT INTO public.rate_counters (key_hash, window_start, count) VALUES ('a9cbe1
 INSERT INTO public.rate_counters (key_hash, window_start, count) VALUES ('a9cbe1d7b949b139475abfc93825a8efb8b059ec226faf65a5043c76e1b50d8d', '2026-09-18 08:50:00+00', 8);
 
 
+ALTER TABLE public.rate_counters ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: releases; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.releases DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.releases ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.roles DISABLE TRIGGER ALL;
 
 INSERT INTO public.roles (id, key, name, description, is_system, is_active, created_by, created_at, updated_at) VALUES ('3dc6f2c2-2635-40f4-8c00-a1da1f909c03', 'super_administrator', 'Super Administrator', 'Full platform, identity and governance control', true, true, NULL, '2026-09-18 08:21:20.691895+00', '2026-09-18 08:21:20.691895+00');
 INSERT INTO public.roles (id, key, name, description, is_system, is_active, created_by, created_at, updated_at) VALUES ('21fce4f7-83a4-4389-a8d6-965958d952e7', 'knowledge_administrator', 'Knowledge Administrator', 'Sources, ingestion, verification, vectors and guidelines', true, true, NULL, '2026-09-18 08:21:20.691895+00', '2026-09-18 08:21:20.691895+00');
@@ -448,9 +569,13 @@ INSERT INTO public.roles (id, key, name, description, is_system, is_active, crea
 INSERT INTO public.roles (id, key, name, description, is_system, is_active, created_by, created_at, updated_at) VALUES ('fb9e89b9-5589-4eae-917c-d4106e4ac3ff', 'read_only_auditor', 'Read-only Auditor', 'Read-only governance and audit access', true, true, NULL, '2026-09-18 08:21:20.691895+00', '2026-09-18 08:21:20.691895+00');
 
 
+ALTER TABLE public.roles ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: role_permissions; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.role_permissions DISABLE TRIGGER ALL;
 
 INSERT INTO public.role_permissions (role_id, permission_key, granted_at) VALUES ('3dc6f2c2-2635-40f4-8c00-a1da1f909c03', 'dashboard.view', '2026-09-18 08:21:20.691895+00');
 INSERT INTO public.role_permissions (role_id, permission_key, granted_at) VALUES ('3dc6f2c2-2635-40f4-8c00-a1da1f909c03', 'cases.review', '2026-09-18 08:21:20.691895+00');
@@ -531,22 +656,34 @@ INSERT INTO public.role_permissions (role_id, permission_key, granted_at) VALUES
 INSERT INTO public.role_permissions (role_id, permission_key, granted_at) VALUES ('21fce4f7-83a4-4389-a8d6-965958d952e7', 'widgets.manage', '2026-09-18 08:42:59.201978+00');
 
 
+ALTER TABLE public.role_permissions ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: staff_invitations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.staff_invitations DISABLE TRIGGER ALL;
 
+
+
+ALTER TABLE public.staff_invitations ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.user_roles DISABLE TRIGGER ALL;
+
 INSERT INTO public.user_roles (id, user_id, role_id, granted_by, granted_at) VALUES ('5ae4f97b-cef4-46b6-b21e-63fce461f827', '5276c2c5-ac56-44d1-b8c7-cd94fa60e21e', '3dc6f2c2-2635-40f4-8c00-a1da1f909c03', NULL, '2026-09-18 08:21:20.691895+00');
 
+
+ALTER TABLE public.user_roles ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: visitor_identifiers; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.visitor_identifiers DISABLE TRIGGER ALL;
 
 INSERT INTO public.visitor_identifiers (id, visitor_id, kind, value, created_at) VALUES ('825548f6-c54a-425b-be0a-2f1f05e2a8a8', '1fb3979c-bb70-47f8-a023-2030de610adc', 'browser_token', 'fddee697-72ab-4997-8439-eb3aa9fbe340', '2026-09-18 07:34:01.997303+00');
 INSERT INTO public.visitor_identifiers (id, visitor_id, kind, value, created_at) VALUES ('85183c4b-58b5-449b-8603-f9dac65392b1', '2a9ad53b-6f71-45c2-8138-1b78985fc4b0', 'browser_token', 'b332947d-2423-4c34-81f5-7ab0852209c6', '2026-09-18 07:34:26.176355+00');
@@ -560,8 +697,11 @@ INSERT INTO public.visitor_identifiers (id, visitor_id, kind, value, created_at)
 INSERT INTO public.visitor_identifiers (id, visitor_id, kind, value, created_at) VALUES ('247a621d-4c55-449c-a4fd-610401e67d35', 'f5a25ac0-87e0-4df3-893f-d97ec4976ee8', 'browser_token', '57ec14e9-e830-462c-9d8d-1ec37ac9e308', '2026-09-18 07:41:56.022857+00');
 
 
+ALTER TABLE public.visitor_identifiers ENABLE TRIGGER ALL;
+
 --
 -- PostgreSQL database dump complete
 --
 
+\unrestrict GMcTfJyeunMm1myBDQG5IhLT9i332K3KdQdTjuXdWyIOxgrda3QwEM7k21ahr6T
 
