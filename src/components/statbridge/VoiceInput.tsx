@@ -1,10 +1,16 @@
 /**
- * Optional push-to-talk input. The microphone never starts on its own, the
- * transcript is always shown for correction first, and the control hides
- * itself when the browser cannot support it.
+ * Optional push-to-talk input.
+ *
+ * The microphone never starts on its own. While it is open the recording
+ * state is visible and the live level is metered. What was heard is placed
+ * in the question box for correction — names, dates and figures are often
+ * misheard — and only the corrected text is ever sent through Ask.
+ * The control hides itself when the browser cannot support it.
  */
 import { Mic, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { AudioVisualizer, formatElapsed } from "@/components/statbridge/AudioVisualizer";
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -27,23 +33,97 @@ function getRecognition(): SpeechRecognitionLike | null {
   return Ctor ? new Ctor() : null;
 }
 
-export function VoiceInput({ onTranscript }: { onTranscript: (text: string) => void }) {
+export function VoiceInput({
+  onTranscript,
+  onListeningChange,
+  onLevel,
+  language = "en-ZA",
+}: {
+  onTranscript: (text: string) => void;
+  onListeningChange?: (listening: boolean) => void;
+  onLevel?: (level: number) => void;
+  language?: string;
+}) {
   const [supported, setSupported] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [level, setLevel] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [denied, setDenied] = useState(false);
+
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const contextRef = useRef<AudioContext | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const teardown = useCallback(() => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    void contextRef.current?.close().catch(() => undefined);
+    contextRef.current = null;
+    setLevel(0);
+    setElapsed(0);
+    onLevel?.(0);
+  }, [onLevel]);
 
   useEffect(() => {
     setSupported(getRecognition() !== null);
-    return () => recognitionRef.current?.stop();
-  }, []);
+    return () => {
+      recognitionRef.current?.stop();
+      teardown();
+    };
+  }, [teardown]);
 
-  if (!supported) return <span className="text-xs text-muted-foreground">Type your question</span>;
+  useEffect(() => {
+    onListeningChange?.(recording);
+  }, [recording, onListeningChange]);
+
+  if (!supported) {
+    return <span className="text-xs text-muted-foreground">Type your question</span>;
+  }
+
+  async function meter() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const Ctx =
+        window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const context = new Ctx();
+      contextRef.current = context;
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 512;
+      context.createMediaStreamSource(stream).connect(analyser);
+      const buffer = new Uint8Array(analyser.frequencyBinCount);
+
+      const tick = () => {
+        analyser.getByteTimeDomainData(buffer);
+        let sum = 0;
+        for (let i = 0; i < buffer.length; i += 1) {
+          const v = (buffer[i]! - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / buffer.length);
+        const next = Math.min(1, rms * 3.2);
+        setLevel(next);
+        onLevel?.(next);
+        frameRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      setDenied(true);
+    }
+  }
 
   function start() {
     const recognition = getRecognition();
     if (!recognition) return;
+    setDenied(false);
     recognitionRef.current = recognition;
-    recognition.lang = "en-ZA";
+    recognition.lang = language;
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.onresult = (event) => {
@@ -52,30 +132,57 @@ export function VoiceInput({ onTranscript }: { onTranscript: (text: string) => v
         .trim();
       if (text) onTranscript(text);
     };
-    recognition.onerror = () => setRecording(false);
-    recognition.onend = () => setRecording(false);
+    recognition.onerror = () => {
+      setRecording(false);
+      teardown();
+    };
+    recognition.onend = () => {
+      setRecording(false);
+      teardown();
+    };
     recognition.start();
     setRecording(true);
+    timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+    void meter();
   }
 
   function stop() {
     recognitionRef.current?.stop();
     setRecording(false);
+    teardown();
   }
 
   return (
-    <button
-      type="button"
-      onClick={recording ? stop : start}
-      aria-pressed={recording}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-        recording
-          ? "border-destructive/50 bg-destructive/10 text-destructive"
-          : "border-input text-muted-foreground hover:bg-secondary"
-      }`}
-    >
-      {recording ? <Square aria-hidden className="size-3" /> : <Mic aria-hidden className="size-3.5" />}
-      {recording ? "Recording — tap to stop" : "Speak"}
-    </button>
+    <div className="flex min-w-0 items-center gap-3">
+      <button
+        type="button"
+        onClick={recording ? stop : start}
+        aria-pressed={recording}
+        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+          recording
+            ? "border-official/60 bg-official/15 text-official"
+            : "border-input text-muted-foreground hover:bg-secondary hover:text-foreground"
+        }`}
+      >
+        {recording ? <Square aria-hidden className="size-3" /> : <Mic aria-hidden className="size-3.5" />}
+        {recording ? "Stop" : "Hold to speak"}
+      </button>
+
+      {recording && (
+        <>
+          <AudioVisualizer level={level} bars={14} tone="official" className="h-5 w-24" />
+          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{formatElapsed(elapsed)}</span>
+          <span className="sr-only" role="status">
+            Recording. What is heard will appear in the question box for you to correct before sending.
+          </span>
+        </>
+      )}
+
+      {denied && !recording && (
+        <span className="text-[11px] text-muted-foreground">
+          The microphone is not available. Type your question instead.
+        </span>
+      )}
+    </div>
   );
 }
