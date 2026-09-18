@@ -159,6 +159,9 @@ export const KNOWN_BLOCK_TYPES = [
   "gap",
   "case_acknowledgement",
   "follow_up_actions",
+  "image",
+  "video",
+  "dataset",
 ] as const;
 
 export const answerOutcomes = ["answered", "clarification", "gap", "escalated", "error"] as const;
