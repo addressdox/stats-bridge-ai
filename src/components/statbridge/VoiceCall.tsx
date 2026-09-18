@@ -1,5 +1,5 @@
 /**
- * Live voice call with Naledi.
+ * Live voice call with Kaya.
  *
  * The call is a real-time two-way conversation: she greets, listens, speaks and
  * can be interrupted. She cannot state a figure of her own — every statistic
@@ -25,7 +25,7 @@ const STATE_LABEL: Record<CallState, string> = {
   unavailable: "Voice is not available here",
 };
 
-type Spoken = { who: "you" | "naledi"; text: string };
+type Spoken = { who: "you" | "kaya"; text: string };
 
 export function VoiceCall({ onTypeInstead }: { onTypeInstead: (draft?: string) => void }) {
   return (
@@ -59,7 +59,7 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
       const text = (payload.message ?? "").trim();
       if (!text) return;
       setTurns((existing) =>
-        [...existing, { who: payload.source === "user" ? ("you" as const) : ("naledi" as const), text }].slice(-6),
+        [...existing, { who: payload.source === "user" ? ("you" as const) : ("kaya" as const), text }].slice(-6),
       );
     },
   });
@@ -171,7 +171,7 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
         : "ended";
 
   const lastHeard = [...turns].reverse().find((turn) => turn.who === "you")?.text ?? "";
-  const lastSaid = [...turns].reverse().find((turn) => turn.who === "naledi")?.text ?? "";
+  const lastSaid = [...turns].reverse().find((turn) => turn.who === "kaya")?.text ?? "";
 
   return (
     <div className="relative flex h-full flex-col items-center justify-center px-5 py-8 text-center">

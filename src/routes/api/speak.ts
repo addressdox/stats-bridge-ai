@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
  * Only wording the assistant has already produced is ever sent here; the
  * credential stays on the server.
  */
-const VOICE_ID = "OcBcxJXlaNwru6LlLs4L"; // Naledi — calm, clear, South African English
+const VOICE_ID = "QrziN6Een025PRsTUEHI"; // Kaya — native Cape Town South African English
 
 export const Route = createFileRoute("/api/speak")({
   server: {
@@ -32,8 +32,8 @@ export const Route = createFileRoute("/api/speak")({
             headers: { "xi-api-key": key, "Content-Type": "application/json" },
             body: JSON.stringify({
               text,
-              model_id: "eleven_turbo_v2_5",
-              voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.25, use_speaker_boost: true },
+              model_id: "eleven_multilingual_v2",
+              voice_settings: { stability: 0.42, similarity_boost: 0.82, style: 0.2, use_speaker_boost: true, speed: 0.97 },
             }),
           },
         );
