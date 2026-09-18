@@ -62,7 +62,7 @@ export const sendToOfficial = createServerFn({ method: "POST" })
       guidelineId: null,
       startedAt: Date.now(),
       kind: "public_escalation",
-      requester: data.contact ? { contact: data.contact, consent: data.consent } : undefined,
+      ...(data.contact ? { requester: { contact: data.contact, consent: data.consent } } : {}),
     });
   });
 

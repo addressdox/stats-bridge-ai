@@ -29,7 +29,7 @@ export const suggestDraft = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => draftInput.parse(input))
   .handler(async ({ data, context }): Promise<DraftSuggestion> => {
     const role = await context.supabase.rpc("staff_role_of", { _uid: context.userId });
-    if (role.data !== "communications_official" && role.data !== "communications_manager") {
+    if (role.data !== "official" && role.data !== "manager") {
       throw new Error("Only a communications official may request a draft.");
     }
 

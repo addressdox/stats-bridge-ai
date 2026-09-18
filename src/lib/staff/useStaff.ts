@@ -15,9 +15,9 @@ export type StaffProfile = {
 };
 
 export const ROLE_LABELS: Record<StaffRole, string> = {
-  communications_official: "Communications official",
-  knowledge_administrator: "Knowledge administrator",
-  communications_manager: "Communications manager",
+  official: "Communications official",
+  administrator: "Knowledge administrator",
+  manager: "Communications manager",
 };
 
 /**
@@ -57,9 +57,9 @@ export function useStaff() {
     isLoading: query.isPending,
     role: query.data?.role ?? null,
     can: {
-      review: query.data?.role === "communications_official" || query.data?.role === "communications_manager",
-      release: query.data?.role === "communications_manager",
-      knowledge: query.data?.role === "knowledge_administrator",
+      review: query.data?.role === "official" || query.data?.role === "manager",
+      release: query.data?.role === "manager",
+      knowledge: query.data?.role === "administrator",
     },
   };
 }

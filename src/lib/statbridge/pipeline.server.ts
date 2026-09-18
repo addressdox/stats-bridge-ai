@@ -653,12 +653,12 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
     _reasons: args.reasons.length ? args.reasons : ["complex"],
     _token_hash: hash,
     _channel: input.channel,
-    _name: args.requester?.name,
-    _outlet: args.requester?.outlet,
-    _contact: args.requester?.contact,
     _consent: args.requester?.consent ?? false,
-    _deadline: args.deadline ?? undefined,
     _notice: "statbridge-privacy-v1",
+    ...(args.requester?.name ? { _name: args.requester.name } : {}),
+    ...(args.requester?.outlet ? { _outlet: args.requester.outlet } : {}),
+    ...(args.requester?.contact ? { _contact: args.requester.contact } : {}),
+    ...(args.deadline ? { _deadline: args.deadline } : {}),
   });
 
   const opened = Array.isArray(data) ? data[0] : data;
