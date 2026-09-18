@@ -123,6 +123,21 @@ function AccessibleTable({ columns, rows }: { columns: string[]; rows: Array<Rec
   );
 }
 
+/** Builds the download in the browser from the verified rows already shown. */
+function downloadCsv(fileName: string, columns: string[], rows: Array<Record<string, string>>) {
+  const escape = (value: string) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const csv = [
+    columns.map(escape).join(","),
+    ...rows.map((row) => columns.map((column) => escape(row[column] ?? "")).join(",")),
+  ].join("\r\n");
+  const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export function RenderBlock({ block }: { block: PublicRenderBlock }) {
   if (!KNOWN_BLOCK_TYPES.includes(block.type)) {
     return (
