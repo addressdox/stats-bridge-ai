@@ -7,10 +7,12 @@
  * misheard — and only the corrected text is ever sent through Ask.
  * The control hides itself when the browser cannot support it.
  */
-import { Mic, Square } from "lucide-react";
+import { Mic, MicOff, Square } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AudioVisualizer, formatElapsed } from "@/components/statbridge/AudioVisualizer";
+
+export type VoiceStatus = "ready" | "requesting" | "listening" | "ended" | "denied" | "error";
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -35,14 +37,16 @@ function getRecognition(): SpeechRecognitionLike | null {
 
 export function VoiceInput({
   onTranscript,
-  onListeningChange,
+  onStatusChange,
   onLevel,
   language = "en-ZA",
+  prominent = false,
 }: {
   onTranscript: (text: string) => void;
-  onListeningChange?: (listening: boolean) => void;
+  onStatusChange?: (status: VoiceStatus) => void;
   onLevel?: (level: number) => void;
   language?: string;
+  prominent?: boolean;
 }) {
   const [supported, setSupported] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -78,12 +82,8 @@ export function VoiceInput({
     };
   }, [teardown]);
 
-  useEffect(() => {
-    onListeningChange?.(recording);
-  }, [recording, onListeningChange]);
-
   if (!supported) {
-    return <span className="text-xs text-muted-foreground">Type your question</span>;
+    return prominent ? <span className="text-xs text-muted-foreground">Voice input is unavailable. You can type below.</span> : null;
   }
 
   async function meter() {
@@ -115,6 +115,7 @@ export function VoiceInput({
       tick();
     } catch {
       setDenied(true);
+      onStatusChange?.("denied");
     }
   }
 
@@ -122,6 +123,7 @@ export function VoiceInput({
     const recognition = getRecognition();
     if (!recognition) return;
     setDenied(false);
+    onStatusChange?.("requesting");
     recognitionRef.current = recognition;
     recognition.lang = language;
     recognition.continuous = false;
@@ -134,14 +136,17 @@ export function VoiceInput({
     };
     recognition.onerror = () => {
       setRecording(false);
+      onStatusChange?.("error");
       teardown();
     };
     recognition.onend = () => {
       setRecording(false);
+      onStatusChange?.("ended");
       teardown();
     };
     recognition.start();
     setRecording(true);
+    onStatusChange?.("listening");
     timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     void meter();
   }
@@ -149,23 +154,24 @@ export function VoiceInput({
   function stop() {
     recognitionRef.current?.stop();
     setRecording(false);
+    onStatusChange?.("ended");
     teardown();
   }
 
   return (
-    <div className="flex min-w-0 items-center gap-3">
+    <div className={`flex min-w-0 items-center gap-3 ${prominent ? "flex-col" : ""}`}>
       <button
         type="button"
         onClick={recording ? stop : start}
         aria-pressed={recording}
-        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+        className={`inline-flex shrink-0 items-center gap-2 rounded-full border font-semibold transition-all ${prominent ? "px-6 py-3 text-sm" : "px-3 py-1.5 text-xs"} ${
           recording
-            ? "border-official/60 bg-official/15 text-official"
-            : "border-input text-muted-foreground hover:bg-secondary hover:text-foreground"
+            ? "border-destructive/60 bg-destructive/10 text-destructive"
+            : "border-official/55 bg-official/10 text-official hover:bg-official/20"
         }`}
       >
         {recording ? <Square aria-hidden className="size-3" /> : <Mic aria-hidden className="size-3.5" />}
-        {recording ? "Stop" : "Hold to speak"}
+        {recording ? "End voice" : "Start voice"}
       </button>
 
       {recording && (
@@ -179,7 +185,8 @@ export function VoiceInput({
       )}
 
       {denied && !recording && (
-        <span className="text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <MicOff aria-hidden className="size-3" />
           The microphone is not available. Type your question instead.
         </span>
       )}
