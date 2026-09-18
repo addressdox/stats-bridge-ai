@@ -202,9 +202,18 @@ export const decideKnowledgeSource = createServerFn({ method: "POST" })
       if (version.ingest_state !== "done") throw new Error("Complete extraction before approval.");
       const { count } = await db.from("passages").select("id", { count: "exact", head: true }).eq("source_version_id", data.versionId);
       if (!count) throw new Error("This version has no extracted passages to approve.");
-      await db.from("source_versions").update({ status: "approved", approval_basis: "human_reviewed", approved_by: actor, approved_at: new Date().toISOString() }).eq("id", data.versionId);
+      const { count: unverified } = await db.from("observations").select("id", { count: "exact", head: true }).eq("source_version_id", data.versionId).is("verified_at", null);
+      if (unverified) throw new Error("Every extracted figure must be verified before this version can be approved.");
+      const { error: approvalError } = await db.from("source_versions").update({ status: "approved", approval_basis: "official", approved_by: actor, approved_at: new Date().toISOString() }).eq("id", data.versionId).eq("status", "pending");
+      if (approvalError) throw new Error(approvalError.message);
       await db.from("sources").update({ current_version_id: data.versionId }).eq("id", version.source_id);
       await db.from("knowledge_ingestion_jobs").update({ state: "approved" }).eq("source_version_id", data.versionId);
+      try {
+        const { backfillEmbeddings } = await import("@/lib/statbridge/embeddings.server");
+        await backfillEmbeddings(db, 120);
+      } catch {
+        // Approval remains valid; keyword search is available while vector indexing retries later.
+      }
     } else if (data.action === "reject") {
       await db.from("source_versions").update({ status: "rejected", change_note: data.reason }).eq("id", data.versionId);
     } else {
