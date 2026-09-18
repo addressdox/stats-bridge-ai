@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
-import { SiteChrome } from "@/components/statbridge/SiteChrome";
+import { SiteFooter, SiteHeader } from "@/components/statbridge/SiteChrome";
 
 const title = "StatBridge services — media, cases and developer tools";
 const description = "Open the StatBridge Media Desk, track a private case, explore developer tools or sign in as staff.";
@@ -29,7 +29,8 @@ const DESTINATIONS = [
 
 function DeskPage() {
   return (
-    <SiteChrome>
+    <>
+      <SiteHeader />
       <main className="mx-auto min-h-[calc(100svh-4rem)] max-w-5xl px-5 py-16 sm:py-24">
         <p className="eyebrow text-official">Public services</p>
         <h1 className="mt-3 max-w-3xl text-4xl font-semibold sm:text-6xl">Enter StatBridge</h1>
@@ -50,6 +51,7 @@ function DeskPage() {
           ))}
         </div>
       </main>
-    </SiteChrome>
+      <SiteFooter />
+    </>
   );
 }
