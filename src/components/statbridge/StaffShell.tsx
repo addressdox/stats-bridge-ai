@@ -1,12 +1,28 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, ClipboardList, FileClock, Loader2, LogOut, ScrollText, Shield } from "lucide-react";
+import {
+  BookOpen,
+  ClipboardList,
+  FileClock,
+  Gauge,
+  Loader2,
+  LogOut,
+  MessagesSquare,
+  ScrollText,
+  Shield,
+  UserRound,
+  Users,
+} from "lucide-react";
 
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABELS, useStaff } from "@/lib/staff/useStaff";
 
 const LINKS = [
+  { to: "/staff/overview", label: "Overview", icon: Gauge },
+  { to: "/staff/handoffs", label: "Handover queue", icon: UserRound },
+  { to: "/staff/conversations", label: "Conversations", icon: MessagesSquare },
+  { to: "/staff/visitors", label: "People", icon: Users },
   { to: "/staff/review", label: "Review queue", icon: ClipboardList },
   { to: "/staff/knowledge/sources", label: "Sources", icon: BookOpen },
   { to: "/staff/knowledge/guidelines", label: "Guidelines", icon: ScrollText },
