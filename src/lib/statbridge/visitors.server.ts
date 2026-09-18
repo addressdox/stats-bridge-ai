@@ -106,7 +106,8 @@ export async function resolveVisitor(
     patch["consent_given"] = true;
     patch["consent_at"] = new Date().toISOString();
   }
-  await db.from("visitors").update(patch as never).eq("id", visitorId);
+  const { error: updateError } = await db.from("visitors").update(patch as never).eq("id", visitorId);
+  if (updateError) throw new Error("Your visitor details could not be saved. Please try again.");
 
   const { data: visitor } = await db.from("visitors").select("full_name").eq("id", visitorId).maybeSingle();
 

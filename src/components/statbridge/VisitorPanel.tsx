@@ -15,11 +15,13 @@ import type { VisitorSession } from "@/lib/statbridge/useVisitor";
 export function ContactCard({
   session,
   onSaved,
+  beforeChat = false,
 }: {
   session: VisitorSession;
   onSaved: (name: string | null) => void;
+  beforeChat?: boolean;
 }) {
-  const [fullName, setFullName] = useState("");
+  const [fullName, setFullName] = useState(session.knownName ?? "");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [organisation, setOrganisation] = useState("");
@@ -58,25 +60,34 @@ export function ContactCard({
   }
 
   return (
-    <div className="rounded-2xl border border-hairline bg-surface/70 p-5">
+    <form onSubmit={(event) => { event.preventDefault(); if (ready && !save.isPending) save.mutate(); }} className="rounded-2xl border border-hairline bg-surface/70 p-5">
       <p className="flex items-center gap-1.5 eyebrow text-muted-foreground">
         <UserRound aria-hidden className="size-3.5" />
         Who are we speaking with?
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
-        A name and one way to reach you lets an official follow up and lets us recognise you next time.
+        Add your name and an email address or phone number. We'll remember you on this browser and use your details if an official needs to follow up.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <input
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
           placeholder="Full name"
+          aria-label="Full name"
+          autoComplete="name"
+          required
+          minLength={2}
+          maxLength={120}
           className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         />
         <input
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email address"
+          aria-label="Email address"
+          autoComplete="email"
+          type="email"
+          maxLength={200}
           inputMode="email"
           className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         />
@@ -84,6 +95,11 @@ export function ContactCard({
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
           placeholder="Phone number"
+          aria-label="Phone number"
+          autoComplete="tel"
+          type="tel"
+          minLength={6}
+          maxLength={40}
           inputMode="tel"
           className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         />
@@ -91,6 +107,9 @@ export function ContactCard({
           value={organisation}
           onChange={(event) => setOrganisation(event.target.value)}
           placeholder="Organisation (optional)"
+          aria-label="Organisation (optional)"
+          autoComplete="organization"
+          maxLength={200}
           className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         />
       </div>
@@ -106,16 +125,16 @@ export function ContactCard({
           are removed on request.
         </span>
       </label>
+      {save.isError && <p role="alert" className="mt-3 text-sm text-destructive">Your details could not be saved. Check your name and email address or phone number, then try again.</p>}
       <button
-        type="button"
+        type="submit"
         disabled={!ready || save.isPending}
-        onClick={() => save.mutate()}
         className="mt-4 inline-flex items-center gap-2 rounded-full bg-official px-4 py-2 text-sm font-semibold text-official-foreground disabled:opacity-50"
       >
         {save.isPending ? <Loader2 aria-hidden className="size-3.5 animate-spin" /> : <ShieldCheck aria-hidden className="size-3.5" />}
-        Save my details
+        {beforeChat ? "Save and start chatting" : "Save my details"}
       </button>
-    </div>
+    </form>
   );
 }
 
@@ -213,7 +232,7 @@ export function TalkToPerson({
       <p className="mt-1.5 text-xs text-muted-foreground">
         {joined
           ? "You are now speaking with a member of the communications team."
-          : "Your request is in the queue. You can keep this page open, or leave your details above and we will come back to you."}
+          : "Your request is in the queue. You can keep this page open. Your saved contact details let an official follow up."}
       </p>
 
       {joined && (

@@ -2,7 +2,7 @@
 export const SERVICE_INTENTS = ["greeting", "about", "usage", "languages", "thanks", "conversation"] as const;
 export type ServiceIntent = (typeof SERVICE_INTENTS)[number];
 
-const INTRODUCTION = "I'm Naledi by AddressDox. I help you find and understand published Statistics South Africa figures, definitions and releases. You can ask by voice or type, and I'll show the available source material with statistical answers. What would you like to know?";
+const INTRODUCTION = "I'm Naledi. I help you find and understand published Statistics South Africa figures, definitions and releases. You can ask by voice or type, and I'll show the available source material with statistical answers. What would you like to know?";
 
 const SERVICE_REPLIES: Record<ServiceIntent, string> = {
   greeting: `Hello! ${INTRODUCTION}`,

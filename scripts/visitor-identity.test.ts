@@ -16,6 +16,7 @@ function fixture(initialMisses = 0) {
   const missesReady = new Promise<void>((resolve) => (release = resolve));
   const settings = {
     claimError: false,
+    updateError: false,
     missingOwner: false,
     beforeClaim: null as (() => void) | null,
   };
@@ -71,6 +72,7 @@ function fixture(initialMisses = 0) {
     }
     private async run(): Promise<Result> {
       if (this.table === "visitors") {
+        if (this.operation === "update" && settings.updateError) return { data: null, error: { message: "update failed" } };
         if (this.operation === "insert") {
           const id = addVisitor(this.row);
           return { data: { id }, error: null };
@@ -210,6 +212,25 @@ test("a new visitor without consent remains unconsented after claiming its brows
     consent_at: null,
   });
   expect(f.identifiers.get(`browser_token:${browserToken}`)!.visitor_id).toBe(result.visitorId);
+});
+
+test("saved contact is remembered when the same browser returns without resending personal details", async () => {
+  const f = fixture();
+  const initial = await resolveVisitor(f.db, { browserToken });
+  await resolveVisitor(f.db, { browserToken, contact: { fullName: "Remembered Visitor", email: "visitor@example.invalid", consent: true } });
+  const returned = await resolveVisitor(f.db, { browserToken });
+  expect(returned).toEqual({ visitorId: initial.visitorId, returning: true, knownName: "Remembered Visitor" });
+  expect(f.visitors.size).toBe(1);
+  expect(f.visitors.get(returned.visitorId)).toMatchObject({ email: "visitor@example.invalid", consent_given: true });
+});
+
+test("failed contact persistence cannot report that onboarding succeeded", async () => {
+  const f = fixture();
+  const id = f.addVisitor();
+  f.bind("browser_token", browserToken, id);
+  f.settings.updateError = true;
+  await expect(resolveVisitor(f.db, { browserToken, contact: { fullName: "Unsaved Visitor", email: "visitor@example.invalid", consent: true } })).rejects.toThrow("could not be saved");
+  expect(f.visitors.get(id)?.full_name).toBeNull();
 });
 
 test("failed or unreadable browser claims fail closed before contact writes", async () => {

@@ -2,8 +2,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Bot, CircleAlert, PanelRightOpen, Send, SquareArrowOutUpRight } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { Bot, CircleAlert, Loader2, PanelRightOpen, Send, SquareArrowOutUpRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { StickToBottomContext } from "use-stick-to-bottom";
 
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
@@ -44,10 +45,27 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const [draft, setDraft] = useState(initialDraft);
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
-  const [contactSaved, setContactSaved] = useState(false);
   const parentAnswerRef = useRef<string | null>(null);
+  const roomRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const conversationRef = useRef<StickToBottomContext>(null);
   const reduce = useReducedMotion();
-  const { session } = useVisitorSession(compact ? "widget" : "chat");
+  const { session, setSession, loading, error, retry } = useVisitorSession(compact ? "widget" : "chat");
+  const readyForChat = Boolean(session?.knownName && session.hasContact);
+
+  useEffect(() => {
+    const room = roomRef.current;
+    const composer = composerRef.current;
+    if (!readyForChat || !room || !composer) return;
+    const measure = () => {
+      const height = composer.getBoundingClientRect().height;
+      if (height > 0) room.style.setProperty("--chat-composer-height", `${height}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(composer);
+    return () => observer.disconnect();
+  }, [readyForChat]);
 
   const ask = useMutation({
     mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "auto", parentAnswerRef: parentAnswerRef.current, channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
@@ -76,26 +94,50 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
 
   function submit(question: string) {
     const trimmed = question.trim();
-    if (!trimmed || ask.isPending) return;
+    if (!readyForChat || !trimmed || ask.isPending) return;
     setTurns((current) => [...current, { id: uid(), role: "user", text: trimmed }]);
     setDraft("");
     setVoiceStatus("ready");
     ask.mutate(trimmed);
+    requestAnimationFrame(() => void conversationRef.current?.scrollToBottom());
   }
 
   const lastQuestion = [...turns].reverse().find((turn) => turn.role === "user");
   const showCanvas = Boolean(latestWithEvidence) && canvasOpen && !compact;
   const state = roomState(voiceStatus, ask.isPending);
 
+  if (!session) {
+    return <div className="flex h-full flex-col items-center justify-center gap-3 px-5 text-center text-sm text-muted-foreground" role={error ? "alert" : "status"}>
+      {loading && <Loader2 aria-hidden className="size-5 animate-spin" />}
+      <p>{error ?? "Opening your conversation…"}</p>
+      {error && <button type="button" onClick={retry} className="rounded-full border border-hairline bg-surface px-4 py-2 font-semibold text-foreground">Try again</button>}
+    </div>;
+  }
+
+  if (!readyForChat) {
+    return <div className="h-full overflow-y-auto overscroll-contain px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-xl">
+        <h1 className="mb-2 text-2xl font-semibold">Before we begin</h1>
+        <p className="mb-5 text-sm text-muted-foreground">Introduce yourself once, then continue to the conversation.</p>
+        <ContactCard
+          session={session}
+          beforeChat
+          onSaved={(name) => setSession((current) => current ? { ...current, knownName: name, hasContact: true } : current)}
+        />
+      </div>
+    </div>;
+  }
+
   return (
-    <div className={showCanvas ? "grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,27rem)]" : "mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"}>
+    <div ref={roomRef} className={showCanvas ? "relative grid h-full min-h-0 min-w-0 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(22rem,27rem)]" : "relative mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"}>
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <Conversation className="min-h-0">
-          <ConversationContent className={turns.length === 0 ? "min-h-full justify-center px-5 py-8" : "mx-auto w-full max-w-3xl px-5 py-8"}>
+        <Conversation className="min-h-0" contextRef={conversationRef}>
+          <ConversationContent className={turns.length === 0 ? "min-h-full px-5 py-8" : "mx-auto w-full max-w-3xl px-5 py-8"}>
             {turns.length === 0 ? (
-              <div className="flex flex-col items-center text-center">
+              <div className="my-auto flex flex-col items-center text-center">
                 <AssistantPortrait state={state} size="small" className="!size-16" />
                 <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">What would you like to know?</h1>
+                {session.knownName && <p className="mt-2 text-sm text-foreground">Welcome{session.returning ? " back" : ""}, {session.knownName.split(" ")[0]}.</p>}
                 <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Ask about a published statistic, definition or release. Type your question below.</p>
                 <div className="mt-6 flex max-w-2xl flex-wrap justify-center gap-2">
                   {STARTERS.map((starter) => <button key={starter} type="button" onClick={() => submit(starter)} className="rounded-full border border-hairline bg-surface/60 px-3.5 py-2 text-left text-xs text-muted-foreground transition-colors hover:border-official/50 hover:text-foreground">{starter}</button>)}
@@ -116,9 +158,6 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
 
             {session && turns.length > 0 && (
               <div className="mt-6 space-y-3">
-                {!session.hasContact && !contactSaved && (
-                  <ContactCard session={session} onSaved={() => setContactSaved(true)} />
-                )}
                 <TalkToPerson
                   session={session}
                   compact={compact}
@@ -130,7 +169,7 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
           <ConversationScrollButton />
         </Conversation>
 
-        <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-3 sm:px-6">
+        <div ref={composerRef} className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-3 sm:px-6">
           <PromptInput onSubmit={({ text }) => submit(text)} className="mx-auto max-w-3xl rounded-2xl border-input bg-surface/90 shadow-[var(--glass-shadow)] backdrop-blur-xl">
             <PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" />
             <PromptInputFooter className="justify-end">
@@ -141,8 +180,8 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
         </div>
       </section>
 
-      {latestWithEvidence && !compact && <EvidenceCanvas answer={latestWithEvidence} open={canvasOpen} onClose={() => setCanvasOpen(false)} />}
-      {latestWithEvidence && !canvasOpen && !compact && <button type="button" onClick={() => setCanvasOpen(true)} className="fixed bottom-28 right-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-official/50 bg-surface px-3.5 py-2 text-xs font-semibold text-official shadow-lg"><PanelRightOpen className="size-3.5" />Show evidence</button>}
+      {latestWithEvidence && !compact && <EvidenceCanvas answer={latestWithEvidence} open={canvasOpen} onClose={() => setCanvasOpen(false)} contained />}
+      {latestWithEvidence && !canvasOpen && !compact && <button type="button" onClick={() => setCanvasOpen(true)} className="absolute bottom-[calc(var(--chat-composer-height,10rem)_+_1rem)] right-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-official/50 bg-surface px-3.5 py-2 text-xs font-semibold text-official shadow-lg"><PanelRightOpen className="size-3.5" />Show evidence</button>}
     </div>
   );
 }

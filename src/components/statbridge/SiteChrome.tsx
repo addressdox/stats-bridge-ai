@@ -24,7 +24,6 @@ export function StatBridgeMark({ className = "" }: { className?: string }) {
       </span>
       <span className="font-display text-[17px] font-bold uppercase tracking-tight">
         Na<span className="text-accent">ledi</span>
-        <span className="block text-[9px] font-medium normal-case tracking-normal text-muted-foreground">by AddressDox</span>
       </span>
     </span>
   );
@@ -36,7 +35,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-background/70 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link to="/" className="rounded-md" aria-label="Naledi by AddressDox home">
+        <Link to="/" className="rounded-md" aria-label="Naledi home">
           <StatBridgeMark />
         </Link>
 

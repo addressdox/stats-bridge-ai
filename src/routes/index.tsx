@@ -13,7 +13,7 @@ const deskLinks = [
   { label: "Staff sign in", hint: "Review and knowledge base" },
 ];
 
-const title = "Naledi by AddressDox — Ask about South Africa's official statistics";
+const title = "Naledi — Ask about South Africa's official statistics";
 const description =
   "Ask questions about published Statistics South Africa figures, definitions and publications. Every answer quotes approved sources; media and sensitive requests go to a communications official.";
 
@@ -93,7 +93,7 @@ function EntryGate() {
         </motion.button>
 
         <p className="relative px-6 pb-6 text-center text-xs text-muted-foreground md:absolute md:bottom-4 md:left-0 md:right-0 md:pb-0">
-          Naledi by AddressDox. Demonstration build. Content shown here is loaded for demonstration and is not an official
+          Naledi. Demonstration build. Content shown here is loaded for demonstration and is not an official
           Statistics South Africa endorsement.
         </p>
       </div>

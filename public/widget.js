@@ -1,5 +1,5 @@
 /**
- * Naledi by AddressDox widget loader.
+ * Naledi widget loader.
  *
  * Drop this on any site:
  *   <script src="https://naledi.example/widget.js" data-statbridge async></script>
@@ -52,7 +52,7 @@
   ].join(";");
 
   var frame = document.createElement("iframe");
-  frame.title = "Naledi by AddressDox assistant";
+  frame.title = "Naledi assistant";
   frame.allow = "microphone; autoplay";
   frame.style.cssText = "width:100%;height:100%;border:0;display:block;background:#fff;";
   panel.appendChild(frame);

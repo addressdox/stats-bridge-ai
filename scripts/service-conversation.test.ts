@@ -30,7 +30,7 @@ describe("conversation without statistical evidence", () => {
     expect(result.serviceIntent).toBe("about");
     expect(result.searchQueries).toEqual([]);
     const reply = serviceReply(result.serviceIntent!);
-    expect(reply.text).toContain("Naledi by AddressDox");
+    expect(reply.text).toContain("Naledi");
     expect(reply.text).toContain("voice or type");
     expect(reply.text).not.toContain("No approved source");
     expect(reply.followUps.length).toBeLessThanOrEqual(3);

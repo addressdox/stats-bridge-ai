@@ -48,11 +48,12 @@ export const openConversation = createServerFn({ method: "POST" })
       pageUrl: data.pageUrl ?? null,
     });
 
-    const { data: row } = await db
+    const { data: row, error } = await db
       .from("visitors")
       .select("full_name, email, phone")
       .eq("id", visitor.visitorId)
       .maybeSingle();
+    if (error || !row) throw new Error("Your saved visitor details could not be loaded. Please try again.");
 
     return {
       conversationId,

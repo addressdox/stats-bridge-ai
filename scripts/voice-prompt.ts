@@ -7,7 +7,7 @@ const CALL_SAFETY = `The language and persona rules above override any old Engli
 export function buildHostedVoicePrompt(existingPrompt: string): string {
   const callInstructions = existingPrompt
     .replace(/\bKaya\b/g, ASSISTANT_NAME)
-    .replace(/StatBridge/g, "Naledi by AddressDox")
+    .replace(/StatBridge|Naledi by AddressDox/g, ASSISTANT_NAME)
     // Only the old standalone LANGUAGE section is replaced. Never consume the
     // similarly named LIVE CONVERSATION LANGUAGE section and the policy below it.
     .replace(/^LANGUAGE\n[\s\S]*?^MANNER\b/gm, "MANNER")
