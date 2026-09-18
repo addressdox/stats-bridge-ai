@@ -44,6 +44,6 @@ BEGIN
   UPDATE public.audit_events SET actor_id = v_new WHERE actor_id = v_old;
 END $$;
 
-ALTER TABLE public.audit_events ENABLE TRIGGER audit_immutable;
-
 COMMIT;
+
+ALTER TABLE public.audit_events ENABLE TRIGGER audit_immutable;
