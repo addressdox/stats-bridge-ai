@@ -77,6 +77,16 @@ export function VoiceCall({ onTypeInstead }: { onTypeInstead: (draft?: string) =
   const frameRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endedRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      if (audioRef.current.src.startsWith("blob:")) URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
+    if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+  }, []);
 
   const teardown = useCallback(() => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
@@ -88,8 +98,43 @@ export function VoiceCall({ onTypeInstead }: { onTypeInstead: (draft?: string) =
     void contextRef.current?.close().catch(() => undefined);
     contextRef.current = null;
     setLevel(0);
-    if (typeof window !== "undefined") window.speechSynthesis?.cancel();
-  }, []);
+    stopSpeaking();
+  }, [stopSpeaking]);
+
+  /** Speaks with the South African voice, falling back to the built-in one. */
+  const speak = useCallback(
+    async (text: string) => {
+      const finish = () => {
+        if (!endedRef.current) setState("listening");
+      };
+      try {
+        const response = await fetch("/api/speak", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        const blob = await response.blob();
+        if (endedRef.current) return;
+        const audio = new Audio(URL.createObjectURL(blob));
+        audioRef.current = audio;
+        audio.onended = finish;
+        audio.onerror = finish;
+        await audio.play();
+      } catch {
+        if (endedRef.current) return;
+        if (typeof window !== "undefined" && window.speechSynthesis) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = "en-ZA";
+          utterance.onend = finish;
+          window.speechSynthesis.speak(utterance);
+        } else {
+          finish();
+        }
+      }
+    },
+    [setState],
+  );
 
   const ask = useMutation({
     mutationFn: (question: string) =>
@@ -99,19 +144,14 @@ export function VoiceCall({ onTypeInstead }: { onTypeInstead: (draft?: string) =
       const text = spokenSummary(answer);
       setReply(text);
       setState("speaking");
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "en-ZA";
-        utterance.onend = () => {
-          if (!endedRef.current) setState("listening");
-        };
-        window.speechSynthesis.speak(utterance);
-      }
+      void speak(text);
     },
     onError: () => {
       if (endedRef.current) return;
-      setReply("StatBridge could not complete a checked answer just now. Please try again or switch to typing.");
+      const text = "StatBridge could not complete a checked answer just now. Please try again or switch to typing.";
+      setReply(text);
       setState("speaking");
+      void speak(text);
     },
   });
 
