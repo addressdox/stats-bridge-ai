@@ -8,9 +8,9 @@ import { createServerFn } from "@tanstack/react-start";
 export const runKnowledgeCrawl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const role = await context.supabase.rpc("staff_role_of", { _uid: context.userId });
-    if (role.data !== "administrator") {
-      throw new Error("Only a knowledge administrator may run the crawler.");
+    const allowed = await context.supabase.rpc("has_permission", { _uid: context.userId, _permission: "crawler.manage" });
+    if (allowed.data !== true) {
+      throw new Error("Your account cannot run the crawler.");
     }
     const { runCrawl } = await import("./crawler.server");
     return runCrawl();

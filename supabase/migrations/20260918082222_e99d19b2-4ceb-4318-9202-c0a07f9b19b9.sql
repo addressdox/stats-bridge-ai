@@ -1,0 +1,11 @@
+REVOKE EXECUTE ON FUNCTION public.has_permission(uuid,text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.is_super_admin(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.require_permission(text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.set_user_roles(uuid,uuid[]) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.set_staff_active(uuid,boolean,text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.staff_dashboard_summary(timestamptz,boolean) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.staff_review_queue() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.staff_insight_topics() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.staff_insight_turnaround() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.staff_insight_gaps() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.staff_decision_record(timestamptz,timestamptz,integer,integer) FROM anon;

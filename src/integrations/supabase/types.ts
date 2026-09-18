@@ -857,51 +857,90 @@ export type Database = {
           activated_by: string | null
           approval_basis: Database["public"]["Enums"]["approval_basis"]
           branding_rules: string | null
+          change_summary: string | null
+          channel_rules: Json
           created_at: string
           created_by: string | null
+          escalation_policy: string | null
+          evidence_rules: string | null
+          example_responses: Json
+          forbidden_phrases: string[]
           id: string
+          identity_rules: string | null
+          media_policy: string | null
           messaging_rules: string | null
+          multilingual_rules: string | null
           number_rules: string | null
+          prohibited_claims: string[]
+          required_phrases: string[]
           retired_at: string | null
+          sensitive_topic_policy: string | null
           status: Database["public"]["Enums"]["guideline_status"]
           style_rules: string | null
           terminology: Json
           title: string
           version_number: number
+          voice_rules: string | null
         }
         Insert: {
           activated_at?: string | null
           activated_by?: string | null
           approval_basis?: Database["public"]["Enums"]["approval_basis"]
           branding_rules?: string | null
+          change_summary?: string | null
+          channel_rules?: Json
           created_at?: string
           created_by?: string | null
+          escalation_policy?: string | null
+          evidence_rules?: string | null
+          example_responses?: Json
+          forbidden_phrases?: string[]
           id?: string
+          identity_rules?: string | null
+          media_policy?: string | null
           messaging_rules?: string | null
+          multilingual_rules?: string | null
           number_rules?: string | null
+          prohibited_claims?: string[]
+          required_phrases?: string[]
           retired_at?: string | null
+          sensitive_topic_policy?: string | null
           status?: Database["public"]["Enums"]["guideline_status"]
           style_rules?: string | null
           terminology?: Json
           title: string
           version_number: number
+          voice_rules?: string | null
         }
         Update: {
           activated_at?: string | null
           activated_by?: string | null
           approval_basis?: Database["public"]["Enums"]["approval_basis"]
           branding_rules?: string | null
+          change_summary?: string | null
+          channel_rules?: Json
           created_at?: string
           created_by?: string | null
+          escalation_policy?: string | null
+          evidence_rules?: string | null
+          example_responses?: Json
+          forbidden_phrases?: string[]
           id?: string
+          identity_rules?: string | null
+          media_policy?: string | null
           messaging_rules?: string | null
+          multilingual_rules?: string | null
           number_rules?: string | null
+          prohibited_claims?: string[]
+          required_phrases?: string[]
           retired_at?: string | null
+          sensitive_topic_policy?: string | null
           status?: Database["public"]["Enums"]["guideline_status"]
           style_rules?: string | null
           terminology?: Json
           title?: string
           version_number?: number
+          voice_rules?: string | null
         }
         Relationships: [
           {
@@ -1100,6 +1139,108 @@ export type Database = {
           },
         ]
       }
+      insight_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_key: string
+          created_at: string
+          description: string
+          evidence: Json
+          id: string
+          metric_name: string | null
+          metric_value: number | null
+          related_entity_id: string | null
+          related_entity_kind: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          state: Database["public"]["Enums"]["alert_state"]
+          threshold_value: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_key: string
+          created_at?: string
+          description: string
+          evidence?: Json
+          id?: string
+          metric_name?: string | null
+          metric_value?: number | null
+          related_entity_id?: string | null
+          related_entity_kind?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          state?: Database["public"]["Enums"]["alert_state"]
+          threshold_value?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_key?: string
+          created_at?: string
+          description?: string
+          evidence?: Json
+          id?: string
+          metric_name?: string | null
+          metric_value?: number | null
+          related_entity_id?: string | null
+          related_entity_kind?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          state?: Database["public"]["Enums"]["alert_state"]
+          threshold_value?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insight_alerts_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insight_alerts_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insight_snapshots: {
+        Row: {
+          generated_at: string
+          id: string
+          metrics: Json
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          metrics: Json
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          metrics?: Json
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       kb_embeddings: {
         Row: {
           content: string
@@ -1134,6 +1275,129 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "kb_embeddings_source_version_id_fkey"
+            columns: ["source_version_id"]
+            isOneToOne: false
+            referencedRelation: "source_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_ingestion_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          detail: Json
+          id: string
+          job_id: string
+          message: string
+          state: Database["public"]["Enums"]["ingestion_job_state"]
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          job_id: string
+          message: string
+          state: Database["public"]["Enums"]["ingestion_job_state"]
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          job_id?: string
+          message?: string
+          state?: Database["public"]["Enums"]["ingestion_job_state"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_ingestion_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_ingestion_events_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_ingestion_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_ingestion_jobs: {
+        Row: {
+          checksum: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          detected_metadata: Json
+          error_message: string | null
+          file_name: string | null
+          file_size: number | null
+          id: string
+          kind: Database["public"]["Enums"]["ingestion_job_kind"]
+          mime_type: string | null
+          progress: number
+          source_url: string | null
+          source_version_id: string | null
+          started_at: string | null
+          state: Database["public"]["Enums"]["ingestion_job_state"]
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          checksum?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          detected_metadata?: Json
+          error_message?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          id?: string
+          kind: Database["public"]["Enums"]["ingestion_job_kind"]
+          mime_type?: string | null
+          progress?: number
+          source_url?: string | null
+          source_version_id?: string | null
+          started_at?: string | null
+          state: Database["public"]["Enums"]["ingestion_job_state"]
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          checksum?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          detected_metadata?: Json
+          error_message?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          id?: string
+          kind?: Database["public"]["Enums"]["ingestion_job_kind"]
+          mime_type?: string | null
+          progress?: number
+          source_url?: string | null
+          source_version_id?: string | null
+          started_at?: string | null
+          state?: Database["public"]["Enums"]["ingestion_job_state"]
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_ingestion_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_ingestion_jobs_source_version_id_fkey"
             columns: ["source_version_id"]
             isOneToOne: false
             referencedRelation: "source_versions"
@@ -1364,6 +1628,30 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          created_at: string
+          description: string
+          group_name: string
+          key: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          group_name: string
+          key: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          group_name?: string
+          key?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1513,6 +1801,83 @@ export type Database = {
           {
             foreignKeyName: "releases_released_by_fkey"
             columns: ["released_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          granted_at: string
+          permission_key: string
+          role_id: string
+        }
+        Insert: {
+          granted_at?: string
+          permission_key: string
+          role_id: string
+        }
+        Update: {
+          granted_at?: string
+          permission_key?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean
+          is_system: boolean
+          key: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          key: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          key?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1693,37 +2058,98 @@ export type Database = {
       staff_invitations: {
         Row: {
           accepted_at: string | null
+          accepted_by: string | null
           created_at: string
           email: string
+          expires_at: string | null
           full_name: string
           id: string
           invited_by: string | null
+          revoked_at: string | null
           role: Database["public"]["Enums"]["staff_role"]
+          role_ids: string[]
+          status: string
         }
         Insert: {
           accepted_at?: string | null
+          accepted_by?: string | null
           created_at?: string
           email: string
+          expires_at?: string | null
           full_name: string
           id?: string
           invited_by?: string | null
+          revoked_at?: string | null
           role?: Database["public"]["Enums"]["staff_role"]
+          role_ids?: string[]
+          status?: string
         }
         Update: {
           accepted_at?: string | null
+          accepted_by?: string | null
           created_at?: string
           email?: string
+          expires_at?: string | null
           full_name?: string
           id?: string
           invited_by?: string | null
+          revoked_at?: string | null
           role?: Database["public"]["Enums"]["staff_role"]
+          role_ids?: string[]
+          status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "staff_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "staff_invitations_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
             referencedColumns: ["id"]
           },
         ]
@@ -2030,11 +2456,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_permission: {
+        Args: { _permission: string; _uid: string }
+        Returns: boolean
+      }
       has_staff_role: {
         Args: { _role: Database["public"]["Enums"]["staff_role"]; _uid: string }
         Returns: boolean
       }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      is_super_admin: { Args: { _uid: string }; Returns: boolean }
       next_case_reference: { Args: never; Returns: string }
       open_case: {
         Args: {
@@ -2070,6 +2501,7 @@ export type Database = {
         Args: { _case_id: string; _instruction: string }
         Returns: undefined
       }
+      require_permission: { Args: { _permission: string }; Returns: string }
       require_role: {
         Args: { _role: Database["public"]["Enums"]["staff_role"] }
         Returns: string
@@ -2245,6 +2677,126 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_staff_active: {
+        Args: { _active: boolean; _reason: string; _target: string }
+        Returns: undefined
+      }
+      set_user_roles: {
+        Args: { _role_ids: string[]; _target: string }
+        Returns: undefined
+      }
+      staff_dashboard_summary: {
+        Args: { _include_demo?: boolean; _since: string }
+        Returns: Json
+      }
+      staff_decision_record: {
+        Args: {
+          _from?: string
+          _limit?: number
+          _offset?: number
+          _to?: string
+        }
+        Returns: {
+          approval_basis: Database["public"]["Enums"]["approval_basis"] | null
+          approved_at: string | null
+          approved_by: string | null
+          approved_by_name: string | null
+          drafted_by: string | null
+          fingerprint: string | null
+          first_author_kind: Database["public"]["Enums"]["author_kind"] | null
+          guideline_id: string | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          memory_item_id: string | null
+          question_text: string | null
+          reference: string | null
+          release_id: string | null
+          released_at: string | null
+          released_by_name: string | null
+          released_version: number | null
+          source_version_ids: string[] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "decision_record"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      staff_insight_gaps: {
+        Args: never
+        Returns: {
+          gap_count: number
+          includes_demo_seed: boolean
+          most_recent: string
+          topic: string
+        }[]
+      }
+      staff_insight_topics: {
+        Args: never
+        Returns: {
+          includes_demo_seed: boolean | null
+          outcome: Database["public"]["Enums"]["answer_outcome"] | null
+          question_count: number | null
+          topic: string | null
+          window_end: string | null
+          window_start: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "insight_topics"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      staff_insight_turnaround: {
+        Args: never
+        Returns: {
+          case_id: string | null
+          deadline_at: string | null
+          hours_to_release: number | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          met_deadline: boolean | null
+          received_at: string | null
+          reference: string | null
+          released_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "insight_turnaround"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      staff_review_queue: {
+        Args: never
+        Returns: {
+          assigned_to: string | null
+          assigned_to_name: string | null
+          case_id: string | null
+          channel: Database["public"]["Enums"]["channel"] | null
+          deadline_at: string | null
+          draft_count: number | null
+          has_active_approval: boolean | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          latest_draft_id: string | null
+          latest_draft_version: number | null
+          question_text: string | null
+          received_at: string | null
+          reference: string | null
+          review_reasons: Database["public"]["Enums"]["review_reason"][] | null
+          source_changed: boolean | null
+          status: Database["public"]["Enums"]["case_status"] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "review_queue"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       staff_role_of: {
         Args: { _uid: string }
         Returns: Database["public"]["Enums"]["staff_role"]
@@ -2270,6 +2822,8 @@ export type Database = {
       }
     }
     Enums: {
+      alert_severity: "information" | "warning" | "critical"
+      alert_state: "open" | "acknowledged" | "resolved"
       answer_outcome:
         | "answered"
         | "clarification"
@@ -2313,6 +2867,18 @@ export type Database = {
         | "transferred"
         | "closed"
       ingest_state: "waiting" | "done" | "failed"
+      ingestion_job_kind: "file" | "url" | "crawler"
+      ingestion_job_state:
+        | "uploaded"
+        | "discovered"
+        | "extracting"
+        | "extracted"
+        | "needs_metadata"
+        | "needs_verification"
+        | "ready_for_approval"
+        | "approved"
+        | "failed"
+        | "superseded"
       memory_origin: "imported" | "released_case"
       memory_type:
         | "media_response"
@@ -2487,6 +3053,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_severity: ["information", "warning", "critical"],
+      alert_state: ["open", "acknowledged", "resolved"],
       answer_outcome: [
         "answered",
         "clarification",
@@ -2534,6 +3102,19 @@ export const Constants = {
         "closed",
       ],
       ingest_state: ["waiting", "done", "failed"],
+      ingestion_job_kind: ["file", "url", "crawler"],
+      ingestion_job_state: [
+        "uploaded",
+        "discovered",
+        "extracting",
+        "extracted",
+        "needs_metadata",
+        "needs_verification",
+        "ready_for_approval",
+        "approved",
+        "failed",
+        "superseded",
+      ],
       memory_origin: ["imported", "released_case"],
       memory_type: [
         "media_response",

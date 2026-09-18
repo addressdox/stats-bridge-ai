@@ -3,6 +3,8 @@ import { useEffect } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { useServerFn } from "@tanstack/react-start";
+import { getMyStaffAccess } from "@/lib/statbridge/access.functions";
 
 export type StaffRole = Database["public"]["Enums"]["staff_role"];
 
@@ -26,6 +28,7 @@ export const ROLE_LABELS: Record<StaffRole, string> = {
  */
 export function useStaff() {
   const queryClient = useQueryClient();
+  const fetchAccess = useServerFn(getMyStaffAccess);
 
   const query = useQuery({
     queryKey: ["staff-profile"],
@@ -43,6 +46,15 @@ export function useStaff() {
     },
   });
 
+  const access = useQuery({
+    queryKey: ["staff-access", query.data?.id],
+    queryFn: () => fetchAccess(),
+    enabled: Boolean(query.data?.id && query.data?.is_active),
+    staleTime: 30_000,
+    retry: false,
+  });
+  const permissions = new Set(access.data?.permissions ?? []);
+
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
@@ -54,12 +66,15 @@ export function useStaff() {
 
   return {
     profile: query.data ?? null,
-    isLoading: query.isPending,
+    isLoading: query.isPending || (Boolean(query.data?.id) && access.isPending),
     role: query.data?.role ?? null,
+    roles: access.data?.roles ?? [],
+    permissions: access.data?.permissions ?? [],
+    hasPermission: (permission: string) => permissions.has(permission),
     can: {
-      review: query.data?.role === "official" || query.data?.role === "manager",
-      release: query.data?.role === "manager",
-      knowledge: query.data?.role === "administrator",
+      review: permissions.has("cases.review"),
+      release: permissions.has("cases.release"),
+      knowledge: permissions.has("sources.approve"),
     },
   };
 }
