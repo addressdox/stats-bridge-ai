@@ -7,12 +7,12 @@ import { useMemo, useState } from "react";
 
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
-import { PromptInput, PromptInputBody, PromptInputFooter, PromptInputSubmit, PromptInputTextarea, PromptInputTools } from "@/components/ai-elements/prompt-input";
+import { PromptInput, PromptInputFooter, PromptInputSubmit, PromptInputTextarea } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { AssistantPortrait, type AssistantState } from "@/components/statbridge/assistant-portrait";
 import { EvidenceCanvas } from "@/components/statbridge/EvidenceCanvas";
 import { RenderBlock } from "@/components/statbridge/RenderBlock";
-import { VoiceInput, type VoiceStatus } from "@/components/statbridge/VoiceInput";
+import { type VoiceStatus } from "@/components/statbridge/VoiceInput";
 import { REVIEW_REASON_LABELS, type PublicAnswer } from "@/lib/statbridge/contract";
 import { askQuestion, sendToOfficial } from "@/lib/statbridge/public.functions";
 
@@ -42,7 +42,6 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const [draft, setDraft] = useState(initialDraft);
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
-  const [micLevel, setMicLevel] = useState(0);
   const reduce = useReducedMotion();
 
   const ask = useMutation({
@@ -81,7 +80,6 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const lastQuestion = [...turns].reverse().find((turn) => turn.role === "user");
   const showCanvas = Boolean(latestWithEvidence) && canvasOpen && !compact;
   const state = roomState(voiceStatus, ask.isPending);
-  const statusText = state === "ready" ? "Ready when you are" : state === "connecting" ? "Connecting…" : state === "listening" ? "Listening…" : state === "checking" ? "Checking approved sources…" : "Voice session ended";
 
   return (
     <div className={showCanvas ? "grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,27rem)]" : "mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"}>
@@ -90,11 +88,9 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
           <ConversationContent className={turns.length === 0 ? "min-h-full justify-center px-5 py-8" : "mx-auto w-full max-w-3xl px-5 py-8"}>
             {turns.length === 0 ? (
               <div className="flex flex-col items-center text-center">
-                <AssistantPortrait state={state} level={micLevel} size="large" />
-                <Shimmer as="p" className="mt-1 font-mono text-xs uppercase tracking-[0.22em]" duration={2.4}>{statusText}</Shimmer>
-                <h1 className="mt-4 text-2xl font-semibold sm:text-4xl">What would you like to know?</h1>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Ask about a published statistic, definition or release. Voice is optional and starts only when you choose it.</p>
-                <div className="mt-5"><VoiceInput onTranscript={(text) => setDraft((value) => value ? `${value} ${text}` : text)} onStatusChange={setVoiceStatus} onLevel={setMicLevel} prominent /></div>
+                <AssistantPortrait state={state} size="small" className="!size-16" />
+                <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">What would you like to know?</h1>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Ask about a published statistic, definition or release. Type your question below.</p>
                 <div className="mt-6 flex max-w-2xl flex-wrap justify-center gap-2">
                   {STARTERS.map((starter) => <button key={starter} type="button" onClick={() => submit(starter)} className="rounded-full border border-hairline bg-surface/60 px-3.5 py-2 text-left text-xs text-muted-foreground transition-colors hover:border-official/50 hover:text-foreground">{starter}</button>)}
                 </div>
@@ -117,9 +113,8 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
 
         <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-3 sm:px-6">
           <PromptInput onSubmit={({ text }) => submit(text)} className="mx-auto max-w-3xl rounded-2xl border-input bg-surface/90 shadow-[var(--glass-shadow)] backdrop-blur-xl">
-            <PromptInputBody><PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" /></PromptInputBody>
-            <PromptInputFooter>
-              <PromptInputTools>{turns.length > 0 && <VoiceInput onTranscript={(text) => setDraft((value) => value ? `${value} ${text}` : text)} onStatusChange={setVoiceStatus} onLevel={setMicLevel} />}</PromptInputTools>
+            <PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" />
+            <PromptInputFooter className="justify-end">
               <PromptInputSubmit disabled={draft.trim().length < 3 || ask.isPending} status={ask.isPending ? "submitted" : "ready"} />
             </PromptInputFooter>
           </PromptInput>
