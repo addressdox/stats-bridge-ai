@@ -1,0 +1,2 @@
+REVOKE ALL ON FUNCTION public.search_knowledge_semantic(extensions.vector, integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.search_knowledge_semantic(extensions.vector, integer) TO service_role;
