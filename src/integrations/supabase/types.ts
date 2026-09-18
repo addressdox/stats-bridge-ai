@@ -1555,6 +1555,8 @@ export type Database = {
           created_by: string | null
           current_version_id: string | null
           id: string
+          last_changed_at: string | null
+          last_checked_at: string | null
           publisher: string
           source_type: Database["public"]["Enums"]["source_type"]
           title: string
@@ -1567,6 +1569,8 @@ export type Database = {
           created_by?: string | null
           current_version_id?: string | null
           id?: string
+          last_changed_at?: string | null
+          last_checked_at?: string | null
           publisher?: string
           source_type: Database["public"]["Enums"]["source_type"]
           title: string
@@ -1579,6 +1583,8 @@ export type Database = {
           created_by?: string | null
           current_version_id?: string | null
           id?: string
+          last_changed_at?: string | null
+          last_checked_at?: string | null
           publisher?: string
           source_type?: Database["public"]["Enums"]["source_type"]
           title?: string
