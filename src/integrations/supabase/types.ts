@@ -1419,6 +1419,10 @@ export type Database = {
         Args: { _case_id: string; _owner: string }
         Returns: undefined
       }
+      bump_rate_counter: {
+        Args: { _key_hash: string; _limit: number; _window_start: string }
+        Returns: boolean
+      }
       correct_routing: {
         Args: {
           _case_id: string
@@ -1492,6 +1496,70 @@ export type Database = {
           _reading_level?: Database["public"]["Enums"]["reading_level"]
         }
         Returns: string
+      }
+      search_memory: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          approval_basis: Database["public"]["Enums"]["approval_basis"]
+          body: string
+          communicated_on: string
+          item_type: Database["public"]["Enums"]["memory_type"]
+          memory_id: string
+          rank: number
+          reference_period: string
+          reuse_status: Database["public"]["Enums"]["reuse_status"]
+          title: string
+          topic: string
+        }[]
+      }
+      search_observations: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          adjustment: string
+          comparability_note: string
+          display_value: string
+          geography: string
+          measure: string
+          measure_key: string
+          observation_id: string
+          original_url: string
+          page_number: number
+          period_end: string
+          period_start: string
+          population: string
+          published_on: string
+          publisher: string
+          rank: number
+          reference_period: string
+          reported_change: string
+          source_version_id: string
+          table_label: string
+          title: string
+          unit: string
+          value: number
+          value_state: Database["public"]["Enums"]["value_state"]
+          version_label: string
+        }[]
+      }
+      search_passages: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          content: string
+          original_url: string
+          page_number: number
+          passage_id: string
+          published_on: string
+          publisher: string
+          rank: number
+          reference_period: string
+          section_label: string
+          source_id: string
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_version_id: string
+          title: string
+          topic: string
+          version_label: string
+        }[]
       }
       set_role: {
         Args: {
