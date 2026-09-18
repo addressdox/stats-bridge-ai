@@ -13,12 +13,13 @@
 
 ### Still remaining per the specification
 1. **Real AI provider wiring** — Gemini server-side via Lovable AI Gateway for answer wording within approved sources (provider interface exists; needs a live model behind it, currently demonstration logic).
-2. **Seed demonstration data** — approved Stats SA sources, verified observations, guidelines and memory rows via migration, plus a documented reset procedure.
-3. **Evaluation** — the 30-case test set from the specification, run and recorded (passed / failed / blocked), no invented results.
-4. **Widget polish and independent demo host** — `/embed` exists; standalone hosted demo page still to do.
-5. **Public API documentation completion** — `/developers` page exists; full endpoint reference and usage examples to finish.
-6. **Chart support** — Recharts only where a verified observation justifies it (contract supports it; no charts shipped yet).
-7. **Final compliance report** — what is implemented vs planned, exact routes, demo accounts, region, AI provider/model, known limitations, reset instructions.
+2. **Real South African data foundation** — harvest genuine published statistics from Stats SA and other official bodies (Reserve Bank, National Treasury, municipal portals), load them as approved sources and verified observations through a migration, plus a documented reset procedure. This is the starting knowledge base.
+3. **Continuous crawler** — a scheduled crawler that constantly harvests new official South African publications and feeds them into the knowledge base through the existing source-approval flow, so knowledge and coverage keep growing.
+4. **Evaluation** — the 30-case test set from the specification, run and recorded (passed / failed / blocked), no invented results.
+5. **Widget polish and independent demo host** — `/embed` exists; standalone hosted demo page still to do.
+6. **Public API documentation completion** — `/developers` page exists; full endpoint reference and usage examples to finish.
+7. **Chart support** — Recharts only where a verified observation justifies it (contract supports it; no charts shipped yet).
+8. **Final compliance report** — what is implemented vs planned, exact routes, demo accounts, region, AI provider/model, known limitations, reset instructions.
 
 ## Proposed next step
-Wire the live Gemini provider (server-side), then load seed demonstration data, then run the 30-case evaluation and record honest results.
+Build the real South African data foundation: harvest genuine published statistics from Stats SA and partner official bodies, load them as approved sources and verified observations, then add the continuous crawler that keeps feeding the knowledge base — before wiring the live Gemini provider and running the 30-case evaluation.
