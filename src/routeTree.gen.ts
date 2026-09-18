@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmbedRouteImport } from './routes/embed'
+import { Route as CaseIndexRouteImport } from './routes/case.index'
+import { Route as CaseRefRouteImport } from './routes/case.$ref'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmbedRoute = EmbedRouteImport.update({
+  id: '/embed',
+  path: '/embed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaseIndexRoute = CaseIndexRouteImport.update({
+  id: '/case/',
+  path: '/case/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaseRefRoute = CaseRefRouteImport.update({
+  id: '/case/$ref',
+  path: '/case/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/embed': typeof EmbedRoute
+  '/case/$ref': typeof CaseRefRoute
+  '/case/': typeof CaseIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/embed': typeof EmbedRoute
+  '/case/$ref': typeof CaseRefRoute
+  '/case': typeof CaseIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/embed': typeof EmbedRoute
+  '/case/$ref': typeof CaseRefRoute
+  '/case/': typeof CaseIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/embed' | '/case/$ref' | '/case/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/embed' | '/case/$ref' | '/case'
+  id: '__root__' | '/' | '/embed' | '/case/$ref' | '/case/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EmbedRoute: typeof EmbedRoute
+  CaseRefRoute: typeof CaseRefRoute
+  CaseIndexRoute: typeof CaseIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/embed': {
+      id: '/embed'
+      path: '/embed'
+      fullPath: '/embed'
+      preLoaderRoute: typeof EmbedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/case/': {
+      id: '/case/'
+      path: '/case'
+      fullPath: '/case/'
+      preLoaderRoute: typeof CaseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/case/$ref': {
+      id: '/case/$ref'
+      path: '/case/$ref'
+      fullPath: '/case/$ref'
+      preLoaderRoute: typeof CaseRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EmbedRoute: EmbedRoute,
+  CaseRefRoute: CaseRefRoute,
+  CaseIndexRoute: CaseIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
