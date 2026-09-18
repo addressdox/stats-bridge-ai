@@ -85,7 +85,7 @@ function RecordPage() {
               <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
                 <Line
                   label="First draft"
-                  value={r.first_author_kind === "assistant" ? "Assistant suggestion, edited by a person" : "Written by a person"}
+                  value={r.first_author_kind === "ai" ? "Assistant suggestion, edited by a person" : "Written by a person"}
                 />
                 <Line label="Approved by" value={r.approved_by_name ?? "—"} />
                 <Line
