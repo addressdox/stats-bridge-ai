@@ -6,6 +6,13 @@ import { motion, useReducedMotion } from "motion/react";
 import { AssistantPortrait } from "@/components/statbridge/assistant-portrait";
 import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
+const deskLinks = [
+  { label: "Media desk", hint: "Journalists with a deadline" },
+  { label: "Track a request", hint: "Reference and private token" },
+  { label: "Developers", hint: "Widget and public API" },
+  { label: "Staff sign in", hint: "Review and knowledge base" },
+];
+
 const title = "StatBridge — Ask about South Africa's official statistics";
 const description =
   "Ask questions about published Statistics South Africa figures, definitions and publications. Every answer quotes approved sources; media and sensitive requests go to a communications official.";
