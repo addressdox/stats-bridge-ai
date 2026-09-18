@@ -178,7 +178,7 @@ function AnswerTurn({
               <button
                 key={choice.value}
                 type="button"
-                onClick={() => onFollowUp(choice.value)}
+                onClick={() => onFollowUp(choice.label)}
                 className="rounded-full border border-input px-3.5 py-1.5 text-sm font-medium transition-colors hover:border-accent/60 hover:bg-secondary"
               >
                 {choice.label}
