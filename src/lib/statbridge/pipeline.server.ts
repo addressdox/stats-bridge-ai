@@ -244,6 +244,16 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
   }
 
   const { semanticSearch } = await import("./embeddings.server");
+  const { planRetrieval, runRetrievalTools } = await import("./tools.server");
+  const planner = getAssistant();
+
+  // The assistant chooses its own evidence-gathering tools first. Every tool
+  // runs on the server against approved South African material only.
+  const toolCalls = await planRetrieval(planner, input.question);
+  const toolResult = toolCalls.length
+    ? await runRetrievalTools(db, toolCalls, input.question).catch(() => null)
+    : null;
+
   const [passagesResult, observationsResult, semanticHits] = await Promise.all([
     db.rpc("search_passages", { _q: input.question, _limit: 10 }),
     db.rpc("search_observations", { _q: input.question, _limit: 12 }),
@@ -255,14 +265,22 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
 
   // Meaning-based hits fill in what the word search missed. Both paths only
   // ever return approved publications; the database enforces that, not the prompt.
-  const extraPassageIds = semanticHits
-    .filter((hit) => hit.owner_kind === "passage" && !passages.some((p) => p.passage_id === hit.owner_id))
-    .map((hit) => hit.owner_id)
-    .slice(0, 6);
-  const extraObservationIds = semanticHits
-    .filter((hit) => hit.owner_kind === "observation" && !observations.some((o) => o.observation_id === hit.owner_id))
-    .map((hit) => hit.owner_id)
-    .slice(0, 8);
+  const extraPassageIds = [
+    ...new Set([
+      ...(toolResult?.passageIds ?? []),
+      ...semanticHits.filter((hit) => hit.owner_kind === "passage").map((hit) => hit.owner_id),
+    ]),
+  ]
+    .filter((id) => !passages.some((p) => p.passage_id === id))
+    .slice(0, 12);
+  const extraObservationIds = [
+    ...new Set([
+      ...(toolResult?.observationIds ?? []),
+      ...semanticHits.filter((hit) => hit.owner_kind === "observation").map((hit) => hit.owner_id),
+    ]),
+  ]
+    .filter((id) => !observations.some((o) => o.observation_id === id))
+    .slice(0, 20);
 
   if (extraPassageIds.length > 0) {
     const { data } = await db.rpc("search_passages_by_id", { _ids: extraPassageIds });
@@ -729,7 +747,13 @@ type EscalateArgs = {
 export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> {
   const { db, input } = args;
   const { token, hash } = makeStatusToken();
-  const kind = args.kind ?? (args.reasons.includes("media") ? "media" : "public_escalation");
+  // A media case can only be opened once the newsroom's name, outlet and
+  // contact details are on hand. Without them the request is still routed to a
+  // person and still receives no written answer — it is simply logged as a
+  // public escalation carrying the media reason.
+  const hasRequesterDetails = Boolean(args.requester?.name && args.requester?.outlet && args.requester?.contact);
+  const wantsMedia = (args.kind ?? (args.reasons.includes("media") ? "media" : "public_escalation")) === "media";
+  const kind: "media" | "public_escalation" = wantsMedia && hasRequesterDetails ? "media" : "public_escalation";
 
   const { data, error } = await db.rpc("open_case", {
     _kind: kind,

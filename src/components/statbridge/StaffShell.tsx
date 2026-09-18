@@ -5,6 +5,7 @@ import {
   ClipboardList,
   FileClock,
   Gauge,
+  Globe,
   Loader2,
   LogOut,
   MessagesSquare,
@@ -43,6 +44,7 @@ const GROUPS = [
   ]},
   { label: "Administration", links: [
     { to: "/staff/team", label: "Staff and roles", icon: UserCog, permission: "staff.view" },
+    { to: "/staff/widgets", label: "Websites and widget", icon: Globe, permission: "widgets.manage" },
     { to: "/staff/settings", label: "Desk settings", icon: Settings, permission: "settings.manage" },
     { to: "/staff/account", label: "My account", icon: IdCard, permission: null },
   ]},

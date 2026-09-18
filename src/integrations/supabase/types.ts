@@ -2438,6 +2438,10 @@ export type Database = {
         Args: { _key_hash: string; _limit: number; _window_start: string }
         Returns: boolean
       }
+      capture_insight_snapshot: {
+        Args: { _window_hours?: number }
+        Returns: string
+      }
       correct_routing: {
         Args: {
           _case_id: string
@@ -2500,6 +2504,13 @@ export type Database = {
       request_changes: {
         Args: { _case_id: string; _instruction: string }
         Returns: undefined
+      }
+      require_access: {
+        Args: {
+          _permission: string
+          _role?: Database["public"]["Enums"]["staff_role"]
+        }
+        Returns: string
       }
       require_permission: { Args: { _permission: string }; Returns: string }
       require_role: {
@@ -2670,6 +2681,14 @@ export type Database = {
           version_label: string
         }[]
       }
+      set_alert_state: {
+        Args: {
+          _alert_id: string
+          _note?: string
+          _state: Database["public"]["Enums"]["alert_state"]
+        }
+        Returns: undefined
+      }
       set_role: {
         Args: {
           _role: Database["public"]["Enums"]["staff_role"]
@@ -2731,6 +2750,22 @@ export type Database = {
           most_recent: string
           topic: string
         }[]
+      }
+      staff_insight_history: {
+        Args: { _limit?: number }
+        Returns: {
+          generated_at: string
+          id: string
+          metrics: Json
+          window_end: string
+          window_start: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "insight_snapshots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       staff_insight_topics: {
         Args: never
@@ -2802,6 +2837,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["staff_role"]
       }
       start_review: { Args: { _case_id: string }; Returns: undefined }
+      verify_observations: { Args: { _ids: string[] }; Returns: number }
       withdraw_source: {
         Args: { _reason: string; _version_id: string }
         Returns: undefined

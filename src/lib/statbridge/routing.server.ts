@@ -50,6 +50,11 @@ const INTERPRETATION_SIGNALS = [
   /\bimpact of\b/i,
   /\bexplain the reason\b/i,
   /\bis it (good|bad|acceptable)\b/i,
+  // Judgement about performance is never a figure lookup, even when phrased plainly.
+  /\b(failing|failed|succeeding|doing enough|incompetent|mismanag\w*|to blame)\b/i,
+  /\bis (the )?(government|state|treasury|municipalit\w+|stats ?sa)\b/i,
+  /\b(getting|got) (better|worse)\b/i,
+  /\bhow (well|badly)\b/i,
 ];
 
 const ADVERSARIAL_SIGNALS = [
