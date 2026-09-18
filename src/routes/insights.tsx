@@ -234,7 +234,6 @@ function InsightsPage() {
                     <li key={q}>
                       <Link
                         to="/ask"
-                        search={{ q }}
                         className="inline-block rounded-full border border-border px-3 py-1.5 text-sm transition-colors hover:border-accent hover:text-accent"
                       >
                         {q}
