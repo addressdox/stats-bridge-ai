@@ -215,9 +215,9 @@ export const decideKnowledgeSource = createServerFn({ method: "POST" })
         // Approval remains valid; keyword search is available while vector indexing retries later.
       }
     } else if (data.action === "reject") {
-      await db.from("source_versions").update({ status: "rejected", change_note: data.reason }).eq("id", data.versionId);
+      await db.from("source_versions").update({ status: "rejected", change_note: data.reason! }).eq("id", data.versionId);
     } else {
-      await db.from("source_versions").update({ status: "withdrawn", withdrawal_reason: data.reason, withdrawn_by: actor, withdrawn_at: new Date().toISOString() }).eq("id", data.versionId);
+      await db.from("source_versions").update({ status: "withdrawn", withdrawal_reason: data.reason!, withdrawn_by: actor, withdrawn_at: new Date().toISOString() }).eq("id", data.versionId);
       await db.from("sources").update({ current_version_id: null }).eq("current_version_id", data.versionId);
     }
     await db.from("audit_events").insert({ actor_id: actor, actor_role: "staff", action: `source_${data.action}d`, entity_kind: "source_version", entity_id: data.versionId, detail: { reason: data.reason ?? null }, origin: "screen" });

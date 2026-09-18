@@ -162,7 +162,7 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
           </div>
         </header>
          {menuOpen && <nav aria-label="Staff" className="grid grid-cols-2 gap-1 border-b border-border bg-surface p-3 md:hidden">
-           {GROUPS.flatMap((group) => group.links).filter((link) => !link.permission || hasPermission(link.permission)).map((link) => (
+            {GROUPS.map((group) => group.links.filter((link) => !link.permission || hasPermission(link.permission)).map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -171,7 +171,7 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
             >
               {link.label}
             </Link>
-          ))}
+           )))}
          </nav>}
         <main className="p-4 sm:p-6">{children}</main>
       </div>
