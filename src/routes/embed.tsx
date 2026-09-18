@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Maximize2, SquareArrowOutUpRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { VoiceCall } from "@/components/statbridge/VoiceCall";
+import { AssistantExperience } from "@/components/statbridge/AssistantExperience";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 
 const title = "Naledi assistant";
@@ -94,7 +94,7 @@ function EmbedPage() {
         </div>
       </header>
       <main className="min-h-0 flex-1">
-        {visible && <VoiceCall />}
+        {visible && <AssistantExperience compact />}
       </main>
       <p className="border-t border-border bg-surface px-3 py-1.5 text-[10px] text-muted-foreground">
         Demonstration build. Answers quote approved Stats SA material.

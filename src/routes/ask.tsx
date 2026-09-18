@@ -1,8 +1,8 @@
-/** Immersive Ask room: the live voice conversation and its official evidence. */
+/** Immersive Ask room: voice or typed conversation and its official evidence. */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
-import { VoiceCall } from "@/components/statbridge/VoiceCall";
+import { AssistantExperience } from "@/components/statbridge/AssistantExperience";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
@@ -38,7 +38,7 @@ function AskRoom() {
         </div>
       </header>
       <main className="min-h-0 flex-1">
-        <VoiceCall />
+        <AssistantExperience />
       </main>
     </div>
   );
