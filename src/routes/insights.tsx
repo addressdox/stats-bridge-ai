@@ -104,6 +104,71 @@ function InsightsPage() {
           </p>
         </header>
 
+        {data && (
+          <div className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-hairline bg-surface/60 p-4 print:hidden">
+            <Choice
+              label="Publisher"
+              value={search.publisher ?? ""}
+              options={data.choices.publishers}
+              onChange={(value) => setFilter("publisher", value)}
+            />
+            <Choice
+              label="Topic"
+              value={search.topic ?? ""}
+              options={data.choices.topics}
+              onChange={(value) => setFilter("topic", value)}
+            />
+            <Choice
+              label="Measure"
+              value={search.measureKey ?? ""}
+              options={data.choices.measures.map((m) => m.key)}
+              labels={Object.fromEntries(data.choices.measures.map((m) => [m.key, m.label]))}
+              onChange={(value) => setFilter("measureKey", value)}
+            />
+            <Choice
+              label="Geography"
+              value={search.geography ?? ""}
+              options={data.choices.geographies}
+              onChange={(value) => setFilter("geography", value)}
+            />
+            <Choice
+              label="Question window"
+              value={String(search.days ?? 30)}
+              options={["7", "30", "90", "365"]}
+              labels={{ "7": "7 days", "30": "30 days", "90": "90 days", "365": "12 months" }}
+              allowAny={false}
+              onChange={(value) => setFilter("days", Number(value))}
+            />
+            <div className="ml-auto flex gap-2">
+              <button
+                type="button"
+                onClick={() => download.mutate()}
+                disabled={download.isPending}
+                className="inline-flex items-center gap-1.5 rounded-full border border-input px-3 py-1.5 text-xs font-semibold transition-colors hover:border-accent disabled:opacity-60"
+              >
+                <Download aria-hidden className="size-3.5" />
+                CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 rounded-full border border-input px-3 py-1.5 text-xs font-semibold transition-colors hover:border-accent"
+              >
+                <Printer aria-hidden className="size-3.5" />
+                PDF
+              </button>
+            </div>
+            <p className="w-full text-[11px] text-muted-foreground">
+              Generated {new Date(data.generatedAt).toLocaleString("en-ZA")}
+              {data.coverage.lastCheckedAt
+                ? ` · sources last checked ${new Date(data.coverage.lastCheckedAt).toLocaleString("en-ZA")}`
+                : " · sources not yet checked by the crawler"}
+              . Exports carry these filters, the time above and the full citation for every figure.
+            </p>
+          </div>
+        )}
+
+
         {insights.isPending && (
           <p className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 aria-hidden className="size-4 animate-spin" />
