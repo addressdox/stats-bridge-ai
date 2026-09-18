@@ -51,10 +51,44 @@ function Empty({ children }: { children: string }) {
 }
 
 function InsightsPage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/insights" });
   const load = useServerFn(getPublicInsights);
-  const insights = useQuery({ queryKey: ["public-insights"], queryFn: () => load({}) });
+  const csv = useServerFn(exportInsightsCsv);
+  const [drillDown, setDrillDown] = useState<string | null>(null);
+
+  const filters = {
+    publisher: search.publisher ?? null,
+    topic: search.topic ?? null,
+    measureKey: search.measureKey ?? null,
+    geography: search.geography ?? null,
+    days: search.days ?? 30,
+  };
+
+  const insights = useQuery({
+    queryKey: ["public-insights", filters],
+    queryFn: () => load({ data: filters }),
+  });
+
+  const download = useMutation({
+    mutationFn: () => csv({ data: filters }),
+    onSuccess: ({ fileName, csv: body }) => {
+      const blob = new Blob([`\uFEFF${body}`], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = fileName;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    },
+  });
+
+  const setFilter = (key: keyof typeof search, value: string | number | undefined) =>
+    void navigate({ search: (old) => ({ ...old, [key]: value || undefined }) });
 
   const data = insights.data;
+  const drillRows = data && drillDown ? data.figures.filter((f) => f.measureKey === drillDown) : [];
+
 
   return (
     <div className="flex min-h-dvh flex-col">
