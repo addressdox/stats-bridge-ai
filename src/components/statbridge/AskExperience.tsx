@@ -114,9 +114,8 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
 
         <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-3 sm:px-6">
           <PromptInput onSubmit={({ text }) => submit(text)} className="mx-auto max-w-3xl rounded-2xl border-input bg-surface/90 shadow-[var(--glass-shadow)] backdrop-blur-xl">
-            <PromptInputBody><PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" /></PromptInputBody>
-            <PromptInputFooter>
-              <PromptInputTools>{turns.length > 0 && <VoiceInput onTranscript={(text) => setDraft((value) => value ? `${value} ${text}` : text)} onStatusChange={setVoiceStatus} onLevel={setMicLevel} />}</PromptInputTools>
+            <PromptInputTextarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about South Africa's official statistics…" />
+            <PromptInputFooter className="justify-end">
               <PromptInputSubmit disabled={draft.trim().length < 3 || ask.isPending} status={ask.isPending ? "submitted" : "ready"} />
             </PromptInputFooter>
           </PromptInput>
