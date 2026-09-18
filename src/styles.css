@@ -275,6 +275,15 @@
 .entry-door-glow-gold { background: radial-gradient(circle at 50% 42%, color-mix(in oklab, var(--official) 20%, transparent), transparent 52%); }
 .entry-door-glow-neutral { background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--foreground) 8%, transparent), transparent 55%); }
 .entry-door:hover .entry-door-glow, .entry-door:focus-visible .entry-door-glow { opacity: 1; }
+.entry-door-link {
+  background: color-mix(in oklab, var(--surface) 60%, transparent);
+  transition: border-color 0.4s ease, background-color 0.4s ease, transform 0.4s ease;
+}
+.entry-door:hover .entry-door-link {
+  border-color: color-mix(in oklab, var(--official) 35%, var(--hairline, transparent));
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+.entry-door-link:hover { transform: translateX(4px); }
 
 .assistant-ring {
   position: absolute;
