@@ -42,7 +42,7 @@ export function ContactCard({
       }),
     onSuccess: (result) => {
       setDone(true);
-      onSaved(result.knownName ?? fullName.trim() || null);
+      onSaved(result.knownName ?? (fullName.trim() || null));
     },
   });
 
