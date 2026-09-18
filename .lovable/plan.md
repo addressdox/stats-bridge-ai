@@ -61,6 +61,17 @@ Automated browser tests covering: a cited statistic answer, a table, a chart, an
 - Exports: CSV built server-side; PDF rendered from the same filtered payload so the two always agree.
 - Tests with Playwright under `tests/e2e`, run against the local preview.
 
+## Voice quality — a real South African woman's voice
+
+The current voice sounds synthetic. It gets replaced.
+
+- Speech is generated from a premium voice service (ElevenLabs) chosen for natural, human-sounding delivery, with a warm South African English female voice and pacing tuned for reading figures clearly.
+- You do not need to paste a Gemini key — the voice runs through your Lovable connection, and I can link ElevenLabs in one step when we get there.
+- Audio streams so speech starts almost immediately instead of waiting for the whole sentence.
+- Long answers are split at sentence boundaries so nothing is cut off.
+- If the premium voice is unavailable, it falls back to the built-in voice rather than failing silently.
+- The rule stays: only validated, source-backed answer text is ever spoken.
+
 ## Out of scope for this round
 
 Persona-specific themes, the briefing generator, and any non-South-African data remain excluded.
