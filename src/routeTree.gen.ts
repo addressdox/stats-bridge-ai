@@ -16,6 +16,7 @@ import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as MediaRouteImport } from './routes/media'
+import { Route as WidgetDemoRouteImport } from './routes/widget-demo'
 import { Route as ApiSpeakRouteImport } from './routes/api/speak'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
@@ -67,6 +68,11 @@ const InsightsRoute = InsightsRouteImport.update({
 const MediaRoute = MediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WidgetDemoRoute = WidgetDemoRouteImport.update({
+  id: '/widget-demo',
+  path: '/widget-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSpeakRoute = ApiSpeakRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/embed': typeof EmbedRoute
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
+  '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/conversations': typeof StaffConversationsRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/embed': typeof EmbedRoute
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
+  '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/conversations': typeof StaffConversationsRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/embed': typeof EmbedRoute
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
+  '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
   '/staff/conversations': typeof StaffConversationsRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/insights'
     | '/media'
+    | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
     | '/staff/conversations'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/insights'
     | '/media'
+    | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
     | '/staff/conversations'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/embed'
     | '/insights'
     | '/media'
+    | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
     | '/staff/conversations'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   EmbedRoute: typeof EmbedRoute
   InsightsRoute: typeof InsightsRoute
   MediaRoute: typeof MediaRoute
+  WidgetDemoRoute: typeof WidgetDemoRoute
   ApiSpeakRoute: typeof ApiSpeakRoute
   CaseRefRoute: typeof CaseRefRoute
   StaffConversationsRoute: typeof StaffConversationsRoute
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       path: '/media'
       fullPath: '/media'
       preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/widget-demo': {
+      id: '/widget-demo'
+      path: '/widget-demo'
+      fullPath: '/widget-demo'
+      preLoaderRoute: typeof WidgetDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/speak': {
@@ -524,6 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbedRoute: EmbedRoute,
   InsightsRoute: InsightsRoute,
   MediaRoute: MediaRoute,
+  WidgetDemoRoute: WidgetDemoRoute,
   ApiSpeakRoute: ApiSpeakRoute,
   CaseRefRoute: CaseRefRoute,
   StaffConversationsRoute: StaffConversationsRoute,
