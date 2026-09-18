@@ -6,18 +6,17 @@
 - Continuous crawler — harvests Stats SA, Reserve Bank and Treasury listing pages, dedupes, proposes new sources as pending. Staff → Sources, or a scheduler POSTing `/api/public/crawl` with the `CRAWL_TOKEN` header.
 - Live AI provider wired server-side through the Lovable gateway; full safety pipeline verified end to end.
 - Rich evidence blocks — statistics, tables, charts, images, video, documents and downloadable datasets, each only when an approved publication carries it.
-- Public insights page at `/insights`.
+- Public insights page at `/insights`, with source freshness, interactive filters, figure drill-down and CSV / PDF export.
 - Visitor identity and conversation memory — visitors, identifiers, conversations, turns, analysis, handoffs, handoff events; returning-visitor recognition; erase-my-record.
 - Meaning-based retrieval — pgvector index over approved extracts and figures, embeddings built through the Lovable gateway, merged with word search inside the answer pipeline. Rebuild endpoint `/api/public/embeddings`.
 - Enterprise staff desk — Overview, Handover queue (accept / decline / transfer / close, reply as official), Conversations with analysis, People.
 - Real South African woman's voice — ElevenLabs "Naledi" via `/api/speak`, streamed, with the built-in voice as fallback. Only checked wording is ever spoken.
+- Visitor contact capture and handover controls in the Ask room — name / email / phone with consent, "speak to a person", live official replies.
+- Tawk-style widget — `public/widget.js` launcher bubble, live-chat-sized panel, full-screen expand, link to the main app, demonstration page at `/widget-demo`.
+- Public API — working `/api/public/v1/ask`, `/escalate`, `/media-query`, `/case-status` and `/openapi`, documented on `/developers`.
 
 ## Open
 
-1. Visitor-side contact capture and handover controls in the Ask room (name / email / phone with consent notice, "speak to a person" button, live official replies).
-2. Assistant tool calling — server-side tools for search, comparison, case status, media request, contact capture and handover.
-3. Insights: source freshness timestamps, interactive filters and drill-down, PDF and CSV export.
-4. Tawk-style widget rebuild — compact launcher, widget-sized chat/voice panel, full-screen expand, link to the main app; independent hosted demo page.
-5. Public API documentation on `/developers`.
-6. Real-data evaluation (30-case set), then delete any remaining test/demo records.
-7. Final compliance report.
+1. Assistant tool calling — server-side tools for search, comparison, case status, media request, contact capture and handover.
+2. Real-data evaluation (30-case set), then delete any remaining test/demo records.
+3. Final compliance report.
