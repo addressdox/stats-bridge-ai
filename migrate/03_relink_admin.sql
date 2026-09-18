@@ -16,8 +16,6 @@ SET CONSTRAINTS ALL DEFERRED;
 SELECT set_config('statbridge.old_id', :old_id, true);
 SELECT set_config('statbridge.new_id', :new_id, true);
 
--- the decision record is append-only; lift the guard for this one relink
-ALTER TABLE public.audit_events DISABLE TRIGGER audit_immutable;
 
 DO $$
 DECLARE
