@@ -57,6 +57,7 @@
   --color-hairline: var(--hairline);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-live: var(--live);
   --color-ring-offset-background: var(--background);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -80,9 +81,9 @@
   --radius: 0.75rem;
 
   /* Near-black stage, one warm metallic accent. */
-  --background: oklch(0.148 0 0);
+  --background: #0a0a0a;
   --foreground: oklch(0.968 0 0);
-  --surface: oklch(0.186 0 0);
+  --surface: #121212;
   --surface-2: oklch(0.236 0 0);
 
   --card: oklch(0.186 0 0);
@@ -125,6 +126,7 @@
   --hairline: oklch(1 0 0 / 7%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.755 0.105 80);
+  --live: oklch(0.72 0.12 190);
 
   --chart-1: oklch(0.755 0.105 80);
   --chart-2: oklch(0.86 0.075 84);
@@ -177,6 +179,7 @@
   --hairline: oklch(0.93 0.004 85);
   --input: oklch(0.88 0.006 85);
   --ring: oklch(0.52 0.095 72);
+  --live: oklch(0.48 0.11 190);
   --chart-1: oklch(0.52 0.095 72);
   --chart-2: oklch(0.68 0.1 80);
   --chart-3: oklch(0.4 0.075 70);
@@ -259,6 +262,44 @@
     radial-gradient(60rem 40rem at 12% -10%, color-mix(in oklab, var(--color-accent) 12%, transparent), transparent 70%),
     radial-gradient(48rem 32rem at 92% 8%, color-mix(in oklab, var(--color-official) 9%, transparent), transparent 70%);
 }
+
+.entry-door { background: var(--background); isolation: isolate; }
+.entry-door-assistant { background: var(--surface); }
+.entry-door-glow {
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.entry-door-glow-gold { background: radial-gradient(circle at 50% 42%, color-mix(in oklab, var(--official) 20%, transparent), transparent 52%); }
+.entry-door-glow-neutral { background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--foreground) 8%, transparent), transparent 55%); }
+.entry-door:hover .entry-door-glow, .entry-door:focus-visible .entry-door-glow { opacity: 1; }
+
+.assistant-ring {
+  position: absolute;
+  border: 1px solid color-mix(in oklab, var(--official) 42%, transparent);
+  border-radius: 9999px;
+}
+.assistant-ring-outer { inset: 8%; }
+.assistant-ring-middle { inset: 15%; opacity: 0.55; }
+.assistant-image-shell {
+  border: 1px solid color-mix(in oklab, var(--official) 55%, transparent);
+  box-shadow: 0 0 54px color-mix(in oklab, var(--official) 14%, transparent);
+  filter: sepia(0.2) saturate(0.82);
+  transition: filter 700ms ease, box-shadow 700ms ease;
+}
+.assistant-portrait-interactive:hover .assistant-image-shell,
+.entry-door:hover .assistant-image-shell,
+.entry-door:focus-visible .assistant-image-shell {
+  filter: none;
+  box-shadow: 0 0 72px color-mix(in oklab, var(--official) 28%, transparent);
+}
+.assistant-portrait-interactive:hover img,
+.entry-door:hover .assistant-portrait-interactive img,
+.entry-door:focus-visible .assistant-portrait-interactive img { transform: scale(1.1); }
+.entry-door:hover .assistant-mic, .entry-door:focus-visible .assistant-mic { transform: scale(1.1) rotate(5deg); }
+.assistant-portrait-ended { filter: grayscale(0.75); opacity: 0.48; }
 
 @media (prefers-reduced-motion: reduce) {
   *,
