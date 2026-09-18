@@ -117,6 +117,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "answers_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "answers_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
+          },
+          {
             foreignKeyName: "answers_guideline_id_fkey"
             columns: ["guideline_id"]
             isOneToOne: false
@@ -198,11 +212,32 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "approvals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "approvals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
+          },
+          {
             foreignKeyName: "approvals_draft_id_fkey"
             columns: ["draft_id"]
             isOneToOne: false
             referencedRelation: "drafts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["latest_draft_id"]
           },
           {
             foreignKeyName: "approvals_guideline_id_fkey"
@@ -270,6 +305,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "cases"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "audit_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
           },
         ]
       }
@@ -377,6 +426,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "cases_follow_up_of_case_id_fkey"
+            columns: ["follow_up_of_case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "cases_follow_up_of_case_id_fkey"
+            columns: ["follow_up_of_case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
+          },
+          {
             foreignKeyName: "cases_origin_answer_fk"
             columns: ["origin_answer_id"]
             isOneToOne: false
@@ -474,6 +537,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "cases"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drafts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "drafts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
           },
           {
             foreignKeyName: "drafts_guideline_id_fkey"
@@ -676,6 +753,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_release_fk"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "decision_record"
+            referencedColumns: ["release_id"]
           },
           {
             foreignKeyName: "memory_release_fk"
@@ -936,11 +1020,32 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "releases_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "releases_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
+          },
+          {
             foreignKeyName: "releases_draft_id_fkey"
             columns: ["draft_id"]
             isOneToOne: false
             referencedRelation: "drafts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "releases_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["latest_draft_id"]
           },
           {
             foreignKeyName: "releases_memory_item_id_fkey"
@@ -1164,7 +1269,138 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      decision_record: {
+        Row: {
+          approval_basis: Database["public"]["Enums"]["approval_basis"] | null
+          approved_at: string | null
+          approved_by: string | null
+          approved_by_name: string | null
+          drafted_by: string | null
+          fingerprint: string | null
+          first_author_kind: Database["public"]["Enums"]["author_kind"] | null
+          guideline_id: string | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          memory_item_id: string | null
+          question_text: string | null
+          reference: string | null
+          release_id: string | null
+          released_at: string | null
+          released_by_name: string | null
+          released_version: number | null
+          source_version_ids: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approvals_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_guideline_id_fkey"
+            columns: ["guideline_id"]
+            isOneToOne: false
+            referencedRelation: "guidelines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "releases_memory_item_id_fkey"
+            columns: ["memory_item_id"]
+            isOneToOne: false
+            referencedRelation: "memory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insight_gaps: {
+        Row: {
+          gap_count: number | null
+          includes_demo_seed: boolean | null
+          most_recent: string | null
+          recent_example: string | null
+          topic: string | null
+        }
+        Relationships: []
+      }
+      insight_topics: {
+        Row: {
+          includes_demo_seed: boolean | null
+          outcome: Database["public"]["Enums"]["answer_outcome"] | null
+          question_count: number | null
+          topic: string | null
+          window_end: string | null
+          window_start: string | null
+        }
+        Relationships: []
+      }
+      insight_turnaround: {
+        Row: {
+          case_id: string | null
+          deadline_at: string | null
+          hours_to_release: number | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          met_deadline: boolean | null
+          received_at: string | null
+          reference: string | null
+          released_at: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          deadline_at?: string | null
+          hours_to_release?: never
+          is_demo_seed?: boolean | null
+          kind?: Database["public"]["Enums"]["case_kind"] | null
+          met_deadline?: never
+          received_at?: string | null
+          reference?: string | null
+          released_at?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          deadline_at?: string | null
+          hours_to_release?: never
+          is_demo_seed?: boolean | null
+          kind?: Database["public"]["Enums"]["case_kind"] | null
+          met_deadline?: never
+          received_at?: string | null
+          reference?: string | null
+          released_at?: string | null
+        }
+        Relationships: []
+      }
+      review_queue: {
+        Row: {
+          assigned_to: string | null
+          assigned_to_name: string | null
+          case_id: string | null
+          channel: Database["public"]["Enums"]["channel"] | null
+          deadline_at: string | null
+          draft_count: number | null
+          has_active_approval: boolean | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          latest_draft_id: string | null
+          latest_draft_version: number | null
+          question_text: string | null
+          received_at: string | null
+          reference: string | null
+          review_reasons: Database["public"]["Enums"]["review_reason"][] | null
+          source_changed: boolean | null
+          status: Database["public"]["Enums"]["case_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       activate_guidelines: {
