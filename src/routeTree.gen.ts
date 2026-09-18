@@ -20,12 +20,15 @@ import { Route as WidgetDemoRouteImport } from './routes/widget-demo'
 import { Route as ApiSpeakRouteImport } from './routes/api/speak'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
+import { Route as StaffAccountRouteImport } from './routes/staff/account'
 import { Route as StaffConversationsRouteImport } from './routes/staff/conversations'
 import { Route as StaffHandoffsRouteImport } from './routes/staff/handoffs'
 import { Route as StaffInsightsRouteImport } from './routes/staff/insights'
 import { Route as StaffOverviewRouteImport } from './routes/staff/overview'
 import { Route as StaffRecordRouteImport } from './routes/staff/record'
+import { Route as StaffSettingsRouteImport } from './routes/staff/settings'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as StaffTeamRouteImport } from './routes/staff/team'
 import { Route as StaffVisitorsRouteImport } from './routes/staff/visitors'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
 import { Route as ApiPublicEmbeddingsRouteImport } from './routes/api/public/embeddings'
@@ -97,6 +100,11 @@ const CaseRefRoute = CaseRefRouteImport.update({
   path: '/case/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffAccountRoute = StaffAccountRouteImport.update({
+  id: '/staff/account',
+  path: '/staff/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffConversationsRoute = StaffConversationsRouteImport.update({
   id: '/staff/conversations',
   path: '/staff/conversations',
@@ -122,9 +130,19 @@ const StaffRecordRoute = StaffRecordRouteImport.update({
   path: '/staff/record',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffSettingsRoute = StaffSettingsRouteImport.update({
+  id: '/staff/settings',
+  path: '/staff/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffSignInRoute = StaffSignInRouteImport.update({
   id: '/staff/sign-in',
   path: '/staff/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffTeamRoute = StaffTeamRouteImport.update({
+  id: '/staff/team',
+  path: '/staff/team',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffVisitorsRoute = StaffVisitorsRouteImport.update({
@@ -215,12 +233,15 @@ export interface FileRoutesByFullPath {
   '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/account': typeof StaffAccountRoute
   '/staff/conversations': typeof StaffConversationsRoute
   '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
   '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
+  '/staff/settings': typeof StaffSettingsRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/team': typeof StaffTeamRoute
   '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
@@ -249,12 +270,15 @@ export interface FileRoutesByTo {
   '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/account': typeof StaffAccountRoute
   '/staff/conversations': typeof StaffConversationsRoute
   '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
   '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
+  '/staff/settings': typeof StaffSettingsRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/team': typeof StaffTeamRoute
   '/staff/visitors': typeof StaffVisitorsRoute
   '/case': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
@@ -284,12 +308,15 @@ export interface FileRoutesById {
   '/widget-demo': typeof WidgetDemoRoute
   '/api/speak': typeof ApiSpeakRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/account': typeof StaffAccountRoute
   '/staff/conversations': typeof StaffConversationsRoute
   '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
   '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
+  '/staff/settings': typeof StaffSettingsRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/team': typeof StaffTeamRoute
   '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
@@ -320,12 +347,15 @@ export interface FileRouteTypes {
     | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
+    | '/staff/account'
     | '/staff/conversations'
     | '/staff/handoffs'
     | '/staff/insights'
     | '/staff/overview'
     | '/staff/record'
+    | '/staff/settings'
     | '/staff/sign-in'
+    | '/staff/team'
     | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
@@ -354,12 +384,15 @@ export interface FileRouteTypes {
     | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
+    | '/staff/account'
     | '/staff/conversations'
     | '/staff/handoffs'
     | '/staff/insights'
     | '/staff/overview'
     | '/staff/record'
+    | '/staff/settings'
     | '/staff/sign-in'
+    | '/staff/team'
     | '/staff/visitors'
     | '/case'
     | '/api/public/crawl'
@@ -388,12 +421,15 @@ export interface FileRouteTypes {
     | '/widget-demo'
     | '/api/speak'
     | '/case/$ref'
+    | '/staff/account'
     | '/staff/conversations'
     | '/staff/handoffs'
     | '/staff/insights'
     | '/staff/overview'
     | '/staff/record'
+    | '/staff/settings'
     | '/staff/sign-in'
+    | '/staff/team'
     | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
@@ -423,12 +459,15 @@ export interface RootRouteChildren {
   WidgetDemoRoute: typeof WidgetDemoRoute
   ApiSpeakRoute: typeof ApiSpeakRoute
   CaseRefRoute: typeof CaseRefRoute
+  StaffAccountRoute: typeof StaffAccountRoute
   StaffConversationsRoute: typeof StaffConversationsRoute
   StaffHandoffsRoute: typeof StaffHandoffsRoute
   StaffInsightsRoute: typeof StaffInsightsRoute
   StaffOverviewRoute: typeof StaffOverviewRoute
   StaffRecordRoute: typeof StaffRecordRoute
+  StaffSettingsRoute: typeof StaffSettingsRoute
   StaffSignInRoute: typeof StaffSignInRoute
+  StaffTeamRoute: typeof StaffTeamRoute
   StaffVisitorsRoute: typeof StaffVisitorsRoute
   CaseIndexRoute: typeof CaseIndexRoute
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
@@ -526,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/account': {
+      id: '/staff/account'
+      path: '/staff/account'
+      fullPath: '/staff/account'
+      preLoaderRoute: typeof StaffAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/conversations': {
       id: '/staff/conversations'
       path: '/staff/conversations'
@@ -561,11 +607,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffRecordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/settings': {
+      id: '/staff/settings'
+      path: '/staff/settings'
+      fullPath: '/staff/settings'
+      preLoaderRoute: typeof StaffSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/sign-in': {
       id: '/staff/sign-in'
       path: '/staff/sign-in'
       fullPath: '/staff/sign-in'
       preLoaderRoute: typeof StaffSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/team': {
+      id: '/staff/team'
+      path: '/staff/team'
+      fullPath: '/staff/team'
+      preLoaderRoute: typeof StaffTeamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/visitors': {
@@ -687,12 +747,15 @@ const rootRouteChildren: RootRouteChildren = {
   WidgetDemoRoute: WidgetDemoRoute,
   ApiSpeakRoute: ApiSpeakRoute,
   CaseRefRoute: CaseRefRoute,
+  StaffAccountRoute: StaffAccountRoute,
   StaffConversationsRoute: StaffConversationsRoute,
   StaffHandoffsRoute: StaffHandoffsRoute,
   StaffInsightsRoute: StaffInsightsRoute,
   StaffOverviewRoute: StaffOverviewRoute,
   StaffRecordRoute: StaffRecordRoute,
+  StaffSettingsRoute: StaffSettingsRoute,
   StaffSignInRoute: StaffSignInRoute,
+  StaffTeamRoute: StaffTeamRoute,
   StaffVisitorsRoute: StaffVisitorsRoute,
   CaseIndexRoute: CaseIndexRoute,
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,

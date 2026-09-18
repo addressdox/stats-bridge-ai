@@ -15,6 +15,10 @@
 - Tawk-style widget — `public/widget.js` launcher bubble, live-chat-sized panel, full-screen expand, link to the main app, demonstration page at `/widget-demo`.
 - Public API — working `/api/public/v1/ask`, `/escalate`, `/media-query`, `/case-status` and `/openapi`, documented on `/developers`.
 
+## Done (added)
+- Desk settings, staff roles and accounts, own-account page, super administrator sign-in
+- Telephone handover: officer number configurable and read out on the voice line
+
 ## Open
 
 1. Assistant tool calling — server-side tools for search, comparison, case status, media request, contact capture and handover.

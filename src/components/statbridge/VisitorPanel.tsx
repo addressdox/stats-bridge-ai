@@ -133,6 +133,7 @@ export function TalkToPerson({
 }) {
   const [requested, setRequested] = useState(false);
   const [message, setMessage] = useState("");
+  const [deskPhone, setDeskPhone] = useState<{ number: string; label: string; hours: string } | null>(null);
 
   const request = useMutation({
     mutationFn: () =>
@@ -146,7 +147,16 @@ export function TalkToPerson({
           topic: topic ?? null,
         },
       }),
-    onSuccess: () => setRequested(true),
+    onSuccess: (result) => {
+      setRequested(true);
+      if (result.officerPhone) {
+        setDeskPhone({
+          number: result.officerPhone,
+          label: result.officerPhoneLabel ?? "Stats SA communications desk",
+          hours: result.officeHours,
+        });
+      }
+    },
   });
 
   const thread = useQuery({
@@ -191,6 +201,15 @@ export function TalkToPerson({
         <Headset aria-hidden className="size-3.5" />
         {joined ? "An official has joined" : "Waiting for an official"}
       </p>
+      {deskPhone && (
+        <p className="mt-2 rounded-lg border border-hairline bg-surface/70 px-3 py-2 text-xs">
+          Prefer to call? {deskPhone.label}:{" "}
+          <a className="font-semibold text-official underline underline-offset-2" href={`tel:${deskPhone.number.replace(/\s+/g, "")}`}>
+            {deskPhone.number}
+          </a>{" "}
+          · {deskPhone.hours}
+        </p>
+      )}
       <p className="mt-1.5 text-xs text-muted-foreground">
         {joined
           ? "You are now speaking with a member of the communications team."

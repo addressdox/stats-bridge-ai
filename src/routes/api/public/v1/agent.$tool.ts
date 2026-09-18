@@ -131,19 +131,36 @@ export const Route = createFileRoute("/api/public/v1/agent/$tool")({
           case "human": {
             if (!conversationId) return jsonResponse({ spoken: "I cannot reach an official on this line just now." });
             const { resolveVisitor, requestHandoff } = await import("@/lib/statbridge/visitors.server");
+            const { readDeskSettings, callerPhoneOffer, speakableNumber } = await import(
+              "@/lib/statbridge/settings.server"
+            );
             const db = await getAdminClient();
-            const visitor = await resolveVisitor(db, { browserToken });
+            const [visitor, settings] = await Promise.all([
+              resolveVisitor(db, { browserToken }),
+              readDeskSettings(db),
+            ]);
+            const offer = callerPhoneOffer(settings);
+
             await requestHandoff(db, {
               conversationId,
               visitorId: visitor.visitorId,
               reason: (str(body, "reason") ?? "visitor_request") as never,
-              urgency: (str(body, "urgency") ?? "normal") as never,
+              urgency: (str(body, "urgency") ?? "high") as never,
               topic: str(body, "topic"),
               summary: str(body, "summary") ?? "Caller asked to speak to a person.",
+              channel: "voice",
+              offeredPhone: offer?.number ?? null,
+              callerPhone: str(body, "caller_phone"),
             });
+
+            const spoken = offer
+              ? `I have alerted a Stats SA official now, and they can see this call on the desk. If you would rather speak to them straight away, the ${offer.label} number is ${speakableNumber(offer.number)}. Shall I say it once more?`
+              : "I have alerted a Stats SA official now. They can see this call on the desk and will come back to you on the contact details you gave me.";
+
             return jsonResponse({
-              spoken:
-                "I have passed this to a Stats SA official. Someone will come to you on this conversation shortly.",
+              spoken,
+              officer_phone: offer?.number ?? null,
+              officer_phone_label: offer?.label ?? null,
             });
           }
 

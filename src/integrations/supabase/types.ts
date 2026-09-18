@@ -619,6 +619,77 @@ export type Database = {
           },
         ]
       }
+      desk_settings: {
+        Row: {
+          crawler_enabled: boolean
+          desk_name: string
+          handover_response_minutes: number
+          id: boolean
+          media_auto_escalate: boolean
+          notify_email: string | null
+          office_hours: string
+          officer_phone: string | null
+          officer_phone_label: string
+          phone_handover_enabled: boolean
+          public_api_enabled: boolean
+          support_email: string | null
+          time_zone: string
+          updated_at: string
+          updated_by: string | null
+          visitor_retention_days: number
+          voice_enabled: boolean
+          widget_enabled: boolean
+        }
+        Insert: {
+          crawler_enabled?: boolean
+          desk_name?: string
+          handover_response_minutes?: number
+          id?: boolean
+          media_auto_escalate?: boolean
+          notify_email?: string | null
+          office_hours?: string
+          officer_phone?: string | null
+          officer_phone_label?: string
+          phone_handover_enabled?: boolean
+          public_api_enabled?: boolean
+          support_email?: string | null
+          time_zone?: string
+          updated_at?: string
+          updated_by?: string | null
+          visitor_retention_days?: number
+          voice_enabled?: boolean
+          widget_enabled?: boolean
+        }
+        Update: {
+          crawler_enabled?: boolean
+          desk_name?: string
+          handover_response_minutes?: number
+          id?: boolean
+          media_auto_escalate?: boolean
+          notify_email?: string | null
+          office_hours?: string
+          officer_phone?: string | null
+          officer_phone_label?: string
+          phone_handover_enabled?: boolean
+          public_api_enabled?: boolean
+          support_email?: string | null
+          time_zone?: string
+          updated_at?: string
+          updated_by?: string | null
+          visitor_retention_days?: number
+          voice_enabled?: boolean
+          widget_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "desk_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drafts: {
         Row: {
           adapted_from_memory_item_id: string | null
@@ -895,7 +966,9 @@ export type Database = {
         Row: {
           accepted_at: string | null
           accepted_by: string | null
+          caller_phone: string | null
           case_id: string | null
+          channel: string
           closed_at: string | null
           conversation_id: string
           decline_reason: string | null
@@ -903,6 +976,8 @@ export type Database = {
           declined_by: string | null
           id: string
           is_demo: boolean
+          offered_phone: string | null
+          phone_connect_offered: boolean
           reason: Database["public"]["Enums"]["handoff_reason"]
           requested_at: string
           state: Database["public"]["Enums"]["handoff_state"]
@@ -917,7 +992,9 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           accepted_by?: string | null
+          caller_phone?: string | null
           case_id?: string | null
+          channel?: string
           closed_at?: string | null
           conversation_id: string
           decline_reason?: string | null
@@ -925,6 +1002,8 @@ export type Database = {
           declined_by?: string | null
           id?: string
           is_demo?: boolean
+          offered_phone?: string | null
+          phone_connect_offered?: boolean
           reason?: Database["public"]["Enums"]["handoff_reason"]
           requested_at?: string
           state?: Database["public"]["Enums"]["handoff_state"]
@@ -939,7 +1018,9 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           accepted_by?: string | null
+          caller_phone?: string | null
           case_id?: string | null
+          channel?: string
           closed_at?: string | null
           conversation_id?: string
           decline_reason?: string | null
@@ -947,6 +1028,8 @@ export type Database = {
           declined_by?: string | null
           id?: string
           is_demo?: boolean
+          offered_phone?: string | null
+          phone_connect_offered?: boolean
           reason?: Database["public"]["Enums"]["handoff_reason"]
           requested_at?: string
           state?: Database["public"]["Enums"]["handoff_state"]
@@ -1607,6 +1690,44 @@ export type Database = {
           },
         ]
       }
+      staff_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["staff_role"]
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["staff_role"]
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["staff_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitor_identifiers: {
         Row: {
           created_at: string
@@ -1952,6 +2073,35 @@ export type Database = {
       require_role: {
         Args: { _role: Database["public"]["Enums"]["staff_role"] }
         Returns: string
+      }
+      save_desk_settings: {
+        Args: { _patch: Json }
+        Returns: {
+          crawler_enabled: boolean
+          desk_name: string
+          handover_response_minutes: number
+          id: boolean
+          media_auto_escalate: boolean
+          notify_email: string | null
+          office_hours: string
+          officer_phone: string | null
+          officer_phone_label: string
+          phone_handover_enabled: boolean
+          public_api_enabled: boolean
+          support_email: string | null
+          time_zone: string
+          updated_at: string
+          updated_by: string | null
+          visitor_retention_days: number
+          voice_enabled: boolean
+          widget_enabled: boolean
+        }
+        SetofOptions: {
+          from: "*"
+          to: "desk_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       save_draft: {
         Args: {

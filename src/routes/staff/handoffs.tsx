@@ -158,6 +158,7 @@ function HandoffsPage() {
                       </div>
                       <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{row.summary}</p>
                       <p className="mt-1 text-[11px] text-muted-foreground">
+                        {row.channel === "voice" ? "Voice call" : row.channel === "widget" ? "Widget" : "Typed"} ·{" "}
                         {row.reason.replace(/_/g, " ")} · {relativeTime(row.requestedAt)}
                         {row.acceptedByName ? ` · with ${row.acceptedByName}` : ""}
                       </p>
@@ -179,7 +180,26 @@ function HandoffsPage() {
                   <dt className="text-muted-foreground">Email</dt>
                   <dd className="truncate">{selected.visitorEmail ?? "Not given"}</dd>
                   <dt className="text-muted-foreground">Phone</dt>
-                  <dd>{selected.visitorPhone ?? "Not given"}</dd>
+                  <dd>
+                    {selected.callerPhone ?? selected.visitorPhone ? (
+                      <a
+                        className="underline underline-offset-2"
+                        href={`tel:${(selected.callerPhone ?? selected.visitorPhone ?? "").replace(/\s+/g, "")}`}
+                      >
+                        {selected.callerPhone ?? selected.visitorPhone}
+                      </a>
+                    ) : (
+                      "Not given"
+                    )}
+                  </dd>
+                  <dt className="text-muted-foreground">Came in by</dt>
+                  <dd className="capitalize">{selected.channel === "voice" ? "Voice call" : selected.channel}</dd>
+                  {selected.offeredPhone && (
+                    <>
+                      <dt className="text-muted-foreground">Desk number given</dt>
+                      <dd>{selected.offeredPhone}</dd>
+                    </>
+                  )}
                   <dt className="text-muted-foreground">Reason</dt>
                   <dd className="capitalize">{selected.reason.replace(/_/g, " ")}</dd>
                 </dl>

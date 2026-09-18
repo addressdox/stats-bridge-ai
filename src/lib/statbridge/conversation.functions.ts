@@ -137,6 +137,10 @@ export const askForHuman = createServerFn({ method: "POST" })
       contact: data.contact ?? {},
     });
 
+    const { readDeskSettings, callerPhoneOffer } = await import("./settings.server");
+    const settings = await readDeskSettings(db);
+    const offer = callerPhoneOffer(settings);
+
     const handoffId = await requestHandoff(db, {
       conversationId: data.conversationId,
       visitorId: visitor.visitorId,
@@ -144,9 +148,15 @@ export const askForHuman = createServerFn({ method: "POST" })
       urgency: data.urgency,
       topic: data.topic ?? null,
       summary: data.summary,
+      offeredPhone: offer?.number ?? null,
     });
 
-    return { handoffId };
+    return {
+      handoffId,
+      officerPhone: offer?.number ?? null,
+      officerPhoneLabel: offer?.label ?? null,
+      officeHours: settings.office_hours,
+    };
   });
 
 /** Lets a visitor watch their own conversation while an official replies. */

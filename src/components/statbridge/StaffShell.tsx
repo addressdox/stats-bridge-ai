@@ -12,6 +12,9 @@ import {
   Shield,
   UserRound,
   Users,
+  Settings,
+  UserCog,
+  IdCard,
 } from "lucide-react";
 
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
@@ -29,6 +32,9 @@ const LINKS = [
   { to: "/staff/knowledge/memory", label: "Communication memory", icon: FileClock },
   { to: "/staff/insights", label: "Insights", icon: Shield },
   { to: "/staff/record", label: "Decision record", icon: ScrollText },
+  { to: "/staff/team", label: "Staff and roles", icon: UserCog },
+  { to: "/staff/settings", label: "Desk settings", icon: Settings },
+  { to: "/staff/account", label: "My account", icon: IdCard },
 ] as const;
 
 export function StaffShell({ children, title }: { children: React.ReactNode; title: string }) {
