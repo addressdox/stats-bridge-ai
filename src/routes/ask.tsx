@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 
 import { AskExperience } from "@/components/statbridge/AskExperience";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
+import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
 const title = "Ask StatBridge — official South African statistics";
 const description =

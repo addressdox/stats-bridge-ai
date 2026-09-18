@@ -38,6 +38,9 @@ function EntryGate() {
 
   return (
     <main className="relative min-h-svh stage-glow">
+      <div className="absolute right-4 top-4 z-50">
+        <ThemeToggle />
+      </div>
       <div className="grid min-h-svh grid-cols-1 lg:grid-cols-2">
         {/* Door one: the assistant */}
         <motion.section
