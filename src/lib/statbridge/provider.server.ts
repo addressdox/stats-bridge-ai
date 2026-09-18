@@ -54,7 +54,7 @@ function lovableGateway(apiKey: string): AssistantProvider {
 }
 
 function directGemini(apiKey: string): AssistantProvider {
-  const model = process.env["GEMINI_MODEL"] ?? "gemini-2.5-flash";
+  const model = process.env["GEMINI_MODEL"] ?? "gemini-3.8-flash";
   return {
     name: "Google Gemini (direct API key)",
     model,
@@ -67,6 +67,9 @@ function directGemini(apiKey: string): AssistantProvider {
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: system }] },
             contents: [{ role: "user", parts: [{ text: prompt }] }],
+            // A spoken caller is waiting: keep deliberation short. The evidence
+            // rule is enforced after the reply, not by longer thinking.
+            generationConfig: { temperature: 0.2, thinkingConfig: { thinkingLevel: "low" } },
           }),
         },
       );
