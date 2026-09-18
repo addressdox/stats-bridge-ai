@@ -72,7 +72,25 @@ export async function resolveVisitor(
     visitorId = data.id;
   }
 
-  for (const lookup of lookups) {
+  // Concurrent first visits must agree on one owner before either opens a conversation.
+  // The unique (kind, value) constraint claims the token without moving an existing owner.
+  const { error: claimError } = await db.from("visitor_identifiers").upsert(
+    { visitor_id: visitorId, kind: "browser_token", value: token },
+    { onConflict: "kind,value", ignoreDuplicates: true },
+  );
+  if (claimError) throw new Error("Could not identify this visitor.");
+  const { data: owner, error: ownerError } = await db
+    .from("visitor_identifiers")
+    .select("visitor_id")
+    .eq("kind", "browser_token")
+    .eq("value", token)
+    .maybeSingle();
+  if (ownerError || !owner?.visitor_id) throw new Error("Could not identify this visitor.");
+  // A losing newly inserted candidate is left unreferenced; deleting it here would not
+  // atomically prove that another request has not attached history or an identifier.
+  visitorId = owner.visitor_id;
+
+  for (const lookup of lookups.filter((item) => item.kind !== "browser_token")) {
     await db
       .from("visitor_identifiers")
       .upsert({ visitor_id: visitorId, kind: lookup.kind, value: lookup.value }, { onConflict: "kind,value" });
