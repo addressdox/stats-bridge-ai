@@ -44,10 +44,12 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const [draft, setDraft] = useState(initialDraft);
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
+  const [contactSaved, setContactSaved] = useState(false);
   const reduce = useReducedMotion();
+  const { session } = useVisitorSession(compact ? "widget" : "chat");
 
   const ask = useMutation({
-    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web" } }),
+    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "en", channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
     onSuccess: (answer) => {
       setTurns((current) => [...current, { id: uid(), role: "assistant", answer }]);
       setCanvasOpen(true);
