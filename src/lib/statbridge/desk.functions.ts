@@ -276,7 +276,7 @@ export const actOnHandoff = createServerFn({ method: "POST" })
       patch["closed_at"] = now;
     }
 
-    const { data: row, error } = await db.from("handoffs").update(patch).eq("id", data.handoffId).select("conversation_id").single();
+    const { data: row, error } = await db.from("handoffs").update(patch as never).eq("id", data.handoffId).select("conversation_id").single();
     if (error) throw new Error(error.message);
 
     await db.from("handoff_events").insert({

@@ -10,12 +10,12 @@ import { getAssistant, parseModelJson } from "./provider.server";
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
 export type ContactDetails = {
-  fullName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  address?: string | null;
-  organisation?: string | null;
-  consent?: boolean;
+  fullName?: string | null | undefined;
+  email?: string | null | undefined;
+  phone?: string | null | undefined;
+  address?: string | null | undefined;
+  organisation?: string | null | undefined;
+  consent?: boolean | undefined;
 };
 
 function clean(value: string | null | undefined) {
@@ -78,7 +78,7 @@ export async function resolveVisitor(
       .upsert({ visitor_id: visitorId, kind: lookup.kind, value: lookup.value }, { onConflict: "kind,value" });
   }
 
-  const patch: Record<string, unknown> = { last_seen_at: new Date().toISOString() };
+  const patch: Record<string, string | boolean | null> = { last_seen_at: new Date().toISOString() };
   if (clean(args.contact?.fullName)) patch["full_name"] = clean(args.contact?.fullName);
   if (email) patch["email"] = email;
   if (phone) patch["phone"] = phone;
@@ -88,7 +88,7 @@ export async function resolveVisitor(
     patch["consent_given"] = true;
     patch["consent_at"] = new Date().toISOString();
   }
-  await db.from("visitors").update(patch).eq("id", visitorId);
+  await db.from("visitors").update(patch as never).eq("id", visitorId);
 
   const { data: visitor } = await db.from("visitors").select("full_name").eq("id", visitorId).maybeSingle();
 

@@ -134,7 +134,7 @@ export const askForHuman = createServerFn({ method: "POST" })
 
     const visitor = await resolveVisitor(db, {
       browserToken: data.browserToken,
-      ...(data.contact ? { contact: data.contact } : {}),
+      contact: data.contact ?? {},
     });
 
     const handoffId = await requestHandoff(db, {
