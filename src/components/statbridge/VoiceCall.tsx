@@ -85,12 +85,12 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
     try {
       const response = await fetch("/api/voice/token");
       if (!response.ok) throw new Error(String(response.status));
-      const body = (await response.json()) as { token?: string | null };
-      if (!body.token) throw new Error("no token");
+      const body = (await response.json()) as { signedUrl?: string | null };
+      if (!body.signedUrl) throw new Error("no signed url");
 
       await conversation.startSession({
-        conversationToken: body.token,
-        connectionType: "webrtc",
+        signedUrl: body.signedUrl,
+        connectionType: "websocket",
         dynamicVariables: {
           conversation_id: session?.conversationId ?? "none",
           browser_token: readBrowserToken() || "none",

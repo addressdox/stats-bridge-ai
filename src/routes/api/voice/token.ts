@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/voice/token")({
         }
 
         const upstream = await fetch(
-          `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${encodeURIComponent(agentId)}`,
+          `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agentId)}`,
           { headers: { "xi-api-key": key } },
         );
 
@@ -31,8 +31,8 @@ export const Route = createFileRoute("/api/voice/token")({
           });
         }
 
-        const body = (await upstream.json()) as { token?: string };
-        return new Response(JSON.stringify({ token: body.token ?? null, agentId }), {
+        const body = (await upstream.json()) as { signed_url?: string };
+        return new Response(JSON.stringify({ signedUrl: body.signed_url ?? null, agentId }), {
           headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
         });
       },
