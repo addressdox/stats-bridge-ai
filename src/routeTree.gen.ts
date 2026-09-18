@@ -10,33 +10,128 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevelopersRouteImport } from './routes/developers'
+import { Route as EmbedRouteImport } from './routes/embed'
+import { Route as MediaRouteImport } from './routes/media'
+import { Route as CaseIndexRouteImport } from './routes/case.index'
+import { Route as CaseRefRouteImport } from './routes/case.$ref'
+import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as StaffReviewIndexRouteImport } from './routes/staff/review.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedRoute = EmbedRouteImport.update({
+  id: '/embed',
+  path: '/embed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaseIndexRoute = CaseIndexRouteImport.update({
+  id: '/case/',
+  path: '/case/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaseRefRoute = CaseRefRouteImport.update({
+  id: '/case/$ref',
+  path: '/case/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffSignInRoute = StaffSignInRouteImport.update({
+  id: '/staff/sign-in',
+  path: '/staff/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffReviewIndexRoute = StaffReviewIndexRouteImport.update({
+  id: '/staff/review/',
+  path: '/staff/review/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
+  '/embed': typeof EmbedRoute
+  '/media': typeof MediaRoute
+  '/case/$ref': typeof CaseRefRoute
+  '/staff/sign-in': typeof StaffSignInRoute
+  '/case/': typeof CaseIndexRoute
+  '/staff/review/': typeof StaffReviewIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
+  '/embed': typeof EmbedRoute
+  '/media': typeof MediaRoute
+  '/case/$ref': typeof CaseRefRoute
+  '/staff/sign-in': typeof StaffSignInRoute
+  '/case': typeof CaseIndexRoute
+  '/staff/review': typeof StaffReviewIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
+  '/embed': typeof EmbedRoute
+  '/media': typeof MediaRoute
+  '/case/$ref': typeof CaseRefRoute
+  '/staff/sign-in': typeof StaffSignInRoute
+  '/case/': typeof CaseIndexRoute
+  '/staff/review/': typeof StaffReviewIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/developers'
+    | '/embed'
+    | '/media'
+    | '/case/$ref'
+    | '/staff/sign-in'
+    | '/case/'
+    | '/staff/review/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/developers'
+    | '/embed'
+    | '/media'
+    | '/case/$ref'
+    | '/staff/sign-in'
+    | '/case'
+    | '/staff/review'
+  id:
+    | '__root__'
+    | '/'
+    | '/developers'
+    | '/embed'
+    | '/media'
+    | '/case/$ref'
+    | '/staff/sign-in'
+    | '/case/'
+    | '/staff/review/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DevelopersRoute: typeof DevelopersRoute
+  EmbedRoute: typeof EmbedRoute
+  MediaRoute: typeof MediaRoute
+  CaseRefRoute: typeof CaseRefRoute
+  StaffSignInRoute: typeof StaffSignInRoute
+  CaseIndexRoute: typeof CaseIndexRoute
+  StaffReviewIndexRoute: typeof StaffReviewIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +143,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed': {
+      id: '/embed'
+      path: '/embed'
+      fullPath: '/embed'
+      preLoaderRoute: typeof EmbedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/case/': {
+      id: '/case/'
+      path: '/case'
+      fullPath: '/case/'
+      preLoaderRoute: typeof CaseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/case/$ref': {
+      id: '/case/$ref'
+      path: '/case/$ref'
+      fullPath: '/case/$ref'
+      preLoaderRoute: typeof CaseRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/sign-in': {
+      id: '/staff/sign-in'
+      path: '/staff/sign-in'
+      fullPath: '/staff/sign-in'
+      preLoaderRoute: typeof StaffSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/review/': {
+      id: '/staff/review/'
+      path: '/staff/review'
+      fullPath: '/staff/review/'
+      preLoaderRoute: typeof StaffReviewIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DevelopersRoute: DevelopersRoute,
+  EmbedRoute: EmbedRoute,
+  MediaRoute: MediaRoute,
+  CaseRefRoute: CaseRefRoute,
+  StaffSignInRoute: StaffSignInRoute,
+  CaseIndexRoute: CaseIndexRoute,
+  StaffReviewIndexRoute: StaffReviewIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
