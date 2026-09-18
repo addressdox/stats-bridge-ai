@@ -149,7 +149,7 @@ Reply with a single JSON object and nothing else:
   "topic": "short lowercase topic label",
   "passageIds": ["id from EXTRACTS you rely on"],
   "observationIds": ["id from FIGURES you rely on"],
-  "blocks": ["metric" | "official_quote" | "comparison_table" | "chart" | "document" | "definition"],
+  "blocks": ["metric" | "official_quote" | "comparison_table" | "chart" | "dataset" | "image" | "video" | "document" | "definition"],
   "explanation": "2-4 short plain-language sentences. No new numbers beyond the supplied ones. No causes, no forecasts, no opinions.",
   "caveats": ["short wording caution, only where the evidence says so"],
   "clarificationQuestion": "asked only when decision is clarify",
