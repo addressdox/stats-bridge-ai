@@ -46,7 +46,10 @@ function EntryGate() {
           <span aria-hidden className="entry-door-glow entry-door-glow-gold" />
           <AssistantPortrait interactive showMic size="small" />
           <h1 className="relative mt-7 text-3xl font-semibold sm:text-4xl">Ask StatBridge</h1>
-          <p className="relative mt-2 text-sm text-muted-foreground sm:text-base">Your official statistics assistant</p>
+          <p className="relative mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Official statistics, answered from approved Stats SA publications — with the source, the
+            page and the period shown every time. No sign-up. Typing or push-to-talk.
+          </p>
         </motion.button>
 
         <div className="mx-20 h-px bg-hairline md:my-20 md:mx-0 md:h-auto md:w-px" />
