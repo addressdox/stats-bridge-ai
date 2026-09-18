@@ -118,10 +118,14 @@ export async function startConversation(
     .single();
   if (error || !data) throw new Error(error?.message ?? "Could not start this conversation.");
 
-  await db.rpc("bump_visitor_conversations", { _visitor_id: args.visitorId }).then(
-    () => undefined,
-    () => undefined,
-  );
+  const { count } = await db
+    .from("conversations")
+    .select("id", { count: "exact", head: true })
+    .eq("visitor_id", args.visitorId);
+  await db
+    .from("visitors")
+    .update({ conversation_count: count ?? 1, last_seen_at: new Date().toISOString() })
+    .eq("id", args.visitorId);
 
   return data.id;
 }
