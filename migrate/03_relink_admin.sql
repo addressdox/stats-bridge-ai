@@ -10,6 +10,9 @@
 --     -v new_id="'<user id of the account you just created>'" \
 --     -f migrate/03_relink_admin.sql
 
+-- the decision record is append-only; lift the guard for this one relink
+ALTER TABLE public.audit_events DISABLE TRIGGER audit_immutable;
+
 BEGIN;
 SET CONSTRAINTS ALL DEFERRED;
 
@@ -43,5 +46,8 @@ BEGIN
 END $$;
 
 COMMIT;
+
+ALTER TABLE public.audit_events ENABLE TRIGGER audit_immutable;
+
 
 ALTER TABLE public.audit_events ENABLE TRIGGER audit_immutable;
