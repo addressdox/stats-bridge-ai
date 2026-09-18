@@ -13,7 +13,8 @@
 
 ### Still remaining per the specification
 1. **Real AI provider wiring** — Gemini server-side via Lovable AI Gateway for answer wording within approved sources (provider interface exists; needs a live model behind it, currently demonstration logic).
-2. **Seed demonstration data** — approved Stats SA sources, verified observations, guidelines and memory rows via migration, plus a documented reset procedure.
+2. **Real South African data foundation** — harvest genuine published statistics from Stats SA and other official bodies (Reserve Bank, National Treasury, municipal portals), load them as approved sources and verified observations through a migration, plus a documented reset procedure. This is the starting knowledge base.
+3. **Continuous crawler** — a scheduled crawler that constantly harvests new official South African publications and feeds them into the knowledge base through the existing source-approval flow, so knowledge and coverage keep growing.
 3. **Evaluation** — the 30-case test set from the specification, run and recorded (passed / failed / blocked), no invented results.
 4. **Widget polish and independent demo host** — `/embed` exists; standalone hosted demo page still to do.
 5. **Public API documentation completion** — `/developers` page exists; full endpoint reference and usage examples to finish.
