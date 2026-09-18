@@ -34,6 +34,7 @@ import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowled
 import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
 import { Route as StaffReviewIndexRouteImport } from './routes/staff/review.index'
 import { Route as StaffReviewIdRouteImport } from './routes/staff/review.$id'
+import { Route as ApiPublicV1AskRouteImport } from './routes/api/public/v1/ask'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -161,6 +162,11 @@ const StaffReviewIdRoute = StaffReviewIdRouteImport.update({
   path: '/staff/review/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1AskRoute = ApiPublicV1AskRouteImport.update({
+  id: '/api/public/v1/ask',
+  path: '/api/public/v1/ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
+  '/api/public/v1/ask': typeof ApiPublicV1AskRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review': typeof StaffReviewIndexRoute
+  '/api/public/v1/ask': typeof ApiPublicV1AskRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
+  '/api/public/v1/ask': typeof ApiPublicV1AskRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -272,6 +281,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge/sources'
     | '/staff/review/$id'
     | '/staff/review/'
+    | '/api/public/v1/ask'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge/sources'
     | '/staff/review/$id'
     | '/staff/review'
+    | '/api/public/v1/ask'
   id:
     | '__root__'
     | '/'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/staff/knowledge/sources'
     | '/staff/review/$id'
     | '/staff/review/'
+    | '/api/public/v1/ask'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
   StaffReviewIdRoute: typeof StaffReviewIdRoute
   StaffReviewIndexRoute: typeof StaffReviewIndexRoute
+  ApiPublicV1AskRoute: typeof ApiPublicV1AskRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -533,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffReviewIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/ask': {
+      id: '/api/public/v1/ask'
+      path: '/api/public/v1/ask'
+      fullPath: '/api/public/v1/ask'
+      preLoaderRoute: typeof ApiPublicV1AskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -562,6 +582,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,
   StaffReviewIdRoute: StaffReviewIdRoute,
   StaffReviewIndexRoute: StaffReviewIndexRoute,
+  ApiPublicV1AskRoute: ApiPublicV1AskRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
