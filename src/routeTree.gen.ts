@@ -16,8 +16,14 @@ import { Route as EmbedRouteImport } from './routes/embed'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
+import { Route as StaffInsightsRouteImport } from './routes/staff/insights'
+import { Route as StaffRecordRouteImport } from './routes/staff/record'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
+import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
+import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
 import { Route as StaffReviewIndexRouteImport } from './routes/staff/review.index'
+import { Route as StaffReviewIdRouteImport } from './routes/staff/review.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -54,14 +60,45 @@ const CaseRefRoute = CaseRefRouteImport.update({
   path: '/case/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffInsightsRoute = StaffInsightsRouteImport.update({
+  id: '/staff/insights',
+  path: '/staff/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRecordRoute = StaffRecordRouteImport.update({
+  id: '/staff/record',
+  path: '/staff/record',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffSignInRoute = StaffSignInRouteImport.update({
   id: '/staff/sign-in',
   path: '/staff/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffKnowledgeGuidelinesRoute =
+  StaffKnowledgeGuidelinesRouteImport.update({
+    id: '/staff/knowledge/guidelines',
+    path: '/staff/knowledge/guidelines',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const StaffKnowledgeMemoryRoute = StaffKnowledgeMemoryRouteImport.update({
+  id: '/staff/knowledge/memory',
+  path: '/staff/knowledge/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffKnowledgeSourcesRoute = StaffKnowledgeSourcesRouteImport.update({
+  id: '/staff/knowledge/sources',
+  path: '/staff/knowledge/sources',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffReviewIndexRoute = StaffReviewIndexRouteImport.update({
   id: '/staff/review/',
   path: '/staff/review/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffReviewIdRoute = StaffReviewIdRouteImport.update({
+  id: '/staff/review/$id',
+  path: '/staff/review/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -72,8 +109,14 @@ export interface FileRoutesByFullPath {
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/insights': typeof StaffInsightsRoute
+  '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
   '/case/': typeof CaseIndexRoute
+  '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
+  '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
+  '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
+  '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
 }
 export interface FileRoutesByTo {
@@ -83,8 +126,14 @@ export interface FileRoutesByTo {
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/insights': typeof StaffInsightsRoute
+  '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
   '/case': typeof CaseIndexRoute
+  '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
+  '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
+  '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
+  '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review': typeof StaffReviewIndexRoute
 }
 export interface FileRoutesById {
@@ -95,8 +144,14 @@ export interface FileRoutesById {
   '/embed': typeof EmbedRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/insights': typeof StaffInsightsRoute
+  '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
   '/case/': typeof CaseIndexRoute
+  '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
+  '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
+  '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
+  '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
 }
 export interface FileRouteTypes {
@@ -108,8 +163,14 @@ export interface FileRouteTypes {
     | '/embed'
     | '/media'
     | '/case/$ref'
+    | '/staff/insights'
+    | '/staff/record'
     | '/staff/sign-in'
     | '/case/'
+    | '/staff/knowledge/guidelines'
+    | '/staff/knowledge/memory'
+    | '/staff/knowledge/sources'
+    | '/staff/review/$id'
     | '/staff/review/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,8 +180,14 @@ export interface FileRouteTypes {
     | '/embed'
     | '/media'
     | '/case/$ref'
+    | '/staff/insights'
+    | '/staff/record'
     | '/staff/sign-in'
     | '/case'
+    | '/staff/knowledge/guidelines'
+    | '/staff/knowledge/memory'
+    | '/staff/knowledge/sources'
+    | '/staff/review/$id'
     | '/staff/review'
   id:
     | '__root__'
@@ -130,8 +197,14 @@ export interface FileRouteTypes {
     | '/embed'
     | '/media'
     | '/case/$ref'
+    | '/staff/insights'
+    | '/staff/record'
     | '/staff/sign-in'
     | '/case/'
+    | '/staff/knowledge/guidelines'
+    | '/staff/knowledge/memory'
+    | '/staff/knowledge/sources'
+    | '/staff/review/$id'
     | '/staff/review/'
   fileRoutesById: FileRoutesById
 }
@@ -142,8 +215,14 @@ export interface RootRouteChildren {
   EmbedRoute: typeof EmbedRoute
   MediaRoute: typeof MediaRoute
   CaseRefRoute: typeof CaseRefRoute
+  StaffInsightsRoute: typeof StaffInsightsRoute
+  StaffRecordRoute: typeof StaffRecordRoute
   StaffSignInRoute: typeof StaffSignInRoute
   CaseIndexRoute: typeof CaseIndexRoute
+  StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
+  StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
+  StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
+  StaffReviewIdRoute: typeof StaffReviewIdRoute
   StaffReviewIndexRoute: typeof StaffReviewIndexRoute
 }
 
@@ -198,6 +277,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/insights': {
+      id: '/staff/insights'
+      path: '/staff/insights'
+      fullPath: '/staff/insights'
+      preLoaderRoute: typeof StaffInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/record': {
+      id: '/staff/record'
+      path: '/staff/record'
+      fullPath: '/staff/record'
+      preLoaderRoute: typeof StaffRecordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/sign-in': {
       id: '/staff/sign-in'
       path: '/staff/sign-in'
@@ -205,11 +298,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/knowledge/guidelines': {
+      id: '/staff/knowledge/guidelines'
+      path: '/staff/knowledge/guidelines'
+      fullPath: '/staff/knowledge/guidelines'
+      preLoaderRoute: typeof StaffKnowledgeGuidelinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/knowledge/memory': {
+      id: '/staff/knowledge/memory'
+      path: '/staff/knowledge/memory'
+      fullPath: '/staff/knowledge/memory'
+      preLoaderRoute: typeof StaffKnowledgeMemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/knowledge/sources': {
+      id: '/staff/knowledge/sources'
+      path: '/staff/knowledge/sources'
+      fullPath: '/staff/knowledge/sources'
+      preLoaderRoute: typeof StaffKnowledgeSourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/review/': {
       id: '/staff/review/'
       path: '/staff/review'
       fullPath: '/staff/review/'
       preLoaderRoute: typeof StaffReviewIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/review/$id': {
+      id: '/staff/review/$id'
+      path: '/staff/review/$id'
+      fullPath: '/staff/review/$id'
+      preLoaderRoute: typeof StaffReviewIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -222,8 +343,14 @@ const rootRouteChildren: RootRouteChildren = {
   EmbedRoute: EmbedRoute,
   MediaRoute: MediaRoute,
   CaseRefRoute: CaseRefRoute,
+  StaffInsightsRoute: StaffInsightsRoute,
+  StaffRecordRoute: StaffRecordRoute,
   StaffSignInRoute: StaffSignInRoute,
   CaseIndexRoute: CaseIndexRoute,
+  StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
+  StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,
+  StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,
+  StaffReviewIdRoute: StaffReviewIdRoute,
   StaffReviewIndexRoute: StaffReviewIndexRoute,
 }
 export const routeTree = rootRouteImport
