@@ -45,7 +45,6 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
   const [problem, setProblem] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const frameRef = useRef<number | null>(null);
   const startedRef = useRef(false);
 
   const conversation = useConversation({
@@ -146,22 +145,23 @@ function VoiceCallRoom({ onTypeInstead }: { onTypeInstead: (draft?: string) => v
   }, [state]);
 
   // live audio level for the portrait and visualiser
+  const conversationRef = useRef(conversation);
+  conversationRef.current = conversation;
+  const speakingRef = useRef(isSpeaking);
+  speakingRef.current = isSpeaking;
+
   useEffect(() => {
     if (state !== "live") {
       setLevel(0);
       return;
     }
-    const tick = () => {
-      const value = isSpeaking ? conversation.getOutputVolume() : conversation.getInputVolume();
+    const meter = setInterval(() => {
+      const live = conversationRef.current;
+      const value = speakingRef.current ? live.getOutputVolume() : live.getInputVolume();
       setLevel(Math.min(1, (typeof value === "number" ? value : 0) * 2.4));
-      frameRef.current = requestAnimationFrame(tick);
-    };
-    tick();
-    return () => {
-      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-    };
-  }, [state, isSpeaking, conversation]);
+    }, 80);
+    return () => clearInterval(meter);
+  }, [state]);
 
   const portraitState: AssistantState =
     state === "connecting" || status === "connecting"
