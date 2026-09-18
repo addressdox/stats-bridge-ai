@@ -1,11 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, Download, Loader2, Printer, X } from "lucide-react";
+import { useState } from "react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { z } from "zod";
 
 import { SiteFooter, SiteHeader } from "@/components/statbridge/SiteChrome";
-import { getPublicInsights } from "@/lib/statbridge/insights.functions";
+import { exportInsightsCsv, getPublicInsights } from "@/lib/statbridge/insights.functions";
+
+const searchSchema = z.object({
+  publisher: z.string().optional(),
+  topic: z.string().optional(),
+  measureKey: z.string().optional(),
+  geography: z.string().optional(),
+  days: z.coerce.number().int().min(1).max(3650).optional(),
+});
 
 const title = "Insights — what South Africa is asking and what was just published";
 const description =
