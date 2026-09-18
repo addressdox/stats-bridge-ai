@@ -30,8 +30,10 @@ import { Route as StaffSettingsRouteImport } from './routes/staff/settings'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
 import { Route as StaffTeamRouteImport } from './routes/staff/team'
 import { Route as StaffVisitorsRouteImport } from './routes/staff/visitors'
+import { Route as StaffWidgetsRouteImport } from './routes/staff/widgets'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
 import { Route as ApiPublicEmbeddingsRouteImport } from './routes/api/public/embeddings'
+import { Route as ApiPublicSnapshotRouteImport } from './routes/api/public/snapshot'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice/token'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
@@ -150,6 +152,11 @@ const StaffVisitorsRoute = StaffVisitorsRouteImport.update({
   path: '/staff/visitors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffWidgetsRoute = StaffWidgetsRouteImport.update({
+  id: '/staff/widgets',
+  path: '/staff/widgets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCrawlRoute = ApiPublicCrawlRouteImport.update({
   id: '/api/public/crawl',
   path: '/api/public/crawl',
@@ -158,6 +165,11 @@ const ApiPublicCrawlRoute = ApiPublicCrawlRouteImport.update({
 const ApiPublicEmbeddingsRoute = ApiPublicEmbeddingsRouteImport.update({
   id: '/api/public/embeddings',
   path: '/api/public/embeddings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSnapshotRoute = ApiPublicSnapshotRouteImport.update({
+  id: '/api/public/snapshot',
+  path: '/api/public/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVoiceTokenRoute = ApiVoiceTokenRouteImport.update({
@@ -243,9 +255,11 @@ export interface FileRoutesByFullPath {
   '/staff/sign-in': typeof StaffSignInRoute
   '/staff/team': typeof StaffTeamRoute
   '/staff/visitors': typeof StaffVisitorsRoute
+  '/staff/widgets': typeof StaffWidgetsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
+  '/api/public/snapshot': typeof ApiPublicSnapshotRoute
   '/api/voice/token': typeof ApiVoiceTokenRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
@@ -280,9 +294,11 @@ export interface FileRoutesByTo {
   '/staff/sign-in': typeof StaffSignInRoute
   '/staff/team': typeof StaffTeamRoute
   '/staff/visitors': typeof StaffVisitorsRoute
+  '/staff/widgets': typeof StaffWidgetsRoute
   '/case': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
+  '/api/public/snapshot': typeof ApiPublicSnapshotRoute
   '/api/voice/token': typeof ApiVoiceTokenRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
@@ -318,9 +334,11 @@ export interface FileRoutesById {
   '/staff/sign-in': typeof StaffSignInRoute
   '/staff/team': typeof StaffTeamRoute
   '/staff/visitors': typeof StaffVisitorsRoute
+  '/staff/widgets': typeof StaffWidgetsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
+  '/api/public/snapshot': typeof ApiPublicSnapshotRoute
   '/api/voice/token': typeof ApiVoiceTokenRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
@@ -357,9 +375,11 @@ export interface FileRouteTypes {
     | '/staff/sign-in'
     | '/staff/team'
     | '/staff/visitors'
+    | '/staff/widgets'
     | '/case/'
     | '/api/public/crawl'
     | '/api/public/embeddings'
+    | '/api/public/snapshot'
     | '/api/voice/token'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
@@ -394,9 +414,11 @@ export interface FileRouteTypes {
     | '/staff/sign-in'
     | '/staff/team'
     | '/staff/visitors'
+    | '/staff/widgets'
     | '/case'
     | '/api/public/crawl'
     | '/api/public/embeddings'
+    | '/api/public/snapshot'
     | '/api/voice/token'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
@@ -431,9 +453,11 @@ export interface FileRouteTypes {
     | '/staff/sign-in'
     | '/staff/team'
     | '/staff/visitors'
+    | '/staff/widgets'
     | '/case/'
     | '/api/public/crawl'
     | '/api/public/embeddings'
+    | '/api/public/snapshot'
     | '/api/voice/token'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
@@ -469,9 +493,11 @@ export interface RootRouteChildren {
   StaffSignInRoute: typeof StaffSignInRoute
   StaffTeamRoute: typeof StaffTeamRoute
   StaffVisitorsRoute: typeof StaffVisitorsRoute
+  StaffWidgetsRoute: typeof StaffWidgetsRoute
   CaseIndexRoute: typeof CaseIndexRoute
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
   ApiPublicEmbeddingsRoute: typeof ApiPublicEmbeddingsRoute
+  ApiPublicSnapshotRoute: typeof ApiPublicSnapshotRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
   StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
@@ -635,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffVisitorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/widgets': {
+      id: '/staff/widgets'
+      path: '/staff/widgets'
+      fullPath: '/staff/widgets'
+      preLoaderRoute: typeof StaffWidgetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/crawl': {
       id: '/api/public/crawl'
       path: '/api/public/crawl'
@@ -647,6 +680,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/embeddings'
       fullPath: '/api/public/embeddings'
       preLoaderRoute: typeof ApiPublicEmbeddingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/snapshot': {
+      id: '/api/public/snapshot'
+      path: '/api/public/snapshot'
+      fullPath: '/api/public/snapshot'
+      preLoaderRoute: typeof ApiPublicSnapshotRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/voice/token': {
@@ -757,9 +797,11 @@ const rootRouteChildren: RootRouteChildren = {
   StaffSignInRoute: StaffSignInRoute,
   StaffTeamRoute: StaffTeamRoute,
   StaffVisitorsRoute: StaffVisitorsRoute,
+  StaffWidgetsRoute: StaffWidgetsRoute,
   CaseIndexRoute: CaseIndexRoute,
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,
   ApiPublicEmbeddingsRoute: ApiPublicEmbeddingsRoute,
+  ApiPublicSnapshotRoute: ApiPublicSnapshotRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
   StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,

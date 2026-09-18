@@ -223,3 +223,13 @@ export const decideKnowledgeSource = createServerFn({ method: "POST" })
     await db.from("audit_events").insert({ actor_id: actor, actor_role: "staff", action: `source_${data.action}d`, entity_kind: "source_version", entity_id: data.versionId, detail: { reason: data.reason ?? null }, origin: "screen" });
     return { ok: true };
   });
+/** Bulk check of extracted figures. Only a person may mark a figure as checked. */
+export const verifyFigures = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ observationIds: z.array(z.string().uuid()).min(1).max(500) }).parse(input))
+  .handler(async ({ context, data }) => {
+    await requirePermission(context as never, "sources.verify");
+    const result = await (context as unknown as { supabase: { rpc: (n: string, a: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> } }).supabase.rpc("verify_observations", { _ids: data.observationIds });
+    if (result.error) throw new Error("The figures could not be marked as checked.");
+    return { verified: Number(result.data ?? 0) };
+  });

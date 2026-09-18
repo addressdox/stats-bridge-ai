@@ -23,3 +23,18 @@ export const getStaffInsights=createServerFn({method:"POST"}).middleware([requir
  const recommendations:string[]=[];const gaps=a.filter((r:any)=>r.outcome==="gap").length;if(gaps)recommendations.push(`Prioritise the top knowledge gaps: ${gaps} unsupported questions appeared in this window.`);if(stale.length)recommendations.push(`Refresh ${stale.length} source${stale.length===1?"":"s"} not checked within 45 days.`);if(c.filter((r:any)=>r.deadline_at&&new Date(r.deadline_at)<new Date()&&!r.released_at).length)recommendations.push("Escalate overdue media cases and confirm owners today.");if(!recommendations.length)recommendations.push("No threshold breach is visible; maintain source checks and review service levels weekly.");
  return{since,days:data.days,includeDemo:data.includeDemo,metrics:{questions:a.length,answerRate:a.length?Math.round(a.filter((r:any)=>r.outcome==="answered").length/a.length*100):null,gaps,openCases:c.filter((r:any)=>!["released","closed","rejected"].includes(r.status)).length,overdueCases:c.filter((r:any)=>r.deadline_at&&new Date(r.deadline_at)<new Date()&&!r.released_at).length,averageReleaseHours:avg(releaseHours),averageHandoffMinutes:avg(responseMinutes),waitingHandoffs:h.filter((r:any)=>r.state==="waiting").length,staleSources:stale.length},daily:[...daily.values()],topics:[...topics.values()].sort((x,y)=>y.total-x.total).slice(0,10),channels:channel,alerts:alerts.data??[],recommendations};
 });
+/** Saved daily snapshots — what makes week-on-week comparison possible. */
+export const getInsightHistory=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({limit:z.number().int().min(2).max(180).default(60)}).parse(i??{})).handler(async({context,data})=>{
+ await access(context as never,"insights.view");
+ const r=await (context as unknown as Ctx).supabase.rpc("staff_insight_history",{_limit:data.limit});
+ if(r.error)throw new Error("The saved history could not be loaded.");
+ return JSON.parse(JSON.stringify(r.data??[])) as Array<{window_end:string;metrics:Record<string,number>}>;
+});
+
+/** Acknowledge or resolve an alert, with a note kept in the audit trail. */
+export const setInsightAlertState=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({alertId:z.string().uuid(),state:z.enum(["open","acknowledged","resolved"]),note:z.string().trim().max(400).nullable().default(null)}).parse(i)).handler(async({context,data})=>{
+ await access(context as never,"insights.view");
+ const r=await (context as unknown as Ctx).supabase.rpc("set_alert_state",{_alert_id:data.alertId,_state:data.state,_note:data.note});
+ if(r.error)throw new Error("The alert could not be updated.");
+ return {ok:true as const};
+});
