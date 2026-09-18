@@ -637,7 +637,7 @@ type EscalateArgs = {
   siteId: string | null;
   guidelineId: string | null;
   startedAt: number;
-  requester?: { name?: string | null; outlet?: string | null; contact?: string | null; consent?: boolean };
+  requester?: { name?: string; outlet?: string; contact?: string; consent?: boolean };
   deadline?: string | null;
   kind?: "media" | "public_escalation";
 };
@@ -653,11 +653,11 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
     _reasons: args.reasons.length ? args.reasons : ["complex"],
     _token_hash: hash,
     _channel: input.channel,
-    _name: args.requester?.name ?? null,
-    _outlet: args.requester?.outlet ?? null,
-    _contact: args.requester?.contact ?? null,
+    _name: args.requester?.name,
+    _outlet: args.requester?.outlet,
+    _contact: args.requester?.contact,
     _consent: args.requester?.consent ?? false,
-    _deadline: args.deadline ?? null,
+    _deadline: args.deadline ?? undefined,
     _notice: "statbridge-privacy-v1",
   });
 
