@@ -2,7 +2,16 @@
 
 Rebuild the staff area as a complete operational back office, not a collection of read-only pages. The live backend already contains eight sources, twelve searchable extracts, thirteen verified figures and twenty-five vector records, but the current screens do not provide the authoring, ingestion, governance and analysis workflows needed to manage them.
 
-## 1. Enterprise staff shell and navigation
+## 1. Immediate security and correctness repair
+
+- Lock down the existing review, insight and decision-record reporting views so only active staff can read them; one current gap exposes raw public-question text and case data to any authenticated account.
+- Redact personal information from insight examples and use aggregate records by default, with explicitly permissioned drill-down.
+- Move search into database queries before pagination; current conversation and people searches only inspect the most recent capped rows and silently miss older matches.
+- Add real pagination to conversations, people, handoffs, review queues and the decision record.
+- Replace seven repeatedly polled overview queries with one staff-only aggregate operation and one shared live-queue result so counters and lists cannot disagree.
+- Guard turnaround calculations against invalid negative durations and separate real records from demonstration data consistently across every dashboard.
+
+## 2. Enterprise staff shell and navigation
 
 - Reorganise the staff area into clear groups: **Operations**, **Knowledge**, **Intelligence**, **Governance** and **Administration**.
 - Add a compact desktop sidebar, proper mobile sheet navigation, breadcrumbs, page actions, global search, notifications, role-aware links and clear permission-denied states.
@@ -10,7 +19,7 @@ Rebuild the staff area as a complete operational back office, not a collection o
 - Replace misleading empty messages such as “Nothing waiting” with operational context, service status and the next useful action.
 - Keep every privileged action enforced on the server; hiding a link is never the security boundary.
 
-## 2. Full knowledge-base workspace
+## 3. Full knowledge-base workspace
 
 Create a dedicated **Knowledge Base** area with tabs for Library, Ingestion queue, Extracts, Verified figures, Vector index, Crawler and Health.
 
@@ -40,7 +49,7 @@ Create a dedicated **Knowledge Base** area with tabs for Library, Ingestion queu
 - Add a staff-only retrieval tester showing keyword hits, semantic hits, final ranking, source/version/page and why a result is eligible.
 - Keep hybrid retrieval enforced in the backend and approved-only at database level.
 
-## 3. Real guidelines and communication governance
+## 4. Real guidelines and communication governance
 
 Replace the current read-only guideline card with a versioned authoring workspace.
 
@@ -51,7 +60,7 @@ Replace the current read-only guideline card with a versioned authoring workspac
 - Compare two versions side by side; activation retires the prior version atomically and records the full change in the decision record.
 - The answer and draft pipelines will load the active guideline so these rules actually govern chat, voice, widget, API and staff-assisted replies.
 
-## 4. Enterprise roles, permissions and staff lifecycle
+## 5. Enterprise roles, permissions and staff lifecycle
 
 Replace the three-role enum stored on profiles with secure RBAC tables: roles, permissions, role_permissions and user_roles. Roles remain separate from staff profiles.
 
@@ -62,7 +71,7 @@ Replace the three-role enum stored on profiles with secure RBAC tables: roles, p
 - Protect the last active Super Administrator from demotion or suspension and prevent privilege escalation.
 - Every role/staff change is validated server-side and written to the immutable audit record.
 
-## 5. Decision-grade insights
+## 6. Decision-grade insights
 
 Replace the three basic tables with an intelligence workspace built from verified sources, conversations, searches, cases, handoffs, crawler activity and knowledge health.
 
@@ -90,7 +99,7 @@ Replace the three basic tables with an intelligence workspace built from verifie
 - Export filtered executive and operational reports to CSV and PDF with generated-at time, filters and citations.
 - Scheduled snapshots and anomaly alerts are recorded so the dashboard monitors trends without waiting for a staff member to open it.
 
-## 6. Repair all existing staff workspaces
+## 7. Repair all existing staff workspaces
 
 - **Overview:** actionable queues, service health, knowledge health, alerts and recent activity.
 - **Review queue:** assignment, ownership, SLA/deadline, filters, bulk triage and clear distinction between media cases, escalations and source reviews.
@@ -101,7 +110,7 @@ Replace the three basic tables with an intelligence workspace built from verifie
 - **Handover queue:** ownership, transfer history, phone/chat channel details, SLA timers, notifications and live reply controls.
 - **Desk settings and account:** grouped enterprise settings, validation, feature status, notification preferences, security/session controls and password protection guidance.
 
-## 7. Backend reliability and security
+## 8. Backend reliability and security
 
 - Move all staff reads/writes into authenticated server functions with Zod validation, stable response contracts and safe detailed errors; components never query protected operational tables directly.
 - Implement RBAC helpers with security-definer checks that avoid recursive policies; never trust browser state for permissions.
@@ -110,7 +119,7 @@ Replace the three basic tables with an intelligence workspace built from verifie
 - Add indexes for queue, insight and retrieval filters; measure slow queries after representative data exists.
 - Fix the current source/guideline/insight permission failures and add route-level error boundaries.
 
-## 8. Verification
+## 9. Verification
 
 - Test Super Administrator, Knowledge Administrator, Communications Manager, Official, Analyst and Auditor access separately.
 - Test upload and ingestion for PDF, DOCX, Markdown, TXT, CSV and XLSX, plus an official web URL.
