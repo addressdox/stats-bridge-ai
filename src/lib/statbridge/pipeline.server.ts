@@ -473,6 +473,28 @@ ${extracts || "(none)"}`,
     });
   }
 
+  // Verified figures offered as a spreadsheet-readable download.
+  if (wanted.has("dataset") && usedObservations.length >= 2) {
+    const columns = ["Measure", "Value", "Unit", "Geography", "Period", "Source", "Publication"];
+    blocks.push({
+      type: "dataset",
+      title: "Verified figures used in this answer",
+      fileName: "statbridge-verified-figures.csv",
+      columns,
+      rows: usedObservations.map((o) => ({
+        Measure: o.measure,
+        Value: o.display_value,
+        Unit: o.unit,
+        Geography: o.geography,
+        Period: o.reference_period,
+        Source: o.publisher,
+        Publication: `${o.title} (${o.version_label})`,
+      })),
+      rowCount: usedObservations.length,
+      sources: usedObservations.map(observationReference),
+    });
+  }
+
   for (const p of usedPassages) {
     const ref = passageReference(p);
     addReference(ref);
