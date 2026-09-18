@@ -4,6 +4,8 @@ import { Loader2, ScrollText } from "lucide-react";
 
 import { StaffShell } from "@/components/statbridge/StaffShell";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getDecisionRecord } from "@/lib/statbridge/governance.functions";
 
 const title = "Decision record — StatBridge staff";
 const description = "Who drafted, approved and released each Stats SA response, against which sources and rules.";
@@ -24,13 +26,10 @@ export const Route = createFileRoute("/staff/record")({
 });
 
 function RecordPage() {
+  const fetchRecord = useServerFn(getDecisionRecord);
   const query = useQuery({
     queryKey: ["decision-record"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("decision_record").select("*");
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
+    queryFn: () => fetchRecord({ data: { limit: 100, offset: 0 } }),
   });
 
   return (
@@ -49,7 +48,7 @@ function RecordPage() {
 
       {query.isError && (
         <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          The record could not be loaded. Your account may not have permission to see it.
+          The record could not be loaded: {(query.error as Error).message}
         </div>
       )}
 

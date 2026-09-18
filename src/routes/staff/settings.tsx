@@ -79,8 +79,8 @@ function Switch({
 }
 
 function SettingsPage() {
-  const { profile } = useStaff();
-  const canEdit = profile?.role === "administrator";
+  const { hasPermission } = useStaff();
+  const canEdit = hasPermission("settings.manage");
   const queryClient = useQueryClient();
 
   const fetchSettings = useServerFn(getDeskSettings);
