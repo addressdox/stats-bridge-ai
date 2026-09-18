@@ -255,6 +255,12 @@ export async function runCrawl(): Promise<CrawlResult> {
 
       result.inserted.push({ title: item.title, url: item.url, publisher: item.publisher });
     }
+
+    // Everything this listing covers has now been looked at.
+    const seen = listing.items.map((item) => item.url).filter(Boolean);
+    if (seen.length > 0) {
+      await supabaseAdmin.from("sources").update({ last_checked_at: result.ranAt }).in("canonical_url", seen);
+    }
   }
 
   return result;
