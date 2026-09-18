@@ -1,11 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpen, Loader2 } from "lucide-react";
+import { BookOpen, Loader2, Radar } from "lucide-react";
 import { useState } from "react";
 
 import { StaffShell } from "@/components/statbridge/StaffShell";
 import { supabase } from "@/integrations/supabase/client";
+import { runKnowledgeCrawl } from "@/lib/statbridge/crawl.functions";
 import { useStaff } from "@/lib/staff/useStaff";
+
+type CrawlSummary = {
+  inserted: Array<{ title: string; url: string; publisher: string }>;
+  skippedExisting: number;
+  errors: string[];
+};
 
 const title = "Sources — StatBridge knowledge base";
 const description = "Approve, correct and withdraw the Stats SA publications StatBridge is allowed to quote.";
@@ -88,12 +95,49 @@ function SourcesPage() {
     onError: (e: Error) => setNotice({ tone: "bad", text: e.message }),
   });
 
+  const [crawlResult, setCrawlResult] = useState<CrawlSummary | null>(null);
+  const crawl = useMutation({
+    mutationFn: async (): Promise<CrawlSummary> => runKnowledgeCrawl(),
+    onSuccess: (result) => {
+      setCrawlResult(result);
+      queryClient.invalidateQueries({ queryKey: ["source-versions"] });
+    },
+    onError: (e: Error) => setNotice({ tone: "bad", text: e.message }),
+  });
+
   return (
     <StaffShell title="Sources">
       <p className="max-w-2xl text-sm text-muted-foreground">
         Uploading a document does not make it searchable. Only an approved version, with every figure checked by a
         person, can be quoted in an answer. Corrections keep the earlier version in the history.
       </p>
+
+      {can.knowledge && (
+        <div className="surface-panel mt-4 flex flex-wrap items-center gap-3 p-4">
+          <Radar aria-hidden className="size-4 text-accent" />
+          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+            The crawler watches official South African publishers and proposes new publications here as{" "}
+            <span className="font-medium text-foreground">pending</span> — nothing it finds is searchable until you
+            approve it.
+          </p>
+          <button
+            onClick={() => crawl.mutate()}
+            disabled={crawl.isPending}
+            className="rounded-md border border-accent/50 px-3 py-1.5 text-sm font-medium text-accent disabled:opacity-60"
+          >
+            {crawl.isPending ? "Crawling official sources…" : "Run crawler now"}
+          </button>
+        </div>
+      )}
+
+      {crawlResult && (
+        <p role="status" className="mt-4 rounded-md border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
+          Crawl finished: {crawlResult.inserted.length} new publication
+          {crawlResult.inserted.length === 1 ? "" : "s"} proposed for approval, {crawlResult.skippedExisting} already
+          known.
+          {crawlResult.errors.length > 0 ? ` ${crawlResult.errors.length} source page(s) could not be reached.` : ""}
+        </p>
+      )}
 
       {notice && (
         <p

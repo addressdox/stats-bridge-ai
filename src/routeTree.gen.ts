@@ -20,6 +20,7 @@ import { Route as CaseRefRouteImport } from './routes/case.$ref'
 import { Route as StaffInsightsRouteImport } from './routes/staff/insights'
 import { Route as StaffRecordRouteImport } from './routes/staff/record'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
 import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
@@ -81,6 +82,11 @@ const StaffSignInRoute = StaffSignInRouteImport.update({
   path: '/staff/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCrawlRoute = ApiPublicCrawlRouteImport.update({
+  id: '/api/public/crawl',
+  path: '/api/public/crawl',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffKnowledgeGuidelinesRoute =
   StaffKnowledgeGuidelinesRouteImport.update({
     id: '/staff/knowledge/guidelines',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
   '/case/': typeof CaseIndexRoute
+  '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
   '/case': typeof CaseIndexRoute
+  '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
   '/case/': typeof CaseIndexRoute
+  '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/staff/record'
     | '/staff/sign-in'
     | '/case/'
+    | '/api/public/crawl'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/staff/record'
     | '/staff/sign-in'
     | '/case'
+    | '/api/public/crawl'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/staff/record'
     | '/staff/sign-in'
     | '/case/'
+    | '/api/public/crawl'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   StaffRecordRoute: typeof StaffRecordRoute
   StaffSignInRoute: typeof StaffSignInRoute
   CaseIndexRoute: typeof CaseIndexRoute
+  ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
   StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
   StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/crawl': {
+      id: '/api/public/crawl'
+      path: '/api/public/crawl'
+      fullPath: '/api/public/crawl'
+      preLoaderRoute: typeof ApiPublicCrawlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/knowledge/guidelines': {
       id: '/staff/knowledge/guidelines'
       path: '/staff/knowledge/guidelines'
@@ -368,6 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffRecordRoute: StaffRecordRoute,
   StaffSignInRoute: StaffSignInRoute,
   CaseIndexRoute: CaseIndexRoute,
+  ApiPublicCrawlRoute: ApiPublicCrawlRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
   StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,
   StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,
