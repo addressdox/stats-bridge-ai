@@ -5,7 +5,18 @@
  * quiet notice instead of failing, so an older browser build can never crash
  * on a newer server response.
  */
-import { AlertTriangle, ExternalLink, FileText, Quote, ShieldCheck, TableIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  ExternalLink,
+  FileText,
+  ImageIcon,
+  PlayCircle,
+  Quote,
+  Sheet,
+  ShieldCheck,
+  TableIcon,
+} from "lucide-react";
 import {
   Bar,
   BarChart,
