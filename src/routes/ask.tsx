@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 
 import { AskExperience } from "@/components/statbridge/AskExperience";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
+import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
 const title = "Ask StatBridge — official South African statistics";
 const description =
@@ -47,9 +48,10 @@ function AskRoom() {
             >
               Track a request
             </Link>
+            <ThemeToggle className="ml-1" />
             <Link
               to="/"
-              className="ml-1 rounded-full border border-hairline p-2 text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full border border-hairline p-2 text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Leave Ask"
             >
               <X aria-hidden className="size-4" />
