@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { Maximize2, SquareArrowOutUpRight, X } from "lucide-react";
 import { useEffect } from "react";
 
 import { AskExperience } from "@/components/statbridge/AskExperience";
@@ -42,14 +42,32 @@ function EmbedPage() {
     <div className="light flex h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between border-b border-border bg-surface px-3 py-2">
         <StatBridgeMark className="text-sm" />
-        <button
-          type="button"
-          onClick={() => postToHost({ type: "close" })}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
-        >
-          <X aria-hidden className="size-4" />
-          <span className="sr-only">Close the assistant</span>
-        </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => postToHost({ type: "expand" })}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
+          >
+            <Maximize2 aria-hidden className="size-4" />
+            <span className="sr-only">Make the assistant bigger</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => postToHost({ type: "open-app" })}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
+          >
+            <SquareArrowOutUpRight aria-hidden className="size-4" />
+            <span className="sr-only">Open StatBridge in a new tab</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => postToHost({ type: "close" })}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
+          >
+            <X aria-hidden className="size-4" />
+            <span className="sr-only">Close the assistant</span>
+          </button>
+        </div>
       </header>
       <main className="flex-1 overflow-y-auto px-3 py-4">
         <AskExperience compact />
