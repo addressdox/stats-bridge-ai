@@ -12,6 +12,67 @@ export class VoiceError extends Error {
 
 export type VoiceTranscript = { text: string; language: string; uncertain: boolean };
 
+// The existing second recognizer documents only these South African languages.
+// Never let a best guess from its narrower language set replace another SA language.
+const SECOND_RECOGNIZER_LANGUAGES = new Set(["en", "af", "nso", "xh", "zu"]);
+
+async function recoverUnclearTranscript(
+  audio: Blob,
+  hint: string,
+  primary: VoiceTranscript,
+): Promise<VoiceTranscript> {
+  const key = process.env["ELEVENLABS_API_KEY"];
+  if (
+    !key ||
+    (hint !== "auto" && !SECOND_RECOGNIZER_LANGUAGES.has(hint)) ||
+    (primary.language !== "auto" && !SECOND_RECOGNIZER_LANGUAGES.has(primary.language))
+  )
+    return primary;
+  try {
+    const form = new FormData();
+    form.set("file", audio, "question");
+    form.set("model_id", "scribe_v2");
+    form.set("tag_audio_events", "false");
+    if (hint !== "auto") form.set("language_code", hint);
+    const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+      method: "POST",
+      headers: { "xi-api-key": key },
+      body: form,
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!response.ok) return primary;
+    const result = (await response.json()) as {
+      text?: unknown;
+      language_code?: unknown;
+      language_probability?: unknown;
+    };
+    const text = typeof result.text === "string" ? result.text.trim().slice(0, 1000) : "";
+    const language = normalizeLanguage(
+      typeof result.language_code === "string" ? result.language_code : "auto",
+    );
+    if (!text || !SECOND_RECOGNIZER_LANGUAGES.has(language)) return primary;
+    const probability = result.language_probability;
+    const confident =
+      typeof probability === "number" &&
+      Number.isFinite(probability) &&
+      probability >= 0.85 &&
+      probability <= 1;
+    if (!confident && primary.text) return primary;
+    const ambiguousGreeting =
+      hint === "auto" && ["zu", "xh"].includes(language) && text.split(/\s+/).length < 8;
+    const disagreement =
+      Boolean(primary.text) && primary.language !== "auto" && primary.language !== language;
+    return {
+      text,
+      language: confident ? language : "auto",
+      uncertain: !confident || ambiguousGreeting || disagreement,
+    };
+  } catch {
+    // A failed recovery must preserve the original editable result, not invent speech.
+    return primary;
+  }
+}
+
 /** Preserve the caller's actual language. A language hint must never become a translation instruction. */
 export async function transcribeVoice(audio: Blob, language = "auto"): Promise<VoiceTranscript> {
   const mime = audio.type.split(";")[0] || "audio/webm";
@@ -91,11 +152,15 @@ export async function transcribeVoice(audio: Blob, language = "auto"): Promise<V
   // Short shared greetings cannot reliably distinguish these closely related languages.
   const ambiguousGreeting =
     hint === "auto" && ["zu", "xh", "ss", "nr"].includes(detected) && text.split(/\s+/).length < 8;
-  return {
+  const transcript = {
     text,
     language: detected,
     uncertain: result.uncertain !== false || ambiguousGreeting || detected === "auto",
   };
+  // Shared greetings still need confirmation; another recognizer cannot prove a dialect.
+  return !text || result.uncertain !== false || detected === "auto"
+    ? recoverUnclearTranscript(audio, hint, transcript)
+    : transcript;
 }
 
 export async function synthesizeVoice(

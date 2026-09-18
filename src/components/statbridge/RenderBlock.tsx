@@ -263,8 +263,8 @@ export function RenderBlock({ block }: { block: PublicRenderBlock }) {
             </div>
           </details>
           <div className="mt-2 space-y-1">
-            {block.sources.slice(0, 2).map((s) => (
-              <SourceLine key={`${s.sourceVersionId}-${s.sectionLabel}`} source={s} />
+            {block.sources.slice(0, 2).map((s, index) => (
+              <SourceLine key={`${s.sourceVersionId}-${s.sectionLabel}-${index}`} source={s} />
             ))}
           </div>
         </Panel>
@@ -390,8 +390,8 @@ export function RenderBlock({ block }: { block: PublicRenderBlock }) {
             Download CSV
           </button>
           <div className="mt-2 space-y-1">
-            {block.sources.slice(0, 2).map((s) => (
-              <SourceLine key={`${s.sourceVersionId}-${s.sectionLabel}`} source={s} />
+            {block.sources.slice(0, 2).map((s, index) => (
+              <SourceLine key={`${s.sourceVersionId}-${s.sectionLabel}-${index}`} source={s} />
             ))}
           </div>
         </Panel>

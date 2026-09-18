@@ -24,7 +24,7 @@ import {
   type ReviewReason,
 } from "./routing.server";
 
-const PROMPT_VERSION = "ask-2026-09-2";
+const PROMPT_VERSION = "ask-2026-09-3";
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
@@ -169,6 +169,8 @@ Reply with a single JSON object and nothing else:
 Rules:
 - If the evidence does not directly support an answer, use "gap". Never guess and never use knowledge of your own.
 - If the question could mean more than one period, geography or population, use "clarify".
+- Use the resolved English question to determine the requested measure, period, geography and population. Select observationIds only for those requested dimensions. A figure for a different period is not a substitute: if the requested value is supported only by an EXTRACT, select that passage and leave observationIds empty. Include other periods only when the user requests a comparison or trend.
+- Each clarificationChoices value must be a complete question preserving the already known topic and dimensions, so selecting a choice resolves the ambiguity without losing context.
 - Never explain why a number moved, never predict, never give an official Stats SA position.
 - Use "chart" only when three or more FIGURES share a measure and unit across periods.
 - Ask for "dataset" when two or more FIGURES are worth downloading as a spreadsheet.

@@ -12,6 +12,10 @@ function database(row: Record<string, unknown> | null) {
       reads.push({ operation: "eq", key, value });
       return query;
     },
+    in(key: string, value: unknown) {
+      reads.push({ operation: "in", key, value });
+      return query;
+    },
     is(key: string, value: unknown) {
       reads.push({ operation: "is", key, value });
       return query;
@@ -54,7 +58,7 @@ describe("public follow-up context", () => {
       },
     });
     expect(JSON.stringify(result)).not.toContain("SECRET");
-    expect(reads).toContainEqual({ operation: "eq", key: "outcome", value: "answered" });
+    expect(reads).toContainEqual({ operation: "in", key: "outcome", value: ["answered", "clarification"] });
     expect(reads).toContainEqual({ operation: "is", key: "case_id", value: null });
     expect(String(reads[0]?.value)).not.toContain("official_blocks");
   });
@@ -62,10 +66,16 @@ describe("public follow-up context", () => {
     { ...prior, outcome: "escalated" },
     { ...prior, case_id: "private-case" },
     { ...prior, review_flag: "source_changed" },
-    { ...prior, outcome: "clarification" },
+    { ...prior, outcome: "gap" },
     null,
   ])("private, unreviewed or absent parents supply no context", async (row) => {
     expect(await readQuestionContext(database(row).db, "ANS-parent")).toBeNull();
+  });
+  test("a public clarification retains the question context without supplying answer text", async () => {
+    const result = await readQuestionContext(database({ ...prior, outcome: "clarification" }).db, "ANS-parent");
+    expect(result?.context.resolvedQuestion).toContain("Q1 2025");
+    expect(result?.answerId).toBe("prior-id");
+    expect(JSON.stringify(result)).not.toContain("SECRET");
   });
   test("old answer records without resolved metadata remain compatible", async () => {
     const { db } = database({

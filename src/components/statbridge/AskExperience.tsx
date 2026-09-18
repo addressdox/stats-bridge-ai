@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Bot, CircleAlert, PanelRightOpen, Send, SquareArrowOutUpRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
@@ -45,12 +45,14 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
   const [canvasOpen, setCanvasOpen] = useState(true);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("ready");
   const [contactSaved, setContactSaved] = useState(false);
+  const parentAnswerRef = useRef<string | null>(null);
   const reduce = useReducedMotion();
   const { session } = useVisitorSession(compact ? "widget" : "chat");
 
   const ask = useMutation({
-    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "auto", channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
+    mutationFn: (question: string) => askQuestion({ data: { question, readingLevel: "short", language: "auto", parentAnswerRef: parentAnswerRef.current, channel: compact ? "widget" : "web", conversationId: session?.conversationId ?? null, browserToken: session?.browserToken ?? null } }),
     onSuccess: (answer) => {
+      parentAnswerRef.current = answer.answerRef;
       setTurns((current) => [...current, { id: uid(), role: "assistant", answer }]);
       setCanvasOpen(true);
     },
@@ -298,4 +300,3 @@ function AnswerTurn({
     </div>
   );
 }
-

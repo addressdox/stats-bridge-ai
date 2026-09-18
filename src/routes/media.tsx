@@ -10,7 +10,7 @@ import { submitMediaQuery } from "@/lib/statbridge/public.functions";
 
 const title = "Media desk — StatBridge";
 const description =
-  "Send a media enquiry to Statistics South Africa. You receive a case reference and a private status link; a communications official prepares every reply.";
+  "Send a media enquiry to Statistics South Africa. You receive a case reference and a private status link; AI-assisted drafts remain private until a communications official reviews, approves and releases the reply.";
 
 export const Route = createFileRoute("/media")({
   head: () => ({
@@ -69,8 +69,9 @@ function MediaPage() {
               Your request has been logged
             </p>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              A Stats SA communications official will prepare the reply. StatBridge does not write responses to media
-              requests, so nothing below is an answer to your question yet.
+              StatBridge prepares a private draft from approved sources for a Stats SA communications official to
+              review, edit and approve. Nothing below is an answer to your question yet; the reply appears only after
+              an authorised official releases it.
             </p>
             <p className="mt-5 font-mono text-2xl font-semibold">{result.caseReference}</p>
             {result.statusToken && (
@@ -92,7 +93,8 @@ function MediaPage() {
             <h1 className="text-3xl font-semibold tracking-tight">Media desk</h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
               Every media request is handled by a Stats SA communications official. You will receive a case reference
-              and a private status link straight away. No AI-written reply is ever sent to a journalist.
+              and a private status link. AI-assisted drafts remain internal until an authorised official reviews,
+              approves and releases the response.
             </p>
 
             <form onSubmit={onSubmit} className="mt-8 space-y-5">

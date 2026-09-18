@@ -46,14 +46,14 @@ export async function readQuestionContext(
     .from("answers")
     .select("id,question_text,language,validation_result,outcome,case_id,review_flag")
     .eq("public_ref", parentAnswerRef)
-    .eq("outcome", "answered")
+    .in("outcome", ["answered", "clarification"])
     .is("case_id", null)
     .eq("review_flag", "none")
     .maybeSingle();
   if (
     error ||
     !prior ||
-    prior.outcome !== "answered" ||
+    !["answered", "clarification"].includes(prior.outcome) ||
     prior.case_id !== null ||
     prior.review_flag !== "none"
   )

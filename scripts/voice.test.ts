@@ -153,6 +153,94 @@ describe("governed voice output", () => {
   });
 });
 
+describe("unclear recording recovery", () => {
+  const empty = { text: "", language: "auto", uncertain: true };
+  const phrase =
+    "Lalingakanani izinga lentswela ngqesho eMzantsi Afrika kwikota yesibini yonyaka ka 2025?";
+  function mockRecognition(secondary: Record<string, unknown> | null, primary = empty) {
+    process.env.GEMINI_API_KEY = "test-primary";
+    process.env.ELEVENLABS_API_KEY = "test-secondary";
+    const calls: Array<{ url: string; options: RequestInit }> = [];
+    globalThis.fetch = (async (url: Parameters<typeof fetch>[0], options: RequestInit) => {
+      calls.push({ url: String(url), options });
+      if (String(url).includes("speech-to-text"))
+        return secondary ? Response.json(secondary) : new Response("Unavailable", { status: 502 });
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: JSON.stringify(primary) }] } }],
+      });
+    }) as typeof fetch;
+    return calls;
+  }
+  test("unclear audio recovers a documented language without forcing an English hint", async () => {
+    const calls = mockRecognition({
+      text: phrase,
+      language_code: "xho",
+      language_probability: 0.98,
+    });
+    expect(await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }))).toEqual({
+      text: phrase,
+      language: "xh",
+      uncertain: false,
+    });
+    expect(calls).toHaveLength(2);
+    const form = calls[1]!.options.body as FormData;
+    expect(form.get("model_id")).toBe("scribe_v2");
+    expect(form.get("language_code")).toBeNull();
+    expect(form.get("file")).toBeInstanceOf(Blob);
+  });
+  test("low or missing language confidence still requires confirmation", async () => {
+    for (const probability of [0.4, undefined, 1.1]) {
+      mockRecognition({ text: phrase, language_code: "xho", language_probability: probability });
+      const result = await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }));
+      expect(result.uncertain).toBe(true);
+      expect(result.language).toBe("auto");
+    }
+  });
+  test("an unsupported explicit language never goes to the narrower recognizer", async () => {
+    for (const language of ["st", "tn", "ss", "ve", "ts", "nr"]) {
+      const calls = mockRecognition({
+        text: phrase,
+        language_code: "xho",
+        language_probability: 1,
+      });
+      expect(await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }), language)).toEqual(
+        empty,
+      );
+      expect(calls).toHaveLength(1);
+    }
+  });
+  test("an identified preview language is not replaced with a supported-language guess", async () => {
+    const primary = { text: "Ngicela tibalo", language: "ss", uncertain: true };
+    const calls = mockRecognition(
+      { text: "Ngicela izibalo", language_code: "zul", language_probability: 1 },
+      primary,
+    );
+    expect(await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }))).toEqual(primary);
+    expect(calls).toHaveLength(1);
+  });
+  test("a supported hint is forwarded, but the actual returned language is preserved", async () => {
+    const calls = mockRecognition({ text: phrase, language_code: "xho", language_probability: 1 });
+    const result = await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }), "xh");
+    expect((calls[1]!.options.body as FormData).get("language_code")).toBe("xh");
+    expect(result.language).toBe("xh");
+  });
+  test("short shared greetings cannot bypass uncertainty through recovery", async () => {
+    mockRecognition({ text: "Sawubona", language_code: "zul", language_probability: 1 });
+    expect((await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }))).uncertain).toBe(
+      true,
+    );
+  });
+  test("unsupported recognition and provider failure preserve the original result", async () => {
+    for (const secondary of [
+      null,
+      { text: "Words", language_code: "fra", language_probability: 1 },
+    ]) {
+      mockRecognition(secondary);
+      expect(await transcribeVoice(new Blob(["audio"], { type: "audio/wav" }))).toEqual(empty);
+    }
+  });
+});
+
 function fakeDB(ownerMatches: boolean, changed = false) {
   const reads: string[] = [];
   const rows: Record<string, unknown> = {
