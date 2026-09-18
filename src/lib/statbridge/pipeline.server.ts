@@ -116,6 +116,19 @@ function observationReference(row: ObservationRow): PublicSourceReference {
   };
 }
 
+/**
+ * What kind of media, if any, an approved source address points at. Only
+ * https addresses are ever considered.
+ */
+function mediaKindOf(url: string | null): "image" | "video-file" | "video-link" | null {
+  if (!url || !/^https:\/\//i.test(url)) return null;
+  const path = url.split("?")[0]!.toLowerCase();
+  if (/\.(png|jpe?g|webp|gif|svg)$/.test(path)) return "image";
+  if (/\.(mp4|webm|ogv)$/.test(path)) return "video-file";
+  if (/(youtube\.com|youtu\.be|vimeo\.com)/.test(path)) return "video-link";
+  return null;
+}
+
 function trimQuote(text: string, limit = 420) {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= limit) return clean;
