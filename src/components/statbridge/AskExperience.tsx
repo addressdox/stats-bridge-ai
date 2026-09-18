@@ -12,7 +12,7 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { AssistantPortrait, type AssistantState } from "@/components/statbridge/assistant-portrait";
 import { EvidenceCanvas } from "@/components/statbridge/EvidenceCanvas";
 import { RenderBlock } from "@/components/statbridge/RenderBlock";
-import { VoiceInput, type VoiceStatus } from "@/components/statbridge/VoiceInput";
+import { type VoiceStatus } from "@/components/statbridge/VoiceInput";
 import { REVIEW_REASON_LABELS, type PublicAnswer } from "@/lib/statbridge/contract";
 import { askQuestion, sendToOfficial } from "@/lib/statbridge/public.functions";
 
