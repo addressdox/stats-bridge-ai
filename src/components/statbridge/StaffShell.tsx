@@ -15,30 +15,42 @@ import {
   Settings,
   UserCog,
   IdCard,
+  Menu,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABELS, useStaff } from "@/lib/staff/useStaff";
 
-const LINKS = [
-  { to: "/staff/overview", label: "Overview", icon: Gauge },
-  { to: "/staff/handoffs", label: "Handover queue", icon: UserRound },
-  { to: "/staff/conversations", label: "Conversations", icon: MessagesSquare },
-  { to: "/staff/visitors", label: "People", icon: Users },
-  { to: "/staff/review", label: "Review queue", icon: ClipboardList },
-  { to: "/staff/knowledge/sources", label: "Sources", icon: BookOpen },
-  { to: "/staff/knowledge/guidelines", label: "Guidelines", icon: ScrollText },
-  { to: "/staff/knowledge/memory", label: "Communication memory", icon: FileClock },
-  { to: "/staff/insights", label: "Insights", icon: Shield },
-  { to: "/staff/record", label: "Decision record", icon: ScrollText },
-  { to: "/staff/team", label: "Staff and roles", icon: UserCog },
-  { to: "/staff/settings", label: "Desk settings", icon: Settings },
-  { to: "/staff/account", label: "My account", icon: IdCard },
+const GROUPS = [
+  { label: "Operations", links: [
+    { to: "/staff/overview", label: "Command centre", icon: Gauge, permission: "dashboard.view" },
+    { to: "/staff/handoffs", label: "Handover queue", icon: UserRound, permission: "handoffs.manage" },
+    { to: "/staff/conversations", label: "Conversations", icon: MessagesSquare, permission: "conversations.view" },
+    { to: "/staff/visitors", label: "People", icon: Users, permission: "visitors.view" },
+    { to: "/staff/review", label: "Review queue", icon: ClipboardList, permission: "cases.review" },
+  ]},
+  { label: "Knowledge", links: [
+    { to: "/staff/knowledge/sources", label: "Knowledge library", icon: BookOpen, permission: "sources.view" },
+    { to: "/staff/knowledge/guidelines", label: "Guidelines", icon: ScrollText, permission: "guidelines.view" },
+    { to: "/staff/knowledge/memory", label: "Communication memory", icon: FileClock, permission: "memory.manage" },
+  ]},
+  { label: "Intelligence & governance", links: [
+    { to: "/staff/insights", label: "Decision intelligence", icon: Shield, permission: "insights.view" },
+    { to: "/staff/record", label: "Decision record", icon: ScrollText, permission: "audit.view" },
+  ]},
+  { label: "Administration", links: [
+    { to: "/staff/team", label: "Staff and roles", icon: UserCog, permission: "staff.view" },
+    { to: "/staff/settings", label: "Desk settings", icon: Settings, permission: "settings.manage" },
+    { to: "/staff/account", label: "My account", icon: IdCard, permission: null },
+  ]},
 ] as const;
 
 export function StaffShell({ children, title }: { children: React.ReactNode; title: string }) {
-  const { profile, isLoading } = useStaff();
+  const { profile, roles, hasPermission, isLoading } = useStaff();
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -85,7 +97,7 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
       <div className="grid min-h-screen place-items-center px-4">
         <div className="max-w-sm text-center">
           <h1 className="text-lg font-semibold">This account is not active</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Ask a communications manager to reactivate it.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Ask a Super Administrator to reactivate it.</p>
           <button onClick={signOut} className="mt-4 text-sm font-medium text-accent underline underline-offset-2">
             Sign out
           </button>
@@ -102,8 +114,13 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
             <StatBridgeMark />
           </Link>
         </div>
-        <nav aria-label="Staff" className="flex-1 space-y-0.5 p-2">
-          {LINKS.map((link) => (
+         <nav aria-label="Staff" className="flex-1 space-y-4 overflow-y-auto p-2">
+          {GROUPS.map((group) => {
+            const links = group.links.filter((link) => !link.permission || hasPermission(link.permission));
+            if (!links.length) return null;
+            return <div key={group.label}>
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/45">{group.label}</p>
+              <div className="space-y-0.5">{links.map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -113,11 +130,13 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
               <link.icon aria-hidden className="size-4" />
               {link.label}
             </Link>
-          ))}
+              ))}</div>
+            </div>;
+          })}
         </nav>
         <div className="border-t border-sidebar-border p-3 text-xs">
           <p className="font-medium text-sidebar-foreground">{profile.full_name}</p>
-          <p className="text-sidebar-foreground/70">{ROLE_LABELS[profile.role]}</p>
+           <p className="text-sidebar-foreground/70">{roles.map((role) => role.name).join(", ") || ROLE_LABELS[profile.role]}</p>
           {profile.is_demo && (
             <p className="mt-1 inline-block rounded bg-warn/20 px-1.5 py-0.5 text-[10px] font-semibold text-warn">
               Demonstration account
@@ -134,17 +153,16 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
-          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-          <div className="flex items-center gap-3 md:hidden">
-            <span className="text-xs text-muted-foreground">{ROLE_LABELS[profile.role]}</span>
+         <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
+           <div className="flex items-center gap-3"><button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open staff navigation">{menuOpen ? <X className="size-5"/> : <Menu className="size-5"/>}</button><h1 className="text-lg font-semibold tracking-tight">{title}</h1></div>
+           <div className="flex items-center gap-3 md:hidden">
             <button onClick={signOut} className="text-xs font-medium text-accent">
               Sign out
             </button>
           </div>
         </header>
-        <nav aria-label="Staff" className="flex gap-1 overflow-x-auto border-b border-border bg-surface px-2 py-1.5 md:hidden">
-          {LINKS.map((link) => (
+         {menuOpen && <nav aria-label="Staff" className="grid grid-cols-2 gap-1 border-b border-border bg-surface p-3 md:hidden">
+            {GROUPS.map((group) => group.links.filter((link) => !link.permission || hasPermission(link.permission)).map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -153,8 +171,8 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
             >
               {link.label}
             </Link>
-          ))}
-        </nav>
+           )))}
+         </nav>}
         <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>

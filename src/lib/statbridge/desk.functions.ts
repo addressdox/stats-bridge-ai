@@ -21,44 +21,36 @@ export type DeskOverview = {
   resolutionRate: number | null;
   averageSeconds: number | null;
   openCases: number;
+  overdueCases: number;
   coverageGaps: number;
   visitors: number;
+  pendingSources: number;
+  failedIngestions: number;
+  staleSources: number;
+  passages: number;
+  verifiedObservations: number;
+  embeddings: number;
 };
 
 export const getDeskOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DeskOverview> => {
     await staffOnly(context as never);
-    const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-    const [live, waiting, today, analyses, cases, gaps, visitors] = await Promise.all([
-      db.from("conversations").select("id", { count: "exact", head: true }).eq("state", "active"),
-      db.from("handoffs").select("id", { count: "exact", head: true }).eq("state", "waiting"),
-      db.from("conversations").select("duration_seconds").gte("started_at", since).limit(1000),
-      db.from("conversation_analysis").select("resolved, created_at").gte("created_at", since).limit(1000),
-      db.from("cases").select("id", { count: "exact", head: true }).in("status", ["received", "draft_prepared", "in_review", "changes_requested"]),
-      db.from("answers").select("id", { count: "exact", head: true }).eq("outcome", "gap").gte("created_at", since),
-      db.from("visitors").select("id", { count: "exact", head: true }),
-    ]);
-
-    const durations = (today.data ?? []).map((r) => r.duration_seconds).filter((n): n is number => typeof n === "number");
-    const resolvedRows = analyses.data ?? [];
-    const resolvedCount = resolvedRows.filter((r) => r.resolved).length;
-
+    const { data, error } = await context.supabase.rpc("staff_dashboard_summary", { _since: since, _include_demo: false });
+    if (error || !data) throw new Error("The command-centre summary could not be loaded.");
+    const value = data as Record<string, number | string | null>;
+    const conversations = Number(value["conversations"] ?? 0);
+    const resolved = Number(value["resolved"] ?? 0);
     return {
-      generatedAt: new Date().toISOString(),
-      liveConversations: live.count ?? 0,
-      waitingHandoffs: waiting.count ?? 0,
-      conversationsToday: today.data?.length ?? 0,
-      answeredToday: resolvedCount,
-      resolutionRate: resolvedRows.length > 0 ? Math.round((resolvedCount / resolvedRows.length) * 100) : null,
-      averageSeconds:
-        durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : null,
-      openCases: cases.count ?? 0,
-      coverageGaps: gaps.count ?? 0,
-      visitors: visitors.count ?? 0,
+      generatedAt: String(value["generated_at"] ?? new Date().toISOString()),
+      liveConversations: Number(value["live_conversations"] ?? 0), waitingHandoffs: Number(value["waiting_handoffs"] ?? 0),
+      conversationsToday: conversations, answeredToday: resolved,
+      resolutionRate: conversations ? Math.round(resolved / conversations * 100) : null,
+      averageSeconds: value["average_seconds"] === null ? null : Number(value["average_seconds"]),
+      openCases: Number(value["open_cases"] ?? 0), overdueCases: Number(value["overdue_cases"] ?? 0), coverageGaps: Number(value["coverage_gaps"] ?? 0), visitors: Number(value["visitors"] ?? 0),
+      pendingSources: Number(value["pending_sources"] ?? 0), failedIngestions: Number(value["failed_ingestions"] ?? 0), staleSources: Number(value["stale_sources"] ?? 0),
+      passages: Number(value["passages"] ?? 0), verifiedObservations: Number(value["verified_observations"] ?? 0), embeddings: Number(value["embeddings"] ?? 0),
     };
   });
 
