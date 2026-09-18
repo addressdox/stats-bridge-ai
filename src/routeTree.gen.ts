@@ -18,11 +18,13 @@ import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
+import { Route as StaffConversationsRouteImport } from './routes/staff/conversations'
 import { Route as StaffHandoffsRouteImport } from './routes/staff/handoffs'
 import { Route as StaffInsightsRouteImport } from './routes/staff/insights'
 import { Route as StaffOverviewRouteImport } from './routes/staff/overview'
 import { Route as StaffRecordRouteImport } from './routes/staff/record'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as StaffVisitorsRouteImport } from './routes/staff/visitors'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
@@ -75,6 +77,11 @@ const CaseRefRoute = CaseRefRouteImport.update({
   path: '/case/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffConversationsRoute = StaffConversationsRouteImport.update({
+  id: '/staff/conversations',
+  path: '/staff/conversations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffHandoffsRoute = StaffHandoffsRouteImport.update({
   id: '/staff/handoffs',
   path: '/staff/handoffs',
@@ -98,6 +105,11 @@ const StaffRecordRoute = StaffRecordRouteImport.update({
 const StaffSignInRoute = StaffSignInRouteImport.update({
   id: '/staff/sign-in',
   path: '/staff/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffVisitorsRoute = StaffVisitorsRouteImport.update({
+  id: '/staff/visitors',
+  path: '/staff/visitors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCrawlRoute = ApiPublicCrawlRouteImport.update({
@@ -141,11 +153,13 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/conversations': typeof StaffConversationsRoute
   '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
   '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
@@ -163,11 +177,13 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/conversations': typeof StaffConversationsRoute
   '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
   '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/visitors': typeof StaffVisitorsRoute
   '/case': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
@@ -186,11 +202,13 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/conversations': typeof StaffConversationsRoute
   '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
   '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
@@ -210,11 +228,13 @@ export interface FileRouteTypes {
     | '/insights'
     | '/media'
     | '/case/$ref'
+    | '/staff/conversations'
     | '/staff/handoffs'
     | '/staff/insights'
     | '/staff/overview'
     | '/staff/record'
     | '/staff/sign-in'
+    | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
     | '/staff/knowledge/guidelines'
@@ -232,11 +252,13 @@ export interface FileRouteTypes {
     | '/insights'
     | '/media'
     | '/case/$ref'
+    | '/staff/conversations'
     | '/staff/handoffs'
     | '/staff/insights'
     | '/staff/overview'
     | '/staff/record'
     | '/staff/sign-in'
+    | '/staff/visitors'
     | '/case'
     | '/api/public/crawl'
     | '/staff/knowledge/guidelines'
@@ -254,11 +276,13 @@ export interface FileRouteTypes {
     | '/insights'
     | '/media'
     | '/case/$ref'
+    | '/staff/conversations'
     | '/staff/handoffs'
     | '/staff/insights'
     | '/staff/overview'
     | '/staff/record'
     | '/staff/sign-in'
+    | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
     | '/staff/knowledge/guidelines'
@@ -277,11 +301,13 @@ export interface RootRouteChildren {
   InsightsRoute: typeof InsightsRoute
   MediaRoute: typeof MediaRoute
   CaseRefRoute: typeof CaseRefRoute
+  StaffConversationsRoute: typeof StaffConversationsRoute
   StaffHandoffsRoute: typeof StaffHandoffsRoute
   StaffInsightsRoute: typeof StaffInsightsRoute
   StaffOverviewRoute: typeof StaffOverviewRoute
   StaffRecordRoute: typeof StaffRecordRoute
   StaffSignInRoute: typeof StaffSignInRoute
+  StaffVisitorsRoute: typeof StaffVisitorsRoute
   CaseIndexRoute: typeof CaseIndexRoute
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
@@ -356,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/conversations': {
+      id: '/staff/conversations'
+      path: '/staff/conversations'
+      fullPath: '/staff/conversations'
+      preLoaderRoute: typeof StaffConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/handoffs': {
       id: '/staff/handoffs'
       path: '/staff/handoffs'
@@ -389,6 +422,13 @@ declare module '@tanstack/react-router' {
       path: '/staff/sign-in'
       fullPath: '/staff/sign-in'
       preLoaderRoute: typeof StaffSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/visitors': {
+      id: '/staff/visitors'
+      path: '/staff/visitors'
+      fullPath: '/staff/visitors'
+      preLoaderRoute: typeof StaffVisitorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/crawl': {
@@ -445,11 +485,13 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRoute: InsightsRoute,
   MediaRoute: MediaRoute,
   CaseRefRoute: CaseRefRoute,
+  StaffConversationsRoute: StaffConversationsRoute,
   StaffHandoffsRoute: StaffHandoffsRoute,
   StaffInsightsRoute: StaffInsightsRoute,
   StaffOverviewRoute: StaffOverviewRoute,
   StaffRecordRoute: StaffRecordRoute,
   StaffSignInRoute: StaffSignInRoute,
+  StaffVisitorsRoute: StaffVisitorsRoute,
   CaseIndexRoute: CaseIndexRoute,
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
