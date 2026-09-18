@@ -29,6 +29,7 @@ import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
 import { Route as StaffVisitorsRouteImport } from './routes/staff/visitors'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
 import { Route as ApiPublicEmbeddingsRouteImport } from './routes/api/public/embeddings'
+import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice/token'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
 import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
@@ -39,6 +40,7 @@ import { Route as ApiPublicV1CaseStatusRouteImport } from './routes/api/public/v
 import { Route as ApiPublicV1EscalateRouteImport } from './routes/api/public/v1/escalate'
 import { Route as ApiPublicV1MediaQueryRouteImport } from './routes/api/public/v1/media-query'
 import { Route as ApiPublicV1OpenapiRouteImport } from './routes/api/public/v1/openapi'
+import { Route as ApiPublicV1AgentToolRouteImport } from './routes/api/public/v1/agent.$tool'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -140,6 +142,11 @@ const ApiPublicEmbeddingsRoute = ApiPublicEmbeddingsRouteImport.update({
   path: '/api/public/embeddings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVoiceTokenRoute = ApiVoiceTokenRouteImport.update({
+  id: '/api/voice/token',
+  path: '/api/voice/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffKnowledgeGuidelinesRoute =
   StaffKnowledgeGuidelinesRouteImport.update({
     id: '/staff/knowledge/guidelines',
@@ -191,6 +198,11 @@ const ApiPublicV1OpenapiRoute = ApiPublicV1OpenapiRouteImport.update({
   path: '/api/public/v1/openapi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1AgentToolRoute = ApiPublicV1AgentToolRouteImport.update({
+  id: '/api/public/v1/agent/$tool',
+  path: '/api/public/v1/agent/$tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -213,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
+  '/api/voice/token': typeof ApiVoiceTokenRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -223,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
   '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
   '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
+  '/api/public/v1/agent/$tool': typeof ApiPublicV1AgentToolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -245,6 +259,7 @@ export interface FileRoutesByTo {
   '/case': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
+  '/api/voice/token': typeof ApiVoiceTokenRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -255,6 +270,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
   '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
   '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
+  '/api/public/v1/agent/$tool': typeof ApiPublicV1AgentToolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -278,6 +294,7 @@ export interface FileRoutesById {
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
   '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
+  '/api/voice/token': typeof ApiVoiceTokenRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -288,6 +305,7 @@ export interface FileRoutesById {
   '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
   '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
   '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
+  '/api/public/v1/agent/$tool': typeof ApiPublicV1AgentToolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -312,6 +330,7 @@ export interface FileRouteTypes {
     | '/case/'
     | '/api/public/crawl'
     | '/api/public/embeddings'
+    | '/api/voice/token'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -322,6 +341,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/escalate'
     | '/api/public/v1/media-query'
     | '/api/public/v1/openapi'
+    | '/api/public/v1/agent/$tool'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -344,6 +364,7 @@ export interface FileRouteTypes {
     | '/case'
     | '/api/public/crawl'
     | '/api/public/embeddings'
+    | '/api/voice/token'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -354,6 +375,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/escalate'
     | '/api/public/v1/media-query'
     | '/api/public/v1/openapi'
+    | '/api/public/v1/agent/$tool'
   id:
     | '__root__'
     | '/'
@@ -376,6 +398,7 @@ export interface FileRouteTypes {
     | '/case/'
     | '/api/public/crawl'
     | '/api/public/embeddings'
+    | '/api/voice/token'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -386,6 +409,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/escalate'
     | '/api/public/v1/media-query'
     | '/api/public/v1/openapi'
+    | '/api/public/v1/agent/$tool'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -409,6 +433,7 @@ export interface RootRouteChildren {
   CaseIndexRoute: typeof CaseIndexRoute
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
   ApiPublicEmbeddingsRoute: typeof ApiPublicEmbeddingsRoute
+  ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
   StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
   StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
@@ -419,6 +444,7 @@ export interface RootRouteChildren {
   ApiPublicV1EscalateRoute: typeof ApiPublicV1EscalateRoute
   ApiPublicV1MediaQueryRoute: typeof ApiPublicV1MediaQueryRoute
   ApiPublicV1OpenapiRoute: typeof ApiPublicV1OpenapiRoute
+  ApiPublicV1AgentToolRoute: typeof ApiPublicV1AgentToolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -563,6 +589,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEmbeddingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/voice/token': {
+      id: '/api/voice/token'
+      path: '/api/voice/token'
+      fullPath: '/api/voice/token'
+      preLoaderRoute: typeof ApiVoiceTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/knowledge/guidelines': {
       id: '/staff/knowledge/guidelines'
       path: '/staff/knowledge/guidelines'
@@ -633,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1OpenapiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/agent/$tool': {
+      id: '/api/public/v1/agent/$tool'
+      path: '/api/public/v1/agent/$tool'
+      fullPath: '/api/public/v1/agent/$tool'
+      preLoaderRoute: typeof ApiPublicV1AgentToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -657,6 +697,7 @@ const rootRouteChildren: RootRouteChildren = {
   CaseIndexRoute: CaseIndexRoute,
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,
   ApiPublicEmbeddingsRoute: ApiPublicEmbeddingsRoute,
+  ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
   StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,
   StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,
@@ -667,6 +708,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1EscalateRoute: ApiPublicV1EscalateRoute,
   ApiPublicV1MediaQueryRoute: ApiPublicV1MediaQueryRoute,
   ApiPublicV1OpenapiRoute: ApiPublicV1OpenapiRoute,
+  ApiPublicV1AgentToolRoute: ApiPublicV1AgentToolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

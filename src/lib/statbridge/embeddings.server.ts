@@ -5,20 +5,47 @@
  * differently worded question still reaches the right publication. Embeddings
  * are generated server-side only and never leave the server.
  */
-const EMBEDDING_MODEL = "google/gemini-embedding-2";
+const EMBEDDING_MODEL = "gemini-embedding-2";
 const EMBEDDING_DIMENSIONS = 1536;
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
-export async function embedTexts(inputs: string[]): Promise<number[][]> {
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) throw new Error("No embedding provider is configured on the server.");
-  if (inputs.length === 0) return [];
+/** Google's own embedding API, on the project-owned key. */
+async function embedWithGoogle(key: string, inputs: string[]): Promise<number[][]> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:batchEmbedContents`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        requests: inputs.map((text) => ({
+          model: `models/${EMBEDDING_MODEL}`,
+          content: { parts: [{ text }] },
+          outputDimensionality: EMBEDDING_DIMENSIONS,
+        })),
+      }),
+    },
+  );
 
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Embedding request failed [${response.status}]: ${detail}`);
+  }
+
+  const body = (await response.json()) as { embeddings?: Array<{ values?: number[] }> };
+  return inputs.map((_, i) => body.embeddings?.[i]?.values ?? []);
+}
+
+/** Managed gateway fallback, used only when no project key is configured. */
+async function embedWithGateway(key: string, inputs: string[]): Promise<number[][]> {
   const response = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model: EMBEDDING_MODEL, input: inputs, dimensions: EMBEDDING_DIMENSIONS }),
+    body: JSON.stringify({
+      model: `google/${EMBEDDING_MODEL}`,
+      input: inputs,
+      dimensions: EMBEDDING_DIMENSIONS,
+    }),
   });
 
   if (!response.ok) {
@@ -29,6 +56,15 @@ export async function embedTexts(inputs: string[]): Promise<number[][]> {
   const body = (await response.json()) as { data?: Array<{ embedding: number[]; index?: number }> };
   const rows = body.data ?? [];
   return inputs.map((_, i) => rows[i]?.embedding ?? rows.find((r) => r.index === i)?.embedding ?? []);
+}
+
+export async function embedTexts(inputs: string[]): Promise<number[][]> {
+  if (inputs.length === 0) return [];
+  const own = process.env["GEMINI_API_KEY"];
+  if (own) return embedWithGoogle(own, inputs);
+  const gateway = process.env["LOVABLE_API_KEY"];
+  if (gateway) return embedWithGateway(gateway, inputs);
+  throw new Error("No embedding provider is configured on the server.");
 }
 
 export async function embedOne(text: string): Promise<number[] | null> {
