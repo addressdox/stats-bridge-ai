@@ -1,18 +1,23 @@
 # StatBridge roadmap
 
-## Done this round
+## Done
 
-- Real South African data foundation — eight genuine approved publications seeded with verified observations (QLFS Q2 2025 33.2%, Census 2022, mid-2025 population, CPI Sep 2025, GDP Q2 2025, SARB repo 6.75%, GHS 2023, Budget 2025), all with real URLs, publication numbers and verification records.
-- Continuous crawler — `crawler.server.ts` harvests Stats SA, Reserve Bank and Treasury listing pages, dedupes, and proposes new sources as pending (never searchable until staff approve). Run from Staff → Sources → "Run crawler now" (administrators), or by an external scheduler POSTing `/api/public/crawl` with the `CRAWL_TOKEN` header (401 without it).
-- Live AI provider wired — server-side, streamed via the Lovable AI gateway; the whole safety pipeline verified live: routing, retrieval, clarification, verified-figure blocks, official quotes, references and caveats. End-to-end test: unemployment question → clarification → 33.2% QLFS answer with full evidence panel.
-- Search fixes — strict full-text match with ranked fallback; seeded figures now count as verified via their verification timestamp.
-- Clarification chips now send human-readable text (was a raw machine value).
+- Real South African data foundation — eight genuine approved publications seeded with verified observations (QLFS Q2 2025 33.2%, Census 2022, mid-2025 population, CPI Sep 2025, GDP Q2 2025, SARB repo 6.75%, GHS 2023, Budget 2025), with real URLs, publication numbers and verification records.
+- Continuous crawler — harvests Stats SA, Reserve Bank and Treasury listing pages, dedupes, proposes new sources as pending. Staff → Sources, or a scheduler POSTing `/api/public/crawl` with the `CRAWL_TOKEN` header.
+- Live AI provider wired server-side through the Lovable gateway; full safety pipeline verified end to end.
+- Rich evidence blocks — statistics, tables, charts, images, video, documents and downloadable datasets, each only when an approved publication carries it.
+- Public insights page at `/insights`.
+- Visitor identity and conversation memory — visitors, identifiers, conversations, turns, analysis, handoffs, handoff events; returning-visitor recognition; erase-my-record.
+- Meaning-based retrieval — pgvector index over approved extracts and figures, embeddings built through the Lovable gateway, merged with word search inside the answer pipeline. Rebuild endpoint `/api/public/embeddings`.
+- Enterprise staff desk — Overview, Handover queue (accept / decline / transfer / close, reply as official), Conversations with analysis, People.
+- Real South African woman's voice — ElevenLabs "Naledi" via `/api/speak`, streamed, with the built-in voice as fallback. Only checked wording is ever spoken.
 
 ## Open
 
-1. Real-data evaluation (30-case set) against the seeded/crawled data; then delete any remaining test/demo records.
-2. Tawk-style widget rebuild — compact launcher bubble, widget-sized chat/voice panel, full-screen expand, link to the main app; independent hosted demo page.
-3. Public API documentation completion on `/developers`.
-4. Rich dynamic output — the AI can already render charts/tables/quotes/metrics from evidence; extend to images, video, documents and Excel/CSV blocks.
-5. Follow-ups (P9, up to 3, KB-grounded), insights views (L1–L4), briefing (stretch), persona themes (later).
-6. Final compliance report.
+1. Visitor-side contact capture and handover controls in the Ask room (name / email / phone with consent notice, "speak to a person" button, live official replies).
+2. Assistant tool calling — server-side tools for search, comparison, case status, media request, contact capture and handover.
+3. Insights: source freshness timestamps, interactive filters and drill-down, PDF and CSV export.
+4. Tawk-style widget rebuild — compact launcher, widget-sized chat/voice panel, full-screen expand, link to the main app; independent hosted demo page.
+5. Public API documentation on `/developers`.
+6. Real-data evaluation (30-case set), then delete any remaining test/demo records.
+7. Final compliance report.
