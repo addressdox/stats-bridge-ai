@@ -35,6 +35,10 @@ import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowle
 import { Route as StaffReviewIndexRouteImport } from './routes/staff/review.index'
 import { Route as StaffReviewIdRouteImport } from './routes/staff/review.$id'
 import { Route as ApiPublicV1AskRouteImport } from './routes/api/public/v1/ask'
+import { Route as ApiPublicV1CaseStatusRouteImport } from './routes/api/public/v1/case-status'
+import { Route as ApiPublicV1EscalateRouteImport } from './routes/api/public/v1/escalate'
+import { Route as ApiPublicV1MediaQueryRouteImport } from './routes/api/public/v1/media-query'
+import { Route as ApiPublicV1OpenapiRouteImport } from './routes/api/public/v1/openapi'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -167,6 +171,26 @@ const ApiPublicV1AskRoute = ApiPublicV1AskRouteImport.update({
   path: '/api/public/v1/ask',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1CaseStatusRoute = ApiPublicV1CaseStatusRouteImport.update({
+  id: '/api/public/v1/case-status',
+  path: '/api/public/v1/case-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1EscalateRoute = ApiPublicV1EscalateRouteImport.update({
+  id: '/api/public/v1/escalate',
+  path: '/api/public/v1/escalate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1MediaQueryRoute = ApiPublicV1MediaQueryRouteImport.update({
+  id: '/api/public/v1/media-query',
+  path: '/api/public/v1/media-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1OpenapiRoute = ApiPublicV1OpenapiRouteImport.update({
+  id: '/api/public/v1/openapi',
+  path: '/api/public/v1/openapi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -195,6 +219,10 @@ export interface FileRoutesByFullPath {
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
   '/api/public/v1/ask': typeof ApiPublicV1AskRoute
+  '/api/public/v1/case-status': typeof ApiPublicV1CaseStatusRoute
+  '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
+  '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
+  '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -223,6 +251,10 @@ export interface FileRoutesByTo {
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review': typeof StaffReviewIndexRoute
   '/api/public/v1/ask': typeof ApiPublicV1AskRoute
+  '/api/public/v1/case-status': typeof ApiPublicV1CaseStatusRoute
+  '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
+  '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
+  '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -252,6 +284,10 @@ export interface FileRoutesById {
   '/staff/review/$id': typeof StaffReviewIdRoute
   '/staff/review/': typeof StaffReviewIndexRoute
   '/api/public/v1/ask': typeof ApiPublicV1AskRoute
+  '/api/public/v1/case-status': typeof ApiPublicV1CaseStatusRoute
+  '/api/public/v1/escalate': typeof ApiPublicV1EscalateRoute
+  '/api/public/v1/media-query': typeof ApiPublicV1MediaQueryRoute
+  '/api/public/v1/openapi': typeof ApiPublicV1OpenapiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -282,6 +318,10 @@ export interface FileRouteTypes {
     | '/staff/review/$id'
     | '/staff/review/'
     | '/api/public/v1/ask'
+    | '/api/public/v1/case-status'
+    | '/api/public/v1/escalate'
+    | '/api/public/v1/media-query'
+    | '/api/public/v1/openapi'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -310,6 +350,10 @@ export interface FileRouteTypes {
     | '/staff/review/$id'
     | '/staff/review'
     | '/api/public/v1/ask'
+    | '/api/public/v1/case-status'
+    | '/api/public/v1/escalate'
+    | '/api/public/v1/media-query'
+    | '/api/public/v1/openapi'
   id:
     | '__root__'
     | '/'
@@ -338,6 +382,10 @@ export interface FileRouteTypes {
     | '/staff/review/$id'
     | '/staff/review/'
     | '/api/public/v1/ask'
+    | '/api/public/v1/case-status'
+    | '/api/public/v1/escalate'
+    | '/api/public/v1/media-query'
+    | '/api/public/v1/openapi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -367,6 +415,10 @@ export interface RootRouteChildren {
   StaffReviewIdRoute: typeof StaffReviewIdRoute
   StaffReviewIndexRoute: typeof StaffReviewIndexRoute
   ApiPublicV1AskRoute: typeof ApiPublicV1AskRoute
+  ApiPublicV1CaseStatusRoute: typeof ApiPublicV1CaseStatusRoute
+  ApiPublicV1EscalateRoute: typeof ApiPublicV1EscalateRoute
+  ApiPublicV1MediaQueryRoute: typeof ApiPublicV1MediaQueryRoute
+  ApiPublicV1OpenapiRoute: typeof ApiPublicV1OpenapiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -553,6 +605,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1AskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/case-status': {
+      id: '/api/public/v1/case-status'
+      path: '/api/public/v1/case-status'
+      fullPath: '/api/public/v1/case-status'
+      preLoaderRoute: typeof ApiPublicV1CaseStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/escalate': {
+      id: '/api/public/v1/escalate'
+      path: '/api/public/v1/escalate'
+      fullPath: '/api/public/v1/escalate'
+      preLoaderRoute: typeof ApiPublicV1EscalateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/media-query': {
+      id: '/api/public/v1/media-query'
+      path: '/api/public/v1/media-query'
+      fullPath: '/api/public/v1/media-query'
+      preLoaderRoute: typeof ApiPublicV1MediaQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/openapi': {
+      id: '/api/public/v1/openapi'
+      path: '/api/public/v1/openapi'
+      fullPath: '/api/public/v1/openapi'
+      preLoaderRoute: typeof ApiPublicV1OpenapiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -583,6 +663,10 @@ const rootRouteChildren: RootRouteChildren = {
   StaffReviewIdRoute: StaffReviewIdRoute,
   StaffReviewIndexRoute: StaffReviewIndexRoute,
   ApiPublicV1AskRoute: ApiPublicV1AskRoute,
+  ApiPublicV1CaseStatusRoute: ApiPublicV1CaseStatusRoute,
+  ApiPublicV1EscalateRoute: ApiPublicV1EscalateRoute,
+  ApiPublicV1MediaQueryRoute: ApiPublicV1MediaQueryRoute,
+  ApiPublicV1OpenapiRoute: ApiPublicV1OpenapiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
