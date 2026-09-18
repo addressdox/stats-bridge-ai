@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 
+import { ThemeToggle } from "./ThemeToggle";
+
 const NAV = [
   { to: "/ask", label: "Ask" },
   { to: "/media", label: "Media desk" },
@@ -54,8 +56,11 @@ export function SiteHeader() {
           >
             Staff sign in
           </Link>
+          <ThemeToggle className="ml-1" />
         </nav>
 
+        <div className="flex items-center gap-2 md:hidden">
+        <ThemeToggle />
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -66,6 +71,7 @@ export function SiteHeader() {
           <Menu aria-hidden className="size-5" />
           <span className="sr-only">Menu</span>
         </button>
+        </div>
       </div>
 
       {open && (

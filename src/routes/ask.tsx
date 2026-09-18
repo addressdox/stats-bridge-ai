@@ -47,9 +47,10 @@ function AskRoom() {
             >
               Track a request
             </Link>
+            <ThemeToggle className="ml-1" />
             <Link
               to="/"
-              className="ml-1 rounded-full border border-hairline p-2 text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full border border-hairline p-2 text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Leave Ask"
             >
               <X aria-hidden className="size-4" />
