@@ -8,14 +8,13 @@
  */
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowLeft, Keyboard, Mic, PhoneOff, RotateCcw } from "lucide-react";
+import { ArrowLeft, Mic, PhoneOff, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { AudioVisualizer, formatElapsed } from "@/components/statbridge/AudioVisualizer";
 import { AssistantPortrait, type AssistantState } from "@/components/statbridge/assistant-portrait";
-import { readBrowserToken, useVisitorSession } from "@/lib/statbridge/useVisitor";
-import { MultilingualVoiceCall } from "./MultilingualVoiceCall";
+import { useVisitorSession } from "@/lib/statbridge/useVisitor";
 import { EvidenceCanvas } from "./EvidenceCanvas";
 import { getVoiceEvidence } from "@/lib/statbridge/voice.functions";
 import type { PublicAnswer } from "@/lib/statbridge/contract";
@@ -31,26 +30,15 @@ const STATE_LABEL: Record<CallState, string> = {
 
 type Spoken = { who: "you" | "kaya"; text: string };
 
-export function VoiceCall({ onTypeInstead }: { onTypeInstead: (draft?: string) => void }) {
-  const [liveLine, setLiveLine] = useState(false);
-  if (!liveLine)
-    return (
-      <MultilingualVoiceCall onTypeInstead={onTypeInstead} onLiveCall={() => setLiveLine(true)} />
-    );
+export function VoiceCall() {
   return (
     <ConversationProvider>
-      <VoiceCallRoom onTypeInstead={onTypeInstead} onMultilingual={() => setLiveLine(false)} />
+      <VoiceCallRoom />
     </ConversationProvider>
   );
 }
 
-function VoiceCallRoom({
-  onTypeInstead,
-  onMultilingual,
-}: {
-  onTypeInstead: (draft?: string) => void;
-  onMultilingual: () => void;
-}) {
+function VoiceCallRoom() {
   const reduce = useReducedMotion();
   const { session } = useVisitorSession("voice");
   const [state, setState] = useState<CallState>("connecting");
@@ -64,15 +52,31 @@ function VoiceCallRoom({
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedRef = useRef(false);
   const evidenceRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+  const requestedRef = useRef(true);
+  const attemptRef = useRef(0);
+  const tokenRequestRef = useRef<AbortController | null>(null);
+  const openingRef = useRef<Promise<void> | null>(null);
+  const closingRef = useRef<Promise<void>>(Promise.resolve());
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
 
   const conversation = useConversation({
-    onConnect: () => setState("live"),
-    onDisconnect: () => setState((current) => (current === "unavailable" ? current : "ended")),
+    onConnect: () => {
+      if (mountedRef.current && requestedRef.current) setState("live");
+      else void Promise.resolve(conversationRef.current.endSession()).catch(() => undefined);
+    },
+    onDisconnect: () => {
+      if (mountedRef.current)
+        setState((current) => (current === "unavailable" ? current : "ended"));
+    },
     onError: () => {
-      setProblem("The voice line could not be opened. You can still ask in writing.");
+      if (!mountedRef.current || !requestedRef.current) return;
+      setProblem("The voice line could not be opened. Please try again.");
       setState("unavailable");
     },
     onMessage: (message: unknown) => {
+      if (!mountedRef.current || !requestedRef.current) return;
       const payload = message as { source?: string; message?: string };
       const text = (payload.message ?? "").trim();
       if (!text) return;
@@ -87,6 +91,16 @@ function VoiceCallRoom({
 
   const status = conversation.status;
   const isSpeaking = conversation.isSpeaking;
+  const conversationRef = useRef(conversation);
+  conversationRef.current = conversation;
+
+  const closeSession = useCallback(() => {
+    const closing = Promise.resolve()
+      .then(() => conversationRef.current.endSession())
+      .catch(() => undefined);
+    closingRef.current = closing;
+    return closing;
+  }, []);
 
   useEffect(() => {
     if (state !== "live" || !session) return;
@@ -123,6 +137,9 @@ function VoiceCallRoom({
   }, [state, session]);
 
   const startCall = useCallback(async () => {
+    const attempt = ++attemptRef.current;
+    tokenRequestRef.current?.abort();
+    requestedRef.current = true;
     setProblem(null);
     setTurns([]);
     setAnswer(null);
@@ -130,61 +147,95 @@ function VoiceCallRoom({
     setElapsed(0);
     setState("connecting");
 
-    try {
-      const permission = await navigator.mediaDevices.getUserMedia({ audio: true });
-      permission.getTracks().forEach((track) => track.stop());
-    } catch {
-      setProblem("The microphone is not available. You can still ask in writing.");
-      setState("unavailable");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/voice/token");
-      if (!response.ok) throw new Error(String(response.status));
-      const body = (await response.json()) as { signedUrl?: string | null };
-      if (!body.signedUrl) throw new Error("no signed url");
-
-      await conversation.startSession({
-        signedUrl: body.signedUrl,
-        connectionType: "websocket",
-        dynamicVariables: {
-          conversation_id: session?.conversationId ?? "none",
-          browser_token: readBrowserToken() || "none",
-          known_name: session?.knownName ?? "unknown",
-        },
-      });
-    } catch {
-      setProblem("The voice line is not available just now. You can still ask in writing.");
-      setState("unavailable");
-    }
-  }, [conversation, session?.conversationId, session?.knownName]);
+    const previousOpening = openingRef.current;
+    const current = () =>
+      mountedRef.current && requestedRef.current && attemptRef.current === attempt;
+    const opening = (async () => {
+      // A retry waits for the previous opening/closing call so its cleanup cannot end the new call.
+      await previousOpening;
+      await closingRef.current;
+      if (!current()) return;
+      const visitor = sessionRef.current;
+      if (!visitor?.conversationId || !visitor.browserToken) {
+        setProblem("The voice session is not ready yet. Please try again.");
+        setState("unavailable");
+        return;
+      }
+      try {
+        const permission = await navigator.mediaDevices.getUserMedia({ audio: true });
+        permission.getTracks().forEach((track) => track.stop());
+      } catch {
+        if (!current()) return;
+        setProblem("The microphone is not available. Check microphone permission and try again.");
+        setState("unavailable");
+        return;
+      }
+      if (!current()) return;
+      const controller = new AbortController();
+      tokenRequestRef.current = controller;
+      try {
+        const response = await fetch("/api/voice/token", { signal: controller.signal });
+        if (!response.ok) throw new Error(String(response.status));
+        const body = (await response.json()) as { signedUrl?: string | null };
+        if (!body.signedUrl) throw new Error("no signed url");
+        if (!current()) return;
+        await conversationRef.current.startSession({
+          signedUrl: body.signedUrl,
+          connectionType: "websocket",
+          dynamicVariables: {
+            conversation_id: visitor.conversationId,
+            browser_token: visitor.browserToken,
+            known_name: visitor.knownName ?? "unknown",
+          },
+        });
+        if (!current()) await closeSession();
+      } catch {
+        if (!current()) return;
+        setProblem("The voice line is not available just now. Please try again.");
+        setState("unavailable");
+      }
+    })();
+    openingRef.current = opening;
+    await opening;
+    if (openingRef.current === opening) openingRef.current = null;
+  }, [closeSession]);
 
   const endCall = useCallback(() => {
-    void Promise.resolve(conversation.endSession()).catch(() => undefined);
+    startedRef.current = true;
+    requestedRef.current = false;
+    attemptRef.current += 1;
+    tokenRequestRef.current?.abort();
+    void closeSession();
     setState("ended");
-  }, [conversation]);
+  }, [closeSession]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      requestedRef.current = false;
+      startedRef.current = false;
+      attemptRef.current += 1;
+      tokenRequestRef.current?.abort();
+      void closeSession();
+    };
+  }, [closeSession]);
 
   useEffect(() => {
     if (startedRef.current) return;
-    // Give the conversation record a moment so the call can be tied to it,
-    // but never hold the caller waiting for it.
+    // Every spoken tool needs a genuine conversation, never an unowned placeholder.
     if (!session) {
       const waited = setTimeout(() => {
-        if (startedRef.current) return;
-        startedRef.current = true;
-        void startCall();
-      }, 1500);
+        if (startedRef.current || !mountedRef.current) return;
+        setProblem("The voice session is not ready yet. Please try again.");
+        setState("unavailable");
+      }, 8000);
       return () => clearTimeout(waited);
     }
     startedRef.current = true;
     void startCall();
-    return () => {
-      void Promise.resolve(conversation.endSession()).catch(() => undefined);
-    };
-    // the call was requested by the click that opened this screen
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+    return undefined;
+  }, [session, startCall]);
 
   // call timer
   useEffect(() => {
@@ -201,8 +252,6 @@ function VoiceCallRoom({
   }, [state]);
 
   // live audio level for the portrait and visualiser
-  const conversationRef = useRef(conversation);
-  conversationRef.current = conversation;
   const speakingRef = useRef(isSpeaking);
   speakingRef.current = isSpeaking;
 
@@ -248,7 +297,10 @@ function VoiceCallRoom({
         >
           <AssistantPortrait state={portraitState} level={level} size="large" />
 
-          <p className="mt-6 font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
+          <p
+            role="status"
+            className="mt-6 font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground"
+          >
             {state === "live" ? (isSpeaking ? "Speaking" : "Listening…") : STATE_LABEL[state]}
           </p>
 
@@ -286,40 +338,17 @@ function VoiceCallRoom({
             </button>
           ) : null}
 
-          {state === "ended" && (
+          {(state === "ended" || state === "unavailable") && (
             <button
               type="button"
               onClick={() => void startCall()}
               className="inline-flex items-center gap-2 rounded-full bg-official px-5 py-2.5 text-sm font-semibold text-official-foreground transition-opacity hover:opacity-90"
             >
               <RotateCcw aria-hidden className="size-4" />
-              Talk again
+              {state === "ended" ? "Talk again" : "Try again"}
             </button>
           )}
-
-          <button
-            type="button"
-            onClick={() => {
-              endCall();
-              onTypeInstead(lastHeard || undefined);
-            }}
-            className="inline-flex items-center gap-2 rounded-full border border-input bg-surface/70 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-official/50"
-          >
-            <Keyboard aria-hidden className="size-4" />
-            Type instead
-          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            endCall();
-            onMultilingual();
-          }}
-          className="mt-4 text-xs text-muted-foreground underline underline-offset-4"
-        >
-          Speak another South African language
-        </button>
         {answer && !canvasOpen && (
           <button
             type="button"

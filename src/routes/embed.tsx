@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Maximize2, SquareArrowOutUpRight, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { AskExperience } from "@/components/statbridge/AskExperience";
+import { VoiceCall } from "@/components/statbridge/VoiceCall";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 
 const title = "StatBridge assistant";
@@ -29,18 +29,39 @@ function postToHost(message: Record<string, unknown>) {
 }
 
 function EmbedPage() {
+  const [visible, setVisible] = useState(true);
+
+  function closeAssistant() {
+    setVisible(false);
+    postToHost({ type: "close" });
+  }
+
   useEffect(() => {
     postToHost({ type: "ready" });
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") postToHost({ type: "close" });
+      if (event.key === "Escape") {
+        setVisible(false);
+        postToHost({ type: "close" });
+      }
+    }
+    function onHostMessage(event: MessageEvent) {
+      if (event.source !== window.parent || window.parent === window) return;
+      const data = event.data;
+      if (data?.source === "statbridge-host" && data.type === "visibility" && typeof data.open === "boolean") {
+        setVisible(data.open);
+      }
     }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("message", onHostMessage);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("message", onHostMessage);
+    };
   }, []);
 
   return (
-    <div className="light flex h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between border-b border-border bg-surface px-3 py-2">
+    <div className="flex h-svh flex-col overflow-hidden bg-background text-foreground">
+      <header className="shrink-0 flex items-center justify-between border-b border-border bg-surface px-3 py-2">
         <StatBridgeMark className="text-sm" />
         <div className="flex items-center gap-0.5">
           <button
@@ -53,7 +74,10 @@ function EmbedPage() {
           </button>
           <button
             type="button"
-            onClick={() => postToHost({ type: "open-app" })}
+            onClick={() => {
+              setVisible(false);
+              postToHost({ type: "open-app" });
+            }}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
           >
             <SquareArrowOutUpRight aria-hidden className="size-4" />
@@ -61,7 +85,7 @@ function EmbedPage() {
           </button>
           <button
             type="button"
-            onClick={() => postToHost({ type: "close" })}
+            onClick={closeAssistant}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
           >
             <X aria-hidden className="size-4" />
@@ -69,8 +93,8 @@ function EmbedPage() {
           </button>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto px-3 py-4">
-        <AskExperience compact />
+      <main className="min-h-0 flex-1">
+        {visible && <VoiceCall />}
       </main>
       <p className="border-t border-border bg-surface px-3 py-1.5 text-[10px] text-muted-foreground">
         Demonstration build. Answers quote approved Stats SA material.

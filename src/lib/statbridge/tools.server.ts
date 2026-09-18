@@ -246,20 +246,25 @@ async function runVisitorAction(input: VisitorToolInput): Promise<Record<string,
     }
 
     case "contact": {
+      const { validateVisitorContact } = await import("./visitor-contact");
+      const intake = validateVisitorContact(values);
+      if (!intake.ready) return intake.reply;
       const { resolveVisitor } = await import("./visitors.server");
+      const { readConversationVisitor } = await import("./visitor-contact.server");
       const db = await getAdminClient();
+      const owner = await readConversationVisitor(db, { conversationId, browserToken });
+      if (!owner)
+        return {
+          spoken:
+            "I could not link those details to this call, so I have not saved them. Please reconnect the call and try again.",
+          saved: false,
+        };
       const visitor = await resolveVisitor(db, {
         browserToken,
-        contact: {
-          fullName: str(values, "full_name"),
-          email: str(values, "email"),
-          phone: str(values, "phone"),
-          organisation: str(values, "organisation"),
-          address: str(values, "address"),
-          consent: true,
-        },
+        contact: intake.contact,
       });
       return {
+        saved: true,
         spoken: visitor.returning
           ? "Thank you, I have your details on file."
           : "Thank you, I have noted your details.",
@@ -269,33 +274,73 @@ async function runVisitorAction(input: VisitorToolInput): Promise<Record<string,
     }
 
     case "human": {
-      if (!conversationId) return { spoken: "I cannot reach an official on this line just now." };
-      const { resolveVisitor, requestHandoff } = await import("./visitors.server");
+      if (!conversationId)
+        return {
+          spoken: "I cannot link a request to this call just now. Please reconnect and try again.",
+          handoff_id: null,
+        };
+      const { requestHandoff } = await import("./visitors.server");
+      const { readConversationVisitor } = await import("./visitor-contact.server");
+      const { validateVisitorContact } = await import("./visitor-contact");
       const { readDeskSettings, callerPhoneOffer, speakableNumber } =
         await import("./settings.server");
       const db = await getAdminClient();
-      const [visitor, settings] = await Promise.all([
-        resolveVisitor(db, { browserToken }),
-        readDeskSettings(db),
-      ]);
+      const visitor = await readConversationVisitor(db, { conversationId, browserToken });
+      if (!visitor)
+        return {
+          spoken:
+            "I could not link the request to this call. Please reconnect and ask again; no handover has been logged.",
+          handoff_id: null,
+        };
+      const intake = validateVisitorContact({
+        full_name: visitor.full_name,
+        email: visitor.email,
+        phone: visitor.phone,
+        consent: visitor.consent_given,
+      });
+      if (!intake.ready)
+        return {
+          ...intake.reply,
+          spoken:
+            "I can ask an official to follow up. Please tell me your name and an email address or phone number. May we store those details so the Stats SA desk can respond?",
+          handoff_id: null,
+          next_tool: "save_contact",
+        };
+      const settings = await readDeskSettings(db);
       const offer = callerPhoneOffer(settings);
-
-      await requestHandoff(db, {
+      const reasons = [
+        "visitor_request",
+        "media",
+        "sensitive",
+        "unsupported",
+        "low_confidence",
+        "complaint",
+        "other",
+      ] as const;
+      const urgencies = ["low", "normal", "high", "urgent"] as const;
+      const reason = str(values, "reason");
+      const urgency = str(values, "urgency");
+      const handoffId = await requestHandoff(db, {
         conversationId,
-        visitorId: visitor.visitorId,
-        reason: (str(values, "reason") ?? "visitor_request") as never,
-        urgency: (str(values, "urgency") ?? "high") as never,
+        visitorId: visitor.id,
+        reason: reasons.includes(reason as (typeof reasons)[number])
+          ? (reason as (typeof reasons)[number])
+          : "visitor_request",
+        urgency: urgencies.includes(urgency as (typeof urgencies)[number])
+          ? (urgency as (typeof urgencies)[number])
+          : "high",
         topic: str(values, "topic"),
         summary: str(values, "summary") ?? "The visitor asked to speak to a person.",
         channel: spoken ? "voice" : "chat",
         offeredPhone: offer?.number ?? null,
-        callerPhone: str(values, "caller_phone"),
+        callerPhone: visitor.phone,
       });
 
       return {
+        handoff_id: handoffId,
         spoken: offer
-          ? `I have alerted a Stats SA official now, and they can see this on the desk. If you would rather speak to them straight away, the ${offer.label} number is ${spoken ? speakableNumber(offer.number) : offer.number}. Shall I say it once more?`
-          : "I have alerted a Stats SA official now. They can see this on the desk and will come back to you on the contact details you gave me.",
+          ? `I have logged your request for an official, and it is visible on the desk with your contact details. You can also call the ${offer.label} on ${spoken ? speakableNumber(offer.number) : offer.number}. Shall I say the number once more?`
+          : "I have logged your request for an official. It is visible on the desk with the contact details you gave me so the team can follow up.",
         officer_phone: offer?.number ?? null,
         officer_phone_label: offer?.label ?? null,
       };

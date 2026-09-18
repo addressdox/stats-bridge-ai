@@ -106,6 +106,9 @@
 
   function setOpen(next) {
     open = next;
+    if (frame.contentWindow && frame.src) {
+      frame.contentWindow.postMessage({ source: "statbridge-host", type: "visibility", open: open }, origin);
+    }
     if (open) {
       if (!frame.src) frame.src = origin + "/embed";
       panel.style.display = "block";
@@ -137,15 +140,21 @@
   });
 
   window.addEventListener("message", function (event) {
-    if (event.origin !== origin) return;
+    if (event.origin !== origin || event.source !== frame.contentWindow) return;
     var data = event.data || {};
     if (data.source !== "statbridge") return;
+    if (data.type === "ready") {
+      frame.contentWindow.postMessage({ source: "statbridge-host", type: "visibility", open: open }, origin);
+    }
     if (data.type === "close") setOpen(false);
     if (data.type === "expand") {
       expanded = !expanded;
       sizePanel();
     }
-    if (data.type === "open-app") window.open(origin + "/ask", "_blank", "noopener");
+    if (data.type === "open-app") {
+      setOpen(false);
+      window.open(origin + "/ask", "_blank", "noopener");
+    }
   });
 
   root.appendChild(panel);

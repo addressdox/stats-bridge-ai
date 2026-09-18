@@ -1,9 +1,7 @@
-/** Immersive Ask room: a voice call first, with a separate typed room. */
+/** Immersive Ask room: the live voice conversation and its official evidence. */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, PhoneCall } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
-import { AskExperience } from "@/components/statbridge/AskExperience";
 import { VoiceCall } from "@/components/statbridge/VoiceCall";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
@@ -27,10 +25,6 @@ export const Route = createFileRoute("/ask")({
 });
 
 function AskRoom() {
-  const [mode, setMode] = useState<"voice" | "chat">("voice");
-  const [carried, setCarried] = useState("");
-  const [chatKey, setChatKey] = useState(0);
-
   return (
     <div className="relative flex h-svh flex-col overflow-hidden bg-background">
       <header className="relative z-40 flex h-16 shrink-0 items-center justify-between border-b border-hairline bg-background/80 px-5 backdrop-blur-md">
@@ -40,31 +34,11 @@ function AskRoom() {
         </Link>
         <StatBridgeMark />
         <div className="flex items-center gap-2">
-          {mode === "chat" && (
-            <button
-              type="button"
-              onClick={() => setMode("voice")}
-              className="inline-flex items-center gap-2 rounded-full border border-official/55 bg-official/10 px-3.5 py-1.5 text-xs font-semibold text-official transition-colors hover:bg-official/20"
-            >
-              <PhoneCall aria-hidden className="size-3.5" />
-              Back to voice
-            </button>
-          )}
           <ThemeToggle />
         </div>
       </header>
       <main className="min-h-0 flex-1">
-        {mode === "voice" ? (
-          <VoiceCall
-            onTypeInstead={(draft) => {
-              setCarried(draft ?? "");
-              setChatKey((value) => value + 1);
-              setMode("chat");
-            }}
-          />
-        ) : (
-          <AskExperience key={chatKey} initialDraft={carried} />
-        )}
+        <VoiceCall />
       </main>
     </div>
   );
