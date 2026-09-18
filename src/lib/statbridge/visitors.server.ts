@@ -267,6 +267,9 @@ export async function requestHandoff(
     topic?: string | null;
     summary: string;
     caseId?: string | null;
+    channel?: "chat" | "voice" | "widget" | "api";
+    offeredPhone?: string | null;
+    callerPhone?: string | null;
   },
 ) {
   const { data: open } = await db
@@ -287,6 +290,10 @@ export async function requestHandoff(
       urgency: args.urgency ?? "normal",
       topic: args.topic ?? null,
       summary: args.summary.slice(0, 2000),
+      channel: args.channel ?? "chat",
+      offered_phone: args.offeredPhone ?? null,
+      caller_phone: args.callerPhone ?? null,
+      phone_connect_offered: Boolean(args.offeredPhone),
     })
     .select("id")
     .single();
