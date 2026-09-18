@@ -6,6 +6,13 @@ import { motion, useReducedMotion } from "motion/react";
 import { AssistantPortrait } from "@/components/statbridge/assistant-portrait";
 import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
+const deskLinks = [
+  { label: "Media desk", hint: "Journalists with a deadline" },
+  { label: "Track a request", hint: "Reference and private token" },
+  { label: "Developers", hint: "Widget and public API" },
+  { label: "Staff sign in", hint: "Review and knowledge base" },
+];
+
 const title = "StatBridge — Ask about South Africa's official statistics";
 const description =
   "Ask questions about published Statistics South Africa figures, definitions and publications. Every answer quotes approved sources; media and sensitive requests go to a communications official.";
@@ -46,7 +53,10 @@ function EntryGate() {
           <span aria-hidden className="entry-door-glow entry-door-glow-gold" />
           <AssistantPortrait interactive showMic size="small" />
           <h1 className="relative mt-7 text-3xl font-semibold sm:text-4xl">Ask StatBridge</h1>
-          <p className="relative mt-2 text-sm text-muted-foreground sm:text-base">Your official statistics assistant</p>
+          <p className="relative mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Official statistics, answered from approved Stats SA publications — with the source, the
+            page and the period shown every time. No sign-up. Typing or push-to-talk.
+          </p>
         </motion.button>
 
         <div className="mx-20 h-px bg-hairline md:my-20 md:mx-0 md:h-auto md:w-px" />
@@ -64,11 +74,28 @@ function EntryGate() {
         >
           <span aria-hidden className="entry-door-glow entry-door-glow-neutral" />
           <h2 className="relative flex items-center gap-3 text-3xl font-semibold sm:text-4xl">
-            Enter StatBridge
+            Enter the desk
             <ArrowRight aria-hidden className="size-7 text-official transition-transform duration-500 group-hover:translate-x-2" />
           </h2>
-          <p className="relative mt-2 text-sm text-muted-foreground sm:text-base">Media, cases, tools and staff</p>
+          <p className="relative mt-2 text-sm text-muted-foreground sm:text-base">Media, tracking and tools</p>
+
+          <ul className="relative mt-8 grid w-full max-w-sm gap-3 text-left sm:max-w-md">
+            {deskLinks.map((link) => (
+              <li
+                key={link.label}
+                className="entry-door-link flex items-baseline gap-3 rounded-md border border-hairline px-4 py-3"
+              >
+                <span className="text-sm font-medium sm:text-base">{link.label}</span>
+                <span className="text-xs text-muted-foreground sm:text-sm">{link.hint}</span>
+              </li>
+            ))}
+          </ul>
         </motion.button>
+
+        <p className="relative px-6 pb-6 text-center text-xs text-muted-foreground md:absolute md:bottom-4 md:left-0 md:right-0 md:pb-0">
+          Demonstration build. Content shown here is loaded for demonstration and is not an official
+          Statistics South Africa endorsement.
+        </p>
       </div>
     </main>
   );
