@@ -90,7 +90,10 @@ function InsightsPage() {
               />
             </section>
 
-            <Panel heading="Current trends" note="Verified figures with more than one reported period.">
+            <Panel
+              heading="Current trends"
+              note="The latest verified figures. A line is drawn where more than one period has been verified."
+            >
               {data.trends.length === 0 ? (
                 <Empty>No measure yet has more than one verified period.</Empty>
               ) : (
