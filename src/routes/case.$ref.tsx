@@ -6,8 +6,8 @@ import { z } from "zod";
 import { SiteFooter, SiteHeader } from "@/components/statbridge/SiteChrome";
 import { readCaseStatus } from "@/lib/statbridge/public.functions";
 
-const title = "Request status — StatBridge";
-const description = "The private status page for a request sent to Statistics South Africa through StatBridge.";
+const title = "Request status — Naledi";
+const description = "The private status page for a request sent to Statistics South Africa through Naledi.";
 
 export const Route = createFileRoute("/case/$ref")({
   validateSearch: z.object({ token: z.string().optional() }),

@@ -10,7 +10,7 @@ import { StaffShell } from "@/components/statbridge/StaffShell";
 import { getDeskSettings, saveDeskSettings, type DeskSettingsPatch } from "@/lib/statbridge/admin.functions";
 import { useStaff } from "@/lib/staff/useStaff";
 
-const title = "Desk settings — StatBridge staff";
+const title = "Desk settings — Naledi staff";
 const description = "Officer telephone number, handover targets, open channels and data retention for the desk.";
 
 export const Route = createFileRoute("/staff/settings")({

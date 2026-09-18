@@ -10,7 +10,7 @@ import { StaffShell } from "@/components/statbridge/StaffShell";
 import { supabase } from "@/integrations/supabase/client";
 import { REVIEW_REASON_LABELS } from "@/lib/statbridge/contract";
 
-const title = "Review queue — StatBridge staff";
+const title = "Review queue — Naledi staff";
 const description = "Cases waiting for a Stats SA communications official, most urgent first.";
 
 export const Route = createFileRoute("/staff/review/")({

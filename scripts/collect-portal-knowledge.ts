@@ -31,7 +31,7 @@ const documents = new Map<string, { title: string; parentUrl: string }>();
 async function download(url: string, redirects = 0): Promise<{ bytes: Uint8Array; mime: string }> {
   const parsed = new URL(url);
   if (parsed.protocol !== "https:" || parsed.hostname !== "isibaloweb.statssa.gov.za") throw new Error("Outside portal boundary");
-  const response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(30_000), headers: { "User-Agent": "StatBridge-Knowledge/1.0 (public statistical source curation)" } });
+  const response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(30_000), headers: { "User-Agent": "Naledi-Knowledge/1.0 (public statistical source curation)" } });
   if ([301,302,303,307,308].includes(response.status)) {
     if (redirects >= 4) throw new Error("Too many redirects");
     return download(new URL(response.headers.get("location")!, url).href, redirects + 1);

@@ -5,7 +5,7 @@ import { jsonResponse, preflight } from "./_shared";
 const document = {
   openapi: "3.1.0",
   info: {
-    title: "StatBridge public API",
+    title: "Naledi by AddressDox public API",
     version: "1.0.0",
     description:
       "One checked answer record for official South African statistics. Evidence is built on the server; the AI wording is kept in a separate field.",

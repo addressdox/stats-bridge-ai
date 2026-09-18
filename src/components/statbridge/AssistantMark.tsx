@@ -1,5 +1,5 @@
 /**
- * The StatBridge presence: a ringed mark that breathes while idle, pulses
+ * The Naledi presence: a ringed mark that breathes while idle, pulses
  * while listening and steadies while a checked answer is read back.
  * There is no avatar and no persona — it is a signal, not a person.
  */
@@ -9,7 +9,7 @@ import { Mic } from "lucide-react";
 type State = "idle" | "listening" | "thinking" | "speaking";
 
 const RING_COPY: Record<State, string> = {
-  idle: "StatBridge is ready",
+  idle: "Naledi is ready",
   listening: "Listening",
   thinking: "Checking approved sources",
   speaking: "Reading the checked answer",

@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useStaff } from "@/lib/staff/useStaff";
 
-const title = "Staff sign in — StatBridge";
-const description = "Sign-in for Statistics South Africa communications staff using StatBridge.";
+const title = "Staff sign in — Naledi";
+const description = "Sign-in for Statistics South Africa communications staff using Naledi.";
 
 export const Route = createFileRoute("/staff/sign-in")({
   head: () => ({
@@ -102,7 +102,7 @@ function SignInPage() {
         </form>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Demonstration accounts are clearly marked once signed in. Nothing on the public side of StatBridge depends on
+          Demonstration accounts are clearly marked once signed in. Nothing on the public side of Naledi depends on
           having an account.
         </p>
       </div>

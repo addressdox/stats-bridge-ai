@@ -1,5 +1,5 @@
 /**
- * StatBridge public answer contract, version v1.
+ * Naledi public answer contract, version v1.
  *
  * This is the only shape the browser, the widget and API clients ever see.
  * The AI never produces these objects directly: it proposes evidence ids and

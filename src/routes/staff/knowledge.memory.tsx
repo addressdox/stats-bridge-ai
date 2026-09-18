@@ -6,7 +6,7 @@ import { useState } from "react";
 import { StaffShell } from "@/components/statbridge/StaffShell";
 import { supabase } from "@/integrations/supabase/client";
 
-const title = "Communication memory — StatBridge knowledge base";
+const title = "Communication memory — Naledi knowledge base";
 const description = "Approved Stats SA responses, statements and FAQs available for careful reuse.";
 
 export const Route = createFileRoute("/staff/knowledge/memory")({

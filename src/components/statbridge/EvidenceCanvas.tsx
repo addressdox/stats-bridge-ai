@@ -55,7 +55,7 @@ export function EvidenceCanvas({
   const body = (
     <div className="space-y-3 overflow-y-auto overscroll-contain p-4">
       <p className="text-xs leading-relaxed text-muted-foreground">
-        Everything below is taken from an approved Stats SA document. The figures are inserted by StatBridge from
+        Everything below is taken from an approved Stats SA document. The figures are inserted by Naledi from
         verified records, not written by the model.
       </p>
       {answer.officialBlocks.map((block, i) => (

@@ -6,7 +6,7 @@ import { StaffShell } from "@/components/statbridge/StaffShell";
 import { useServerFn } from "@tanstack/react-start";
 import { getDecisionRecord } from "@/lib/statbridge/governance.functions";
 
-const title = "Decision record — StatBridge staff";
+const title = "Decision record — Naledi staff";
 const description = "Who drafted, approved and released each Stats SA response, against which sources and rules.";
 
 export const Route = createFileRoute("/staff/record")({

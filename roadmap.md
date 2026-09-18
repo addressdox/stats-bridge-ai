@@ -1,4 +1,4 @@
-# StatBridge roadmap
+# Naledi by AddressDox roadmap
 
 ## Done
 
@@ -10,7 +10,7 @@
 - Visitor identity and conversation memory — visitors, identifiers, conversations, turns, analysis, handoffs, handoff events; returning-visitor recognition; erase-my-record.
 - Meaning-based retrieval — pgvector index over approved extracts and figures, embeddings built through the Lovable gateway, merged with word search inside the answer pipeline. Rebuild endpoint `/api/public/embeddings`.
 - Enterprise staff desk — Overview, Handover queue (accept / decline / transfer / close, reply as official), Conversations with analysis, People.
-- Cape Town South African voice — ElevenLabs “Kaya — From the Mother City”, voice-designed for live conversation, with South African pronunciation rules and the built-in voice as fallback. Only checked wording is ever spoken.
+- Cape Town South African voice — the existing configured South African woman’s voice, voice-designed for live conversation, with South African pronunciation rules and the built-in voice as fallback. Only checked wording is ever spoken.
 - Visitor contact capture and handover controls in the Ask room — name / email / phone with consent, "speak to a person", live official replies.
 - Tawk-style widget — `public/widget.js` launcher bubble, live-chat-sized panel, full-screen expand, link to the main app, demonstration page at `/widget-demo`.
 - Public API — working `/api/public/v1/ask`, `/escalate`, `/media-query`, `/case-status` and `/openapi`, documented on `/developers`.
@@ -18,7 +18,7 @@
 ## Done (added)
 - Desk settings, staff roles and accounts, own-account page, super administrator sign-in
 - Telephone handover: officer number configurable and read out on the voice line
-- Kaya voice identity: native Cape Town conversational style, light natural Afrikaans influence, honest multilingual behaviour, and preserved visitor tools
+- Naledi voice identity: native Cape Town conversational style, light natural Afrikaans influence, honest multilingual behaviour, and preserved visitor tools
 
 ## Open
 

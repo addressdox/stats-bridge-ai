@@ -141,7 +141,7 @@ async function fetchListing(target: CrawlTarget): Promise<{ items: DiscoveredIte
   try {
     const res = await fetch(target.listingUrl, {
       signal: controller.signal,
-      headers: { "user-agent": "StatBridge-Crawler/1.0 (knowledge-base; official-source discovery)" },
+      headers: { "user-agent": "Naledi-Crawler/1.0 (knowledge-base; official-source discovery)" },
       redirect: "follow",
     });
     if (!res.ok) return { items: [], error: `HTTP ${res.status}` };

@@ -143,7 +143,7 @@ export function RenderBlock({ block }: { block: PublicRenderBlock }) {
     return (
       <Panel tone="plain">
         <p className="text-sm text-muted-foreground">
-          This answer includes a piece of evidence this version of StatBridge cannot display yet.
+          This answer includes a piece of evidence this version of Naledi cannot display yet.
         </p>
       </Panel>
     );

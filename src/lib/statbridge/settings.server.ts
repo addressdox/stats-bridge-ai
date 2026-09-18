@@ -14,7 +14,7 @@ export type DeskSettings = Database["public"]["Tables"]["desk_settings"]["Row"];
 
 const FALLBACK: DeskSettings = {
   id: true,
-  desk_name: "StatBridge — Statistics South Africa information desk",
+  desk_name: "Naledi by AddressDox — Statistics South Africa information desk",
   support_email: null,
   officer_phone: null,
   officer_phone_label: "Stats SA communications desk",

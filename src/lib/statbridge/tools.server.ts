@@ -53,7 +53,7 @@ export const RETRIEVAL_TOOLS = [
   },
 ] as const;
 
-const PLANNER_SYSTEM = `You plan evidence gathering for StatBridge, the public information assistant for Statistics South Africa.
+const PLANNER_SYSTEM = `You plan evidence gathering for Naledi, the public information assistant for Statistics South Africa.
 
 You do not answer. You only choose which of these read-only tools to call, and with what wording:
 ${RETRIEVAL_TOOLS.map((t) => `- ${t.name}: ${t.description} arguments: ${JSON.stringify(t.arguments)}`).join("\n")}

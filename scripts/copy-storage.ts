@@ -1,5 +1,5 @@
 /**
- * Copies the StatBridge storage buckets and their files from the old backend to
+ * Copies the Naledi storage buckets and their files from the old backend to
  * the new Supabase project. Both buckets stay private.
  *
  * Run with bun (or `npx tsx`):

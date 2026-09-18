@@ -99,7 +99,7 @@ function InsightsPage() {
           <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">Insights</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             Every figure below is counted from approved South African publications and human-verified figures already in
-            StatBridge, together with the questions the public has asked in the last 30 days. Nothing here is estimated,
+            Naledi, together with the questions the public has asked in the last 30 days. Nothing here is estimated,
             forecast or explained — the numbers are shown with the publication they came from.
           </p>
         </header>
@@ -274,7 +274,7 @@ function InsightsPage() {
               )}
             </Panel>
 
-            <Panel heading="Recently published" note="The newest approved South African publications in StatBridge.">
+            <Panel heading="Recently published" note="The newest approved South African publications in Naledi.">
               {data.announcements.length === 0 ? (
                 <Empty>No approved publication has been recorded yet.</Empty>
               ) : (
@@ -354,7 +354,7 @@ function InsightsPage() {
               </Panel>
             </div>
 
-            <Panel heading="Likely next questions" note="Answerable from figures already approved in StatBridge.">
+            <Panel heading="Likely next questions" note="Answerable from figures already approved in Naledi.">
               {data.followUps.length === 0 ? (
                 <Empty>No follow-up questions can be suggested yet.</Empty>
               ) : (

@@ -2,9 +2,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-const title = "StatBridge widget demonstration";
+const title = "Naledi widget demonstration";
 const description =
-  "See the StatBridge assistant running as a compact chat bubble on an ordinary website, with voice, chat and a full-screen view.";
+  "See the Naledi assistant running as a compact chat bubble on an ordinary website, with voice, chat and a full-screen view.";
 
 export const Route = createFileRoute("/widget-demo")({
   head: () => ({
@@ -51,13 +51,13 @@ function WidgetDemoPage() {
       <main className="mx-auto max-w-4xl px-5 py-12">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Demonstration page</p>
         <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          This is somebody else's website — with StatBridge on it.
+          This is somebody else's website — with Naledi on it.
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Look at the bottom {""}
           <span className="font-semibold text-foreground">right</span> corner. The bubble opens a compact assistant panel,
           the same size as a live-chat window. Inside it you can talk or type, make the panel full screen, or open the
-          full StatBridge site in a new tab.
+          full Naledi site in a new tab.
         </p>
 
         <section className="mt-10 rounded-2xl border border-hairline bg-surface/60 p-6">
@@ -65,7 +65,7 @@ function WidgetDemoPage() {
           <p className="mt-2 text-sm text-muted-foreground">One line, before the closing body tag.</p>
           <pre className="mt-4 overflow-x-auto rounded-xl border border-hairline bg-background p-4 text-xs leading-relaxed">
 {`<script
-  src="${typeof window === "undefined" ? "https://your-statbridge-site" : window.location.origin}/widget.js"
+  src="${typeof window === "undefined" ? "https://your-naledi-site" : window.location.origin}/widget.js"
   data-statbridge
   data-position="right"
   async
@@ -74,7 +74,7 @@ function WidgetDemoPage() {
           <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
             <li>· <span className="text-foreground">data-position</span> — put the bubble on the left or the right.</li>
             <li>· <span className="text-foreground">data-label</span> — change the wording shown on hover.</li>
-            <li>· <span className="text-foreground">StatBridge.open()</span> — open the panel from your own button.</li>
+            <li>· <span className="text-foreground">Naledi.open()</span> — open the panel from your own button.</li>
           </ul>
         </section>
 

@@ -1,11 +1,11 @@
 /**
- * StatBridge widget loader.
+ * Naledi by AddressDox widget loader.
  *
  * Drop this on any site:
- *   <script src="https://statbridge.example/widget.js" data-statbridge async></script>
+ *   <script src="https://naledi.example/widget.js" data-statbridge async></script>
  *
  * Optional attributes:
- *   data-origin="https://statbridge.example"   where the assistant is hosted
+ *   data-origin="https://naledi.example"   where the assistant is hosted
  *   data-position="left"                        put the bubble on the left
  *   data-label="Ask about official statistics"  the bubble tooltip
  */
@@ -52,7 +52,7 @@
   ].join(";");
 
   var frame = document.createElement("iframe");
-  frame.title = "StatBridge assistant";
+  frame.title = "Naledi by AddressDox assistant";
   frame.allow = "microphone; autoplay";
   frame.style.cssText = "width:100%;height:100%;border:0;display:block;background:#fff;";
   panel.appendChild(frame);
@@ -166,7 +166,7 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);
   else mount();
 
-  window.StatBridge = {
+  window.Naledi = window.StatBridge = {
     open: function () {
       setOpen(true);
     },

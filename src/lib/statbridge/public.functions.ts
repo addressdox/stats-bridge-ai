@@ -1,5 +1,5 @@
 /**
- * The four public doors into StatBridge: ask, escalate, media intake and
+ * The four public doors into Naledi: ask, escalate, media intake and
  * private case status. Everything privileged happens behind them.
  */
 import { createServerFn } from "@tanstack/react-start";

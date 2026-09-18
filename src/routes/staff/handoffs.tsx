@@ -15,7 +15,7 @@ import {
   replyAsOfficial,
 } from "@/lib/statbridge/desk.functions";
 
-const title = "Handover queue — StatBridge staff";
+const title = "Handover queue — Naledi staff";
 const description = "Accept, decline or transfer requests the assistant has passed to a Stats SA official.";
 
 export const Route = createFileRoute("/staff/handoffs")({

@@ -1,8 +1,12 @@
+# Naledi by AddressDox
+
+The application and voice assistant are named Naledi. Existing deployment URLs, API paths, browser storage keys and legacy widget integrations remain compatible. The approved documents below retain their original filenames.
+
 # Stats Bridge AI
 
-You are the lead product architect, UX designer, senior React engineer, Supabase engineer and responsible-AI engineer for StatBridge.
+You are the lead product architect, UX designer, senior React engineer, Supabase engineer and responsible-AI engineer for Naledi.
 
-Your task is to produce an implementation-ready specification and then build the approved StatBridge prototype using React, Vite, TypeScript and Supabase.
+Your task is to produce an implementation-ready specification and then build the approved Naledi prototype using React, Vite, TypeScript and Supabase.
 
 1. Read the attached documents first
 
@@ -40,9 +44,9 @@ Do not claim anything has been completed or passed until it exists and its accep
 
 2. Product definition
 
-Build StatBridge: an AI-enabled assistant for Stats SA public and media information queries.
+Build Naledi: an AI-enabled assistant for Stats SA public and media information queries.
 
-StatBridge must:
+Naledi must:
 
 Answer ordinary public questions using only approved Stats SA sources.
 
@@ -304,7 +308,7 @@ transitions help the user understand that the displayed content belongs to the c
 
 Adapt this pattern to statistical evidence. Do not reproduce its automotive language, dark luxury styling, hard-coded keyword detection, external fallback images or fragile parsing of JSON from partial conversational text.
 
-For StatBridge:
+For Naledi:
 
 The conversation occupies the main area.
 
@@ -352,7 +356,7 @@ source list;
 
 grounded follow-up actions.
 
-A statistical answer should feel as rich and immediate as Sarkimota showing a vehicle, its image, price and features during a conversation. In StatBridge, the assistant should be able to discuss a finding while the interface simultaneously displays the verified value, period, geography, comparison, source document, table and supporting page.
+A statistical answer should feel as rich and immediate as Sarkimota showing a vehicle, its image, price and features during a conversation. In Naledi, the assistant should be able to discuss a finding while the interface simultaneously displays the verified value, period, geography, comparison, source document, table and supporting page.
 
 7. Safe structured rendering
 
@@ -940,7 +944,7 @@ how to reset the demonstration.
 Never award the product its own judging score, invent test results or claim full compliance.
 
 
-again i mean(Build the complete, production-quality StatBridge application from start to finish.
+again i mean(Build the complete, production-quality Naledi application from start to finish.
 
 This is an implementation request. Do not return only a product specification, architecture proposal, implementation plan, wireframe or UI prototype. Create the actual working application, database, authentication, security policies, server functions, workflows, widget, API and demonstration data.
 
@@ -978,9 +982,9 @@ Do not replace the approved product with a generic chatbot, statistics dashboard
 
 What you are building
 
-Build StatBridge, an AI-enabled assistant for Statistics South Africa public and media information queries.
+Build Naledi, an AI-enabled assistant for Statistics South Africa public and media information queries.
 
-StatBridge must provide a complete, working service for:
+Naledi must provide a complete, working service for:
 
 members of the public;
 
@@ -1580,9 +1584,9 @@ desktop uses a side-by-side presentation;
 
 mobile uses a responsive stacked or sheet presentation.
 
-Adapt that interaction pattern to StatBridge’s complete Ask experience.
+Adapt that interaction pattern to Naledi’s complete Ask experience.
 
-Sarkimota is a UI and interaction reference. It is not the architecture for the whole StatBridge application.
+Sarkimota is a UI and interaction reference. It is not the architecture for the whole Naledi application.
 
 Do not copy:
 
@@ -1602,7 +1606,7 @@ its dark luxury brand;
 
 its business rules.
 
-StatBridge Evidence Canvas
+Naledi Evidence Canvas
 
 When a question produces supporting content, smoothly transition the Ask experience into:
 

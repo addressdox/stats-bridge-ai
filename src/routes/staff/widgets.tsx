@@ -13,8 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { listWidgetSites, saveWidgetSite, type WidgetSite } from "@/lib/statbridge/widgets.functions";
 
-const title = "Websites and widget — StatBridge staff";
-const description = "Register the websites allowed to embed the StatBridge assistant and set how it appears there.";
+const title = "Websites and widget — Naledi staff";
+const description = "Register the websites allowed to embed the Naledi assistant and set how it appears there.";
 
 export const Route = createFileRoute("/staff/widgets")({
   head: () => ({

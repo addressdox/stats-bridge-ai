@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { updateMyProfile } from "@/lib/statbridge/admin.functions";
 import { ROLE_LABELS, useStaff } from "@/lib/staff/useStaff";
 
-const title = "My account — StatBridge staff";
+const title = "My account — Naledi staff";
 const description = "Change your name and your password for the Stats SA information desk.";
 
 export const Route = createFileRoute("/staff/account")({

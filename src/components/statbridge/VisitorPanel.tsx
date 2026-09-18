@@ -102,7 +102,7 @@ export function ContactCard({
           className="mt-0.5 size-3.5 accent-[var(--official)]"
         />
         <span>
-          I agree that StatBridge may keep these details to handle my request. They are never sold or shared, and they
+          I agree that Naledi may keep these details to handle my request. They are never sold or shared, and they
           are removed on request.
         </span>
       </label>

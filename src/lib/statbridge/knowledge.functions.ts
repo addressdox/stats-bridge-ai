@@ -195,7 +195,7 @@ export const ingestKnowledgeUrl = createServerFn({ method: "POST" })
     const actor = await requirePermission(context as never, "sources.upload");
     const url = officialSouthAfricanUrl(data.url);
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-    const response = await fetch(url, { redirect: "follow", headers: { "user-agent": "StatBridge-Knowledge/1.0" }, signal: AbortSignal.timeout(20_000) });
+    const response = await fetch(url, { redirect: "follow", headers: { "user-agent": "Naledi-Knowledge/1.0" }, signal: AbortSignal.timeout(20_000) });
     if (!response.ok) throw new Error(`The official page returned HTTP ${response.status}.`);
     const finalUrl = officialSouthAfricanUrl(response.url);
     const contentType = response.headers.get("content-type")?.split(";")[0] ?? "text/html";

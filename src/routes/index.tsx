@@ -13,7 +13,7 @@ const deskLinks = [
   { label: "Staff sign in", hint: "Review and knowledge base" },
 ];
 
-const title = "StatBridge — Ask about South Africa's official statistics";
+const title = "Naledi by AddressDox — Ask about South Africa's official statistics";
 const description =
   "Ask questions about published Statistics South Africa figures, definitions and publications. Every answer quotes approved sources; media and sensitive requests go to a communications official.";
 
@@ -41,7 +41,7 @@ function EntryGate() {
       <div className="flex min-h-svh flex-col md:flex-row">
         <motion.button
           type="button"
-          aria-label="Start asking StatBridge"
+          aria-label="Start asking Naledi"
           onClick={() => navigate({ to: "/ask" })}
           initial={reduce ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ function EntryGate() {
         >
           <span aria-hidden className="entry-door-glow entry-door-glow-gold" />
           <AssistantPortrait interactive showMic size="small" />
-          <h1 className="relative mt-7 text-3xl font-semibold sm:text-4xl">Ask StatBridge</h1>
+          <h1 className="relative mt-7 text-3xl font-semibold sm:text-4xl">Ask Naledi</h1>
           <p className="relative mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
             Official statistics, answered from approved Stats SA publications — with the source, the
             page and the period shown every time. No sign-up. Typing or push-to-talk.
@@ -63,7 +63,7 @@ function EntryGate() {
 
         <motion.button
           type="button"
-          aria-label="Enter StatBridge services"
+          aria-label="Enter Naledi services"
           onClick={() => navigate({ to: "/desk" })}
           initial={reduce ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ function EntryGate() {
         </motion.button>
 
         <p className="relative px-6 pb-6 text-center text-xs text-muted-foreground md:absolute md:bottom-4 md:left-0 md:right-0 md:pb-0">
-          Demonstration build. Content shown here is loaded for demonstration and is not an official
+          Naledi by AddressDox. Demonstration build. Content shown here is loaded for demonstration and is not an official
           Statistics South Africa endorsement.
         </p>
       </div>

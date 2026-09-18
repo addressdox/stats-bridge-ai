@@ -12,7 +12,7 @@ import { runKnowledgeCrawl } from "@/lib/statbridge/crawl.functions";
 import { decideKnowledgeSource, ingestKnowledgeFile, ingestKnowledgeUrl, listKnowledgeSources, openKnowledgeOriginal, reviewKnowledgeSource, verifyFigures } from "@/lib/statbridge/knowledge.functions";
 import { useStaff } from "@/lib/staff/useStaff";
 
-const title="Knowledge library — StatBridge staff";
+const title="Knowledge library — Naledi staff";
 export const Route=createFileRoute("/staff/knowledge/sources")({head:()=>({meta:[{title},{name:"robots",content:"noindex"}]}),component:SourcesPage});
 const input="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm";
 type Meta={sourceId?:string;audience:"public"|"staff";versionLabel:string;title:string;publisher:string;sourceType:"statistical_release"|"media_release"|"methodology"|"organisational_page"|"faq_page"|"other";topic:string;publishedOn:string;referencePeriod:string};

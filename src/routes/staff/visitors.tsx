@@ -7,7 +7,7 @@ import { Empty, Loading, Panel, Pill, relativeTime } from "@/components/statbrid
 import { StaffShell } from "@/components/statbridge/StaffShell";
 import { listVisitors } from "@/lib/statbridge/desk.functions";
 
-const title = "People — StatBridge staff";
+const title = "People — Naledi staff";
 const description = "Contact records for everyone who has chatted with or called the Stats SA assistant.";
 
 export const Route = createFileRoute("/staff/visitors")({

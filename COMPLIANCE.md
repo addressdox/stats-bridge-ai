@@ -1,4 +1,4 @@
-# StatBridge — compliance and assurance notes
+# Naledi by AddressDox — compliance and assurance notes
 
 ## Sourcing
 - Every figure or quotation in a public answer comes from an approved publication version. The assistant may propose only record identifiers; the server resolves them and discards anything unsupported.

@@ -144,7 +144,7 @@ function trimQuote(text: string, limit = 420) {
   return (lastStop > 160 ? cut.slice(0, lastStop + 1) : cut.trimEnd() + "…").trim();
 }
 
-const SYSTEM_PROMPT = `You support StatBridge, the public information assistant for Statistics South Africa.
+const SYSTEM_PROMPT = `You support Naledi, the public information assistant for Statistics South Africa.
 
 You never state a figure, date or fact of your own. You only point at supplied evidence and write plain-language wording around it.
 
@@ -385,7 +385,7 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
       references: [],
       clarification: null,
       gapDescription: await localizeServiceText(
-        "No approved Stats SA source in StatBridge covers this yet, so there is nothing verified to quote. You can send the question to an official.",
+        "No approved Stats SA source in Naledi covers this yet, so there is nothing verified to quote. You can send the question to an official.",
         input.language,
       ),
       reviewReasons: ["gap"],
@@ -513,7 +513,7 @@ ${extracts || "(none)"}`,
       gapDescription:
         proposal.gapReason?.slice(0, 500) ??
         (await localizeServiceText(
-          "The approved Stats SA material in StatBridge does not answer this directly, so no figure can be quoted for it.",
+          "The approved Stats SA material in Naledi does not answer this directly, so no figure can be quoted for it.",
           input.language,
         )),
       reviewReasons: lowConfidence ? ["low_confidence", "gap"] : ["gap"],

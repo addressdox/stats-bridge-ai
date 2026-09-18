@@ -57,7 +57,7 @@ export function AskExperience({ compact = false, initialDraft = "" }: { compact?
       setCanvasOpen(true);
     },
     onError: (error: Error) => setTurns((current) => [...current, {
-      id: uid(), role: "error", text: error.message || "StatBridge could not complete a checked answer just now. Please try again, or send the question to an official.",
+      id: uid(), role: "error", text: error.message || "Naledi could not complete a checked answer just now. Please try again, or send the question to an official.",
     }]),
   });
 
@@ -167,7 +167,7 @@ function AnswerTurn({
           <p className="eyebrow text-warn">Sent to an official</p>
           <p className="mt-2 text-sm leading-relaxed text-foreground">
             {answer.reviewReasons.includes("media") || answer.reviewReasons.includes("sensitive")
-              ? "StatBridge does not write replies to media or sensitive requests. A communications official will handle this one."
+              ? "Naledi does not write replies to media or sensitive requests. A communications official will handle this one."
               : "This needs a person to answer it. A communications official will prepare a reply."}
           </p>
           <p className="mt-4 font-mono text-xl font-semibold tracking-tight text-official">{answer.caseReference}</p>
@@ -211,7 +211,7 @@ function AnswerTurn({
         <div className="rounded-2xl border border-warn/45 bg-warn-surface p-5">
           <p className="eyebrow text-warn">No approved source covers this</p>
           <p className="mt-2 text-sm leading-relaxed text-foreground">{answer.gapDescription}</p>
-          <p className="mt-2 text-xs text-muted-foreground">StatBridge will not fill a gap with wording of its own.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Naledi will not fill a gap with wording of its own.</p>
         </div>
       )}
 

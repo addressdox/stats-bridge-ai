@@ -1,4 +1,4 @@
-# Moving StatBridge to your own Supabase project and Vercel
+# Moving Naledi to your own Supabase project and Vercel
 
 Everything you need is in this repository:
 

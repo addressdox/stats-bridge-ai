@@ -60,6 +60,29 @@ describe("constrained realtime voice sessions", () => {
     expect(prompt).toContain("natural code-switching");
   });
 
+  test("Naledi follows the approved spoken call flow without leaking hosted-only tool wiring", () => {
+    const prompt = String(buildLiveVoiceConfig("Nomsa").systemInstruction);
+    expect(prompt).toContain(
+      "You are Naledi, the public information officer for Statistics South Africa.",
+    );
+    expect(prompt).toContain(
+      "Stats South Africa information desk, Naledi speaking. How can I help you?",
+    );
+    expect(prompt).not.toMatch(/\bKaya\b|StatBridge/);
+    expect(prompt).toContain("Let me check that in the published figures");
+    expect(prompt).toContain("Name the publication and period exactly as returned");
+    expect(prompt).toContain("a name and one email address or telephone number, all by voice");
+    expect(prompt).toContain(
+      "If they decline, continue answering ordinary public statistical questions without storing details",
+    );
+    expect(prompt).toContain("explicit spoken agreement before invoking");
+    expect(prompt).toContain("Media and sensitive requests receive acknowledgements only");
+    expect(prompt).toContain("Before any spoken output on EVERY turn, call set_language");
+    expect(prompt).not.toContain("language_detection");
+    expect(prompt).not.toContain("browser_token");
+    expect(prompt).not.toContain("conversation_id");
+  });
+
   test("all five governed tools wait for their result and disclose no session credentials", () => {
     const tools = buildLiveVoiceConfig().tools as Array<{
       functionDeclarations: Array<{ name: string; behavior: Behavior }>;

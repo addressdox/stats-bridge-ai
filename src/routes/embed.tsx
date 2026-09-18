@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { VoiceCall } from "@/components/statbridge/VoiceCall";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 
-const title = "StatBridge assistant";
-const description = "The embeddable StatBridge assistant for Statistics South Africa information.";
+const title = "Naledi assistant";
+const description = "The embeddable Naledi assistant for Statistics South Africa information.";
 
 export const Route = createFileRoute("/embed")({
   head: () => ({
@@ -81,7 +81,7 @@ function EmbedPage() {
             className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary"
           >
             <SquareArrowOutUpRight aria-hidden className="size-4" />
-            <span className="sr-only">Open StatBridge in a new tab</span>
+            <span className="sr-only">Open Naledi in a new tab</span>
           </button>
           <button
             type="button"

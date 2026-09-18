@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SiteFooter, SiteHeader } from "@/components/statbridge/SiteChrome";
 import { Button } from "@/components/ui/button";
 
-const title = "Track a request — StatBridge";
+const title = "Track a request — Naledi";
 const description =
   "Open the private status page for a request you sent to Statistics South Africa using your case reference and private link.";
 

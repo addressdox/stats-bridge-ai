@@ -6,7 +6,7 @@ import { VoiceCall } from "@/components/statbridge/VoiceCall";
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
 import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 
-const title = "Ask StatBridge — official South African statistics";
+const title = "Ask Naledi — official South African statistics";
 const description =
   "Ask about published Statistics South Africa figures, definitions, methods and release dates. Every answer shows the approved source; media and sensitive requests go to an official.";
 

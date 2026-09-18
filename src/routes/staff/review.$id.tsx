@@ -10,7 +10,7 @@ import type { DraftEvidence } from "@/lib/statbridge/draft.contract";
 import { useStaff } from "@/lib/staff/useStaff";
 import { REVIEW_REASON_LABELS } from "@/lib/statbridge/contract";
 
-const title = "Review workbench — StatBridge staff";
+const title = "Review workbench — Naledi staff";
 const description =
   "Draft, approve and release a Stats SA communications response against verified evidence.";
 

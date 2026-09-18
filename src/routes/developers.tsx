@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { SiteFooter, SiteHeader } from "@/components/statbridge/SiteChrome";
 
-const title = "Developers — StatBridge API and widget";
+const title = "Developers — Naledi API and widget";
 const description =
-  "Documented v1 API and embeddable widget for StatBridge. The same checked answer record is returned to the web app, the widget and API clients.";
+  "Documented v1 API and embeddable widget for Naledi. The same checked answer record is returned to the web app, the widget and API clients.";
 
 export const Route = createFileRoute("/developers")({
   head: () => ({
@@ -69,7 +69,7 @@ function DevelopersPage() {
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12">
         <h1 className="text-3xl font-semibold tracking-tight">Developers</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          StatBridge exposes one checked answer record. The web app, the embeddable widget and any API client all
+          Naledi exposes one checked answer record. The web app, the embeddable widget and any API client all
           receive the same shape, with official evidence and the AI-written explanation kept in separate fields so you
           can present them differently.
         </p>
@@ -199,14 +199,14 @@ if (answer.outcome === "escalated") {
         <section className="mt-10">
           <h2 className="text-xl font-semibold tracking-tight">Widget</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Drop one script tag onto any page. It adds a button, opens StatBridge in an isolated iframe and leaks no
+            Drop one script tag onto any page. It adds a button, opens Naledi in an isolated iframe and leaks no
             React or styles into the host page. The panel opens at live-chat size, can be made full screen, and can hand the
             visitor over to the full site. See it running on the{" "}
             <a href="/widget-demo" className="text-accent underline underline-offset-2">widget demonstration page</a>.
           </p>
           <div className="mt-3">
             <Code>{`<script
-  src="https://YOUR-STATBRIDGE-HOST/widget.js"
+  src="https://YOUR-NALEDI-HOST/widget.js"
   data-statbridge
   data-position="right"
   data-label="Ask about official statistics"

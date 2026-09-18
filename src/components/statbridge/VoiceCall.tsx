@@ -1,5 +1,5 @@
 /**
- * Live voice call with Kaya.
+ * Live voice call with Naledi.
  *
  * The call is a real-time two-way conversation: she greets, listens, speaks and
  * can be interrupted. She cannot state a figure of her own — every statistic
@@ -29,7 +29,7 @@ const STATE_LABEL: Record<CallState, string> = {
   unavailable: "Voice is not available here",
 };
 
-type Spoken = { who: "you" | "kaya"; text: string; id: string };
+type Spoken = { who: "you" | "naledi"; text: string; id: string };
 
 export function VoiceCall() {
   return <VoiceCallRoom />;
@@ -79,7 +79,7 @@ function VoiceCallRoom() {
       setTurns((existing) => {
         const next: Spoken = {
           id: payload.id,
-          who: payload.source === "user" ? "you" : "kaya",
+          who: payload.source === "user" ? "you" : "naledi",
           text,
         };
         return existing.some((turn) => turn.id === payload.id)
@@ -284,7 +284,7 @@ function VoiceCallRoom() {
         : "ended";
 
   const lastHeard = [...turns].reverse().find((turn) => turn.who === "you")?.text ?? "";
-  const lastSaid = [...turns].reverse().find((turn) => turn.who === "kaya")?.text ?? "";
+  const lastSaid = [...turns].reverse().find((turn) => turn.who === "naledi")?.text ?? "";
 
   return (
     <div

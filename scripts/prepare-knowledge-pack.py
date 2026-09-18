@@ -175,7 +175,7 @@ for entry in sorted(portal['sources'], key=lambda e: e['url'], reverse=True):
 
 pack={'pack_id':'statssa-public-2026-09-18-v1','assembled_at':NOW,'geography':'South Africa',
       'approval':'pending; administrator must verify figures and approve sources; team approval is demonstration, not departmental approval',
-      'attribution':'Statistics South Africa. Extraction, selection and structuring by StatBridge; no endorsement implied. See https://www.statssa.gov.za/?page_id=425',
+      'attribution':'Statistics South Africa. Extraction, selection and structuring by Naledi; no endorsement implied. See https://www.statssa.gov.za/?page_id=425',
       'sources':sources,'excluded':excluded,'collection_failures':portal['failures']}
 (OUT/'pack.json').write_text(json.dumps(pack,ensure_ascii=False,indent=2))
 print(json.dumps({'sources':len(sources),'passages':sum(len(s['passages']) for s in sources),'excluded':len(excluded)}))

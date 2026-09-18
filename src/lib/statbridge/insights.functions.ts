@@ -1,7 +1,7 @@
 /**
  * South Africa-only insights dashboard data.
  *
- * Everything returned here is counted from records already in StatBridge:
+ * Everything returned here is counted from records already in Naledi:
  * approved South African source versions, human-verified observations, and
  * the questions the public has asked. Nothing is estimated or invented.
  */
@@ -334,7 +334,7 @@ export const exportInsightsCsv = createServerFn({ method: "POST" })
       .join("; ");
 
     const lines: string[] = [
-      `# StatBridge insights export`,
+      `# Naledi insights export`,
       `# Generated at,${insights.generatedAt}`,
       `# Filters,${used || "none"}`,
       `# Scope,South African official statistics only`,
@@ -363,5 +363,5 @@ export const exportInsightsCsv = createServerFn({ method: "POST" })
       );
     }
 
-    return { fileName: `statbridge-insights-${insights.generatedAt.slice(0, 10)}.csv`, csv: lines.join("\n") };
+    return { fileName: `naledi-insights-${insights.generatedAt.slice(0, 10)}.csv`, csv: lines.join("\n") };
   });

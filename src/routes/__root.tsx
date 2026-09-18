@@ -78,15 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "StatBridge" },
+      { title: "Naledi by AddressDox" },
       {
         name: "description",
         content: "An assistant for Statistics South Africa public and media information queries.",
       },
-      { property: "og:site_name", content: "StatBridge" },
+      { property: "og:site_name", content: "Naledi by AddressDox" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

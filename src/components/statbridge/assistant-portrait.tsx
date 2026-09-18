@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export type AssistantState = "ready" | "connecting" | "listening" | "checking" | "speaking" | "ended";
 
 const STATE_LABELS: Record<AssistantState, string> = {
-  ready: "StatBridge assistant is ready",
+  ready: "Naledi assistant is ready",
   connecting: "Connecting to voice input",
   listening: "Listening",
   checking: "Checking approved sources",
@@ -104,7 +104,7 @@ export function AssistantPortrait({
       <canvas aria-hidden className="absolute inset-0 size-full" ref={canvasRef} />
       <span className="assistant-image-shell relative z-10 size-[58%] overflow-hidden rounded-full">
         <img
-          alt="StatBridge assistant, a South African public information professional"
+          alt="Naledi assistant, a South African public information professional"
           className="size-full object-cover object-top transition-transform duration-700"
           height={1024}
           src={assistantPortrait}

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { mediaQueryRequestSchema, type PublicAnswer } from "@/lib/statbridge/contract";
 import { submitMediaQuery } from "@/lib/statbridge/public.functions";
 
-const title = "Media desk — StatBridge";
+const title = "Media desk — Naledi";
 const description =
   "Send a media enquiry to Statistics South Africa. You receive a case reference and a private status link; AI-assisted drafts remain private until a communications official reviews, approves and releases the reply.";
 
@@ -69,7 +69,7 @@ function MediaPage() {
               Your request has been logged
             </p>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              StatBridge prepares a private draft from approved sources for a Stats SA communications official to
+              Naledi prepares a private draft from approved sources for a Stats SA communications official to
               review, edit and approve. Nothing below is an answer to your question yet; the reply appears only after
               an authorised official releases it.
             </p>
