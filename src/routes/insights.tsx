@@ -292,6 +292,15 @@ function InsightsPage() {
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {a.lastCheckedAt
+                          ? `Last checked ${new Date(a.lastCheckedAt).toLocaleDateString("en-ZA", { dateStyle: "medium" })}`
+                          : "Not yet checked by the crawler"}
+                        {a.lastChangedAt
+                          ? ` · last change ${new Date(a.lastChangedAt).toLocaleDateString("en-ZA", { dateStyle: "medium" })}`
+                          : ""}
+                        {a.stale && <span className="ml-1.5 rounded bg-warn/15 px-1.5 py-0.5 font-semibold text-warn">Needs a fresh check</span>}
+                      </p>
                       {a.url && (
                         <a
                           href={a.url}
