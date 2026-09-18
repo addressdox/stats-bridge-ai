@@ -200,6 +200,8 @@ export const askRequestSchema = z.object({
   channel: z.enum(["web", "widget", "api"]).default("web"),
   siteKey: z.string().nullish(),
   parentAnswerRef: z.string().nullish(),
+  conversationId: z.string().uuid().nullish(),
+  browserToken: z.string().trim().min(8).max(80).nullish(),
 });
 export type AskRequest = z.infer<typeof askRequestSchema>;
 

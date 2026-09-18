@@ -32,7 +32,7 @@ export const askQuestion = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => askRequestSchema.parse(input))
   .handler(async ({ data }): Promise<PublicAnswer> => {
     const { runAsk } = await import("./pipeline.server");
-    return runAsk({
+    const answer = await runAsk({
       question: data.question,
       readingLevel: data.readingLevel,
       language: data.language,
@@ -41,6 +41,26 @@ export const askQuestion = createServerFn({ method: "POST" })
       parentAnswerRef: data.parentAnswerRef ?? null,
       clientKey: clientKey(),
     });
+
+    // The conversation record is kept alongside the answer, never instead of it.
+    if (data.conversationId) {
+      try {
+        const { getAdminClient } = await import("./pipeline.server");
+        const { recordTurn } = await import("./visitors.server");
+        const db = await getAdminClient();
+        await recordTurn(db, { conversationId: data.conversationId, author: "visitor", body: data.question });
+        await recordTurn(db, {
+          conversationId: data.conversationId,
+          author: "assistant",
+          body: answer.aiExplanation ?? answer.clarification?.question ?? answer.gapDescription ?? "(no wording)",
+          outcome: answer.outcome,
+        });
+      } catch {
+        // A failed history write must never withhold a checked answer.
+      }
+    }
+
+    return answer;
   });
 
 export const sendToOfficial = createServerFn({ method: "POST" })

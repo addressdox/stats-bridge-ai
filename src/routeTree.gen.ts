@@ -18,10 +18,15 @@ import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as CaseIndexRouteImport } from './routes/case.index'
 import { Route as CaseRefRouteImport } from './routes/case.$ref'
+import { Route as StaffConversationsRouteImport } from './routes/staff/conversations'
+import { Route as StaffHandoffsRouteImport } from './routes/staff/handoffs'
 import { Route as StaffInsightsRouteImport } from './routes/staff/insights'
+import { Route as StaffOverviewRouteImport } from './routes/staff/overview'
 import { Route as StaffRecordRouteImport } from './routes/staff/record'
 import { Route as StaffSignInRouteImport } from './routes/staff/sign-in'
+import { Route as StaffVisitorsRouteImport } from './routes/staff/visitors'
 import { Route as ApiPublicCrawlRouteImport } from './routes/api/public/crawl'
+import { Route as ApiPublicEmbeddingsRouteImport } from './routes/api/public/embeddings'
 import { Route as StaffKnowledgeGuidelinesRouteImport } from './routes/staff/knowledge.guidelines'
 import { Route as StaffKnowledgeMemoryRouteImport } from './routes/staff/knowledge.memory'
 import { Route as StaffKnowledgeSourcesRouteImport } from './routes/staff/knowledge.sources'
@@ -73,9 +78,24 @@ const CaseRefRoute = CaseRefRouteImport.update({
   path: '/case/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffConversationsRoute = StaffConversationsRouteImport.update({
+  id: '/staff/conversations',
+  path: '/staff/conversations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffHandoffsRoute = StaffHandoffsRouteImport.update({
+  id: '/staff/handoffs',
+  path: '/staff/handoffs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffInsightsRoute = StaffInsightsRouteImport.update({
   id: '/staff/insights',
   path: '/staff/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffOverviewRoute = StaffOverviewRouteImport.update({
+  id: '/staff/overview',
+  path: '/staff/overview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRecordRoute = StaffRecordRouteImport.update({
@@ -88,9 +108,19 @@ const StaffSignInRoute = StaffSignInRouteImport.update({
   path: '/staff/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffVisitorsRoute = StaffVisitorsRouteImport.update({
+  id: '/staff/visitors',
+  path: '/staff/visitors',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCrawlRoute = ApiPublicCrawlRouteImport.update({
   id: '/api/public/crawl',
   path: '/api/public/crawl',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEmbeddingsRoute = ApiPublicEmbeddingsRouteImport.update({
+  id: '/api/public/embeddings',
+  path: '/api/public/embeddings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffKnowledgeGuidelinesRoute =
@@ -129,11 +159,16 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/conversations': typeof StaffConversationsRoute
+  '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
+  '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
+  '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -149,11 +184,16 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/conversations': typeof StaffConversationsRoute
+  '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
+  '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/visitors': typeof StaffVisitorsRoute
   '/case': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
+  '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -170,11 +210,16 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRoute
   '/media': typeof MediaRoute
   '/case/$ref': typeof CaseRefRoute
+  '/staff/conversations': typeof StaffConversationsRoute
+  '/staff/handoffs': typeof StaffHandoffsRoute
   '/staff/insights': typeof StaffInsightsRoute
+  '/staff/overview': typeof StaffOverviewRoute
   '/staff/record': typeof StaffRecordRoute
   '/staff/sign-in': typeof StaffSignInRoute
+  '/staff/visitors': typeof StaffVisitorsRoute
   '/case/': typeof CaseIndexRoute
   '/api/public/crawl': typeof ApiPublicCrawlRoute
+  '/api/public/embeddings': typeof ApiPublicEmbeddingsRoute
   '/staff/knowledge/guidelines': typeof StaffKnowledgeGuidelinesRoute
   '/staff/knowledge/memory': typeof StaffKnowledgeMemoryRoute
   '/staff/knowledge/sources': typeof StaffKnowledgeSourcesRoute
@@ -192,11 +237,16 @@ export interface FileRouteTypes {
     | '/insights'
     | '/media'
     | '/case/$ref'
+    | '/staff/conversations'
+    | '/staff/handoffs'
     | '/staff/insights'
+    | '/staff/overview'
     | '/staff/record'
     | '/staff/sign-in'
+    | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
+    | '/api/public/embeddings'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -212,11 +262,16 @@ export interface FileRouteTypes {
     | '/insights'
     | '/media'
     | '/case/$ref'
+    | '/staff/conversations'
+    | '/staff/handoffs'
     | '/staff/insights'
+    | '/staff/overview'
     | '/staff/record'
     | '/staff/sign-in'
+    | '/staff/visitors'
     | '/case'
     | '/api/public/crawl'
+    | '/api/public/embeddings'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -232,11 +287,16 @@ export interface FileRouteTypes {
     | '/insights'
     | '/media'
     | '/case/$ref'
+    | '/staff/conversations'
+    | '/staff/handoffs'
     | '/staff/insights'
+    | '/staff/overview'
     | '/staff/record'
     | '/staff/sign-in'
+    | '/staff/visitors'
     | '/case/'
     | '/api/public/crawl'
+    | '/api/public/embeddings'
     | '/staff/knowledge/guidelines'
     | '/staff/knowledge/memory'
     | '/staff/knowledge/sources'
@@ -253,11 +313,16 @@ export interface RootRouteChildren {
   InsightsRoute: typeof InsightsRoute
   MediaRoute: typeof MediaRoute
   CaseRefRoute: typeof CaseRefRoute
+  StaffConversationsRoute: typeof StaffConversationsRoute
+  StaffHandoffsRoute: typeof StaffHandoffsRoute
   StaffInsightsRoute: typeof StaffInsightsRoute
+  StaffOverviewRoute: typeof StaffOverviewRoute
   StaffRecordRoute: typeof StaffRecordRoute
   StaffSignInRoute: typeof StaffSignInRoute
+  StaffVisitorsRoute: typeof StaffVisitorsRoute
   CaseIndexRoute: typeof CaseIndexRoute
   ApiPublicCrawlRoute: typeof ApiPublicCrawlRoute
+  ApiPublicEmbeddingsRoute: typeof ApiPublicEmbeddingsRoute
   StaffKnowledgeGuidelinesRoute: typeof StaffKnowledgeGuidelinesRoute
   StaffKnowledgeMemoryRoute: typeof StaffKnowledgeMemoryRoute
   StaffKnowledgeSourcesRoute: typeof StaffKnowledgeSourcesRoute
@@ -330,11 +395,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/conversations': {
+      id: '/staff/conversations'
+      path: '/staff/conversations'
+      fullPath: '/staff/conversations'
+      preLoaderRoute: typeof StaffConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/handoffs': {
+      id: '/staff/handoffs'
+      path: '/staff/handoffs'
+      fullPath: '/staff/handoffs'
+      preLoaderRoute: typeof StaffHandoffsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/insights': {
       id: '/staff/insights'
       path: '/staff/insights'
       fullPath: '/staff/insights'
       preLoaderRoute: typeof StaffInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/overview': {
+      id: '/staff/overview'
+      path: '/staff/overview'
+      fullPath: '/staff/overview'
+      preLoaderRoute: typeof StaffOverviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/record': {
@@ -351,11 +437,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/visitors': {
+      id: '/staff/visitors'
+      path: '/staff/visitors'
+      fullPath: '/staff/visitors'
+      preLoaderRoute: typeof StaffVisitorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/crawl': {
       id: '/api/public/crawl'
       path: '/api/public/crawl'
       fullPath: '/api/public/crawl'
       preLoaderRoute: typeof ApiPublicCrawlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/embeddings': {
+      id: '/api/public/embeddings'
+      path: '/api/public/embeddings'
+      fullPath: '/api/public/embeddings'
+      preLoaderRoute: typeof ApiPublicEmbeddingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/knowledge/guidelines': {
@@ -405,11 +505,16 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRoute: InsightsRoute,
   MediaRoute: MediaRoute,
   CaseRefRoute: CaseRefRoute,
+  StaffConversationsRoute: StaffConversationsRoute,
+  StaffHandoffsRoute: StaffHandoffsRoute,
   StaffInsightsRoute: StaffInsightsRoute,
+  StaffOverviewRoute: StaffOverviewRoute,
   StaffRecordRoute: StaffRecordRoute,
   StaffSignInRoute: StaffSignInRoute,
+  StaffVisitorsRoute: StaffVisitorsRoute,
   CaseIndexRoute: CaseIndexRoute,
   ApiPublicCrawlRoute: ApiPublicCrawlRoute,
+  ApiPublicEmbeddingsRoute: ApiPublicEmbeddingsRoute,
   StaffKnowledgeGuidelinesRoute: StaffKnowledgeGuidelinesRoute,
   StaffKnowledgeMemoryRoute: StaffKnowledgeMemoryRoute,
   StaffKnowledgeSourcesRoute: StaffKnowledgeSourcesRoute,

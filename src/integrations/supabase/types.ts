@@ -455,6 +455,170 @@ export type Database = {
           },
         ]
       }
+      conversation_analysis: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          key_points: string[]
+          resolved: boolean
+          sentiment: Database["public"]["Enums"]["sentiment_label"]
+          summary: string
+          topic: string | null
+          unmet_need: string | null
+          urgency: Database["public"]["Enums"]["urgency_level"]
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          key_points?: string[]
+          resolved?: boolean
+          sentiment?: Database["public"]["Enums"]["sentiment_label"]
+          summary: string
+          topic?: string | null
+          unmet_need?: string | null
+          urgency?: Database["public"]["Enums"]["urgency_level"]
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          key_points?: string[]
+          resolved?: boolean
+          sentiment?: Database["public"]["Enums"]["sentiment_label"]
+          summary?: string
+          topic?: string | null
+          unmet_need?: string | null
+          urgency?: Database["public"]["Enums"]["urgency_level"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_analysis_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_turns: {
+        Row: {
+          answer_id: string | null
+          author: Database["public"]["Enums"]["turn_author"]
+          author_profile_id: string | null
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          outcome: Database["public"]["Enums"]["answer_outcome"] | null
+          spoken: boolean
+          tools_used: string[]
+        }
+        Insert: {
+          answer_id?: string | null
+          author: Database["public"]["Enums"]["turn_author"]
+          author_profile_id?: string | null
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          outcome?: Database["public"]["Enums"]["answer_outcome"] | null
+          spoken?: boolean
+          tools_used?: string[]
+        }
+        Update: {
+          answer_id?: string | null
+          author?: Database["public"]["Enums"]["turn_author"]
+          author_profile_id?: string | null
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          outcome?: Database["public"]["Enums"]["answer_outcome"] | null
+          spoken?: boolean
+          tools_used?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_turns_answer_id_fkey"
+            columns: ["answer_id"]
+            isOneToOne: false
+            referencedRelation: "answers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_turns_author_profile_id_fkey"
+            columns: ["author_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_turns_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          channel: Database["public"]["Enums"]["conversation_channel"]
+          created_at: string
+          device: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          is_demo: boolean
+          language: string
+          page_url: string | null
+          started_at: string
+          state: Database["public"]["Enums"]["conversation_state"]
+          turn_count: number
+          updated_at: string
+          visitor_id: string | null
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["conversation_channel"]
+          created_at?: string
+          device?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          is_demo?: boolean
+          language?: string
+          page_url?: string | null
+          started_at?: string
+          state?: Database["public"]["Enums"]["conversation_state"]
+          turn_count?: number
+          updated_at?: string
+          visitor_id?: string | null
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["conversation_channel"]
+          created_at?: string
+          device?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          is_demo?: boolean
+          language?: string
+          page_url?: string | null
+          started_at?: string
+          state?: Database["public"]["Enums"]["conversation_state"]
+          turn_count?: number
+          updated_at?: string
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drafts: {
         Row: {
           adapted_from_memory_item_id: string | null
@@ -681,6 +845,215 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handoff_events: {
+        Row: {
+          action: string
+          actor_profile_id: string | null
+          created_at: string
+          detail: string | null
+          handoff_id: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_profile_id?: string | null
+          created_at?: string
+          detail?: string | null
+          handoff_id: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_profile_id?: string | null
+          created_at?: string
+          detail?: string | null
+          handoff_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handoff_events_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoff_events_handoff_id_fkey"
+            columns: ["handoff_id"]
+            isOneToOne: false
+            referencedRelation: "handoffs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handoffs: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          case_id: string | null
+          closed_at: string | null
+          conversation_id: string
+          decline_reason: string | null
+          declined_at: string | null
+          declined_by: string | null
+          id: string
+          is_demo: boolean
+          reason: Database["public"]["Enums"]["handoff_reason"]
+          requested_at: string
+          state: Database["public"]["Enums"]["handoff_state"]
+          summary: string
+          topic: string | null
+          transferred_at: string | null
+          transferred_to: string | null
+          updated_at: string
+          urgency: Database["public"]["Enums"]["urgency_level"]
+          visitor_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          case_id?: string | null
+          closed_at?: string | null
+          conversation_id: string
+          decline_reason?: string | null
+          declined_at?: string | null
+          declined_by?: string | null
+          id?: string
+          is_demo?: boolean
+          reason?: Database["public"]["Enums"]["handoff_reason"]
+          requested_at?: string
+          state?: Database["public"]["Enums"]["handoff_state"]
+          summary: string
+          topic?: string | null
+          transferred_at?: string | null
+          transferred_to?: string | null
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["urgency_level"]
+          visitor_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          case_id?: string | null
+          closed_at?: string | null
+          conversation_id?: string
+          decline_reason?: string | null
+          declined_at?: string | null
+          declined_by?: string | null
+          id?: string
+          is_demo?: boolean
+          reason?: Database["public"]["Enums"]["handoff_reason"]
+          requested_at?: string
+          state?: Database["public"]["Enums"]["handoff_state"]
+          summary?: string
+          topic?: string | null
+          transferred_at?: string | null
+          transferred_to?: string | null
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["urgency_level"]
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handoffs_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoffs_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoffs_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "insight_turnaround"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "handoffs_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "review_queue"
+            referencedColumns: ["case_id"]
+          },
+          {
+            foreignKeyName: "handoffs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoffs_declined_by_fkey"
+            columns: ["declined_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoffs_transferred_to_fkey"
+            columns: ["transferred_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoffs_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_embeddings: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string
+          id: string
+          model: string
+          owner_id: string
+          owner_kind: Database["public"]["Enums"]["embedding_owner"]
+          source_version_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding: string
+          id?: string
+          model: string
+          owner_id: string
+          owner_kind: Database["public"]["Enums"]["embedding_owner"]
+          source_version_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string
+          id?: string
+          model?: string
+          owner_id?: string
+          owner_kind?: Database["public"]["Enums"]["embedding_owner"]
+          source_version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_embeddings_source_version_id_fkey"
+            columns: ["source_version_id"]
+            isOneToOne: false
+            referencedRelation: "source_versions"
             referencedColumns: ["id"]
           },
         ]
@@ -1228,6 +1601,95 @@ export type Database = {
           },
         ]
       }
+      visitor_identifiers: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          value: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          value: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          value?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_identifiers_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visitors: {
+        Row: {
+          address: string | null
+          consent_at: string | null
+          consent_given: boolean
+          conversation_count: number
+          created_at: string
+          email: string | null
+          first_seen_at: string
+          full_name: string | null
+          id: string
+          is_demo: boolean
+          last_seen_at: string
+          notes: string | null
+          organisation: string | null
+          phone: string | null
+          preferred_language: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          consent_at?: string | null
+          consent_given?: boolean
+          conversation_count?: number
+          created_at?: string
+          email?: string | null
+          first_seen_at?: string
+          full_name?: string | null
+          id?: string
+          is_demo?: boolean
+          last_seen_at?: string
+          notes?: string | null
+          organisation?: string | null
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          consent_at?: string | null
+          consent_given?: boolean
+          conversation_count?: number
+          created_at?: string
+          email?: string | null
+          first_seen_at?: string
+          full_name?: string | null
+          id?: string
+          is_demo?: boolean
+          last_seen_at?: string
+          notes?: string | null
+          organisation?: string | null
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       widget_sites: {
         Row: {
           accent_colour: string | null
@@ -1497,6 +1959,16 @@ export type Database = {
         }
         Returns: string
       }
+      search_knowledge_semantic: {
+        Args: { _embedding: string; _limit?: number }
+        Returns: {
+          content: string
+          owner_id: string
+          owner_kind: Database["public"]["Enums"]["embedding_owner"]
+          similarity: number
+          source_version_id: string
+        }[]
+      }
       search_memory: {
         Args: { _limit?: number; _q: string }
         Returns: {
@@ -1541,8 +2013,57 @@ export type Database = {
           version_label: string
         }[]
       }
+      search_observations_by_id: {
+        Args: { _ids: string[] }
+        Returns: {
+          adjustment: string
+          comparability_note: string
+          display_value: string
+          geography: string
+          measure: string
+          measure_key: string
+          observation_id: string
+          original_url: string
+          page_number: number
+          period_end: string
+          period_start: string
+          population: string
+          published_on: string
+          publisher: string
+          rank: number
+          reference_period: string
+          reported_change: string
+          source_version_id: string
+          table_label: string
+          title: string
+          unit: string
+          value: number
+          value_state: Database["public"]["Enums"]["value_state"]
+          version_label: string
+        }[]
+      }
       search_passages: {
         Args: { _limit?: number; _q: string }
+        Returns: {
+          content: string
+          original_url: string
+          page_number: number
+          passage_id: string
+          published_on: string
+          publisher: string
+          rank: number
+          reference_period: string
+          section_label: string
+          source_id: string
+          source_type: Database["public"]["Enums"]["source_type"]
+          source_version_id: string
+          title: string
+          topic: string
+          version_label: string
+        }[]
+      }
+      search_passages_by_id: {
+        Args: { _ids: string[] }
         Returns: {
           content: string
           original_url: string
@@ -1614,10 +2135,27 @@ export type Database = {
         | "released"
         | "rejected"
       channel: "web" | "widget" | "api"
+      conversation_channel: "chat" | "voice" | "widget" | "api"
+      conversation_state: "active" | "ended" | "handed_off" | "abandoned"
       delivery_state: "shown" | "queued" | "sent" | "failed"
       draft_format: "general_reply" | "faq_answer" | "short_media_statement"
+      embedding_owner: "passage" | "observation" | "memory_item"
       evidence_owner: "answer" | "draft" | "memory_item"
       guideline_status: "draft" | "active" | "retired"
+      handoff_reason:
+        | "visitor_request"
+        | "media"
+        | "sensitive"
+        | "unsupported"
+        | "low_confidence"
+        | "complaint"
+        | "other"
+      handoff_state:
+        | "waiting"
+        | "accepted"
+        | "declined"
+        | "transferred"
+        | "closed"
       ingest_state: "waiting" | "done" | "failed"
       memory_origin: "imported" | "released_case"
       memory_type:
@@ -1643,6 +2181,7 @@ export type Database = {
         | "ambiguous"
         | "low_confidence"
         | "gap"
+      sentiment_label: "positive" | "neutral" | "negative" | "frustrated"
       source_status:
         | "pending"
         | "approved"
@@ -1657,6 +2196,8 @@ export type Database = {
         | "faq_page"
         | "other"
       staff_role: "official" | "administrator" | "manager"
+      turn_author: "visitor" | "assistant" | "official" | "system"
+      urgency_level: "low" | "normal" | "high" | "urgent"
       value_state: "reported" | "missing" | "suppressed" | "not_applicable"
       void_reason:
         | "edited"
@@ -1813,10 +2354,29 @@ export const Constants = {
         "rejected",
       ],
       channel: ["web", "widget", "api"],
+      conversation_channel: ["chat", "voice", "widget", "api"],
+      conversation_state: ["active", "ended", "handed_off", "abandoned"],
       delivery_state: ["shown", "queued", "sent", "failed"],
       draft_format: ["general_reply", "faq_answer", "short_media_statement"],
+      embedding_owner: ["passage", "observation", "memory_item"],
       evidence_owner: ["answer", "draft", "memory_item"],
       guideline_status: ["draft", "active", "retired"],
+      handoff_reason: [
+        "visitor_request",
+        "media",
+        "sensitive",
+        "unsupported",
+        "low_confidence",
+        "complaint",
+        "other",
+      ],
+      handoff_state: [
+        "waiting",
+        "accepted",
+        "declined",
+        "transferred",
+        "closed",
+      ],
       ingest_state: ["waiting", "done", "failed"],
       memory_origin: ["imported", "released_case"],
       memory_type: [
@@ -1845,6 +2405,7 @@ export const Constants = {
         "low_confidence",
         "gap",
       ],
+      sentiment_label: ["positive", "neutral", "negative", "frustrated"],
       source_status: [
         "pending",
         "approved",
@@ -1861,6 +2422,8 @@ export const Constants = {
         "other",
       ],
       staff_role: ["official", "administrator", "manager"],
+      turn_author: ["visitor", "assistant", "official", "system"],
+      urgency_level: ["low", "normal", "high", "urgent"],
       value_state: ["reported", "missing", "suppressed", "not_applicable"],
       void_reason: [
         "edited",
