@@ -510,6 +510,30 @@ ${extracts || "(none)"}`,
     } else {
       blocks.push({ type: "official_quote", text: quote, source: ref });
     }
+    // Pictures and recordings are only ever taken from the approved source's
+    // own published address. Anything else is left out.
+    const media = mediaKindOf(p.original_url);
+    if (media === "image" && wanted.has("image") && p.original_url) {
+      blocks.push({
+        type: "image",
+        title: p.section_label ?? p.title,
+        url: p.original_url,
+        alternativeText: `Published figure from ${p.title} (${p.publisher})`,
+        caption: null,
+        source: ref,
+      });
+    }
+    if (media?.startsWith("video") && wanted.has("video") && p.original_url) {
+      blocks.push({
+        type: "video",
+        title: p.section_label ?? p.title,
+        url: p.original_url,
+        playback: media === "video-file" ? "file" : "link",
+        caption: null,
+        source: ref,
+      });
+    }
+
     if (wanted.has("document")) {
       blocks.push({
         type: "document",
