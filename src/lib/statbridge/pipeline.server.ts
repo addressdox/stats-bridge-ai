@@ -243,13 +243,35 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
     });
   }
 
-  const [passagesResult, observationsResult] = await Promise.all([
+  const { semanticSearch } = await import("./embeddings.server");
+  const [passagesResult, observationsResult, semanticHits] = await Promise.all([
     db.rpc("search_passages", { _q: input.question, _limit: 10 }),
     db.rpc("search_observations", { _q: input.question, _limit: 12 }),
+    semanticSearch(db, input.question, 12).catch(() => []),
   ]);
 
   const passages = (passagesResult.data ?? []) as PassageRow[];
   const observations = (observationsResult.data ?? []) as ObservationRow[];
+
+  // Meaning-based hits fill in what the word search missed. Both paths only
+  // ever return approved publications; the database enforces that, not the prompt.
+  const extraPassageIds = semanticHits
+    .filter((hit) => hit.owner_kind === "passage" && !passages.some((p) => p.passage_id === hit.owner_id))
+    .map((hit) => hit.owner_id)
+    .slice(0, 6);
+  const extraObservationIds = semanticHits
+    .filter((hit) => hit.owner_kind === "observation" && !observations.some((o) => o.observation_id === hit.owner_id))
+    .map((hit) => hit.owner_id)
+    .slice(0, 8);
+
+  if (extraPassageIds.length > 0) {
+    const { data } = await db.rpc("search_passages_by_id", { _ids: extraPassageIds });
+    for (const row of (data ?? []) as PassageRow[]) passages.push(row);
+  }
+  if (extraObservationIds.length > 0) {
+    const { data } = await db.rpc("search_observations_by_id", { _ids: extraObservationIds });
+    for (const row of (data ?? []) as ObservationRow[]) observations.push(row);
+  }
 
   if (passages.length === 0 && observations.length === 0) {
     return await storeAnswer({
