@@ -291,6 +291,86 @@ export function RenderBlock({ block }: { block: PublicRenderBlock }) {
         </Panel>
       );
 
+    case "image":
+      return (
+        <Panel tone="plain" label="Published figure" icon={<ImageIcon aria-hidden className="size-3.5" />}>
+          <p className="text-sm font-semibold text-foreground">{block.title}</p>
+          <img
+            src={block.url}
+            alt={block.alternativeText}
+            loading="lazy"
+            className="mt-2 max-h-80 w-full rounded-md border border-border object-contain"
+            onError={(event) => {
+              const image = event.currentTarget;
+              image.style.display = "none";
+              image.insertAdjacentHTML(
+                "afterend",
+                '<p class="mt-2 text-sm text-muted-foreground">This image could not be loaded. Use the source link below to open it at the publisher.</p>',
+              );
+            }}
+          />
+          {block.caption && <p className="mt-2 text-sm text-muted-foreground">{block.caption}</p>}
+          <SourceLine source={block.source} />
+        </Panel>
+      );
+
+    case "video":
+      return (
+        <Panel tone="plain" label="Published recording" icon={<PlayCircle aria-hidden className="size-3.5" />}>
+          <p className="text-sm font-semibold text-foreground">{block.title}</p>
+          {block.playback === "file" ? (
+            <video
+              controls
+              preload="metadata"
+              src={block.url}
+              className="mt-2 w-full rounded-md border border-border"
+              aria-label={block.title}
+            >
+              Your browser cannot play this recording.
+            </video>
+          ) : (
+            <a
+              href={block.url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-accent underline underline-offset-2"
+            >
+              Watch at the publisher
+              <ExternalLink aria-hidden className="size-3" />
+            </a>
+          )}
+          {block.caption && <p className="mt-2 text-sm text-muted-foreground">{block.caption}</p>}
+          <SourceLine source={block.source} />
+        </Panel>
+      );
+
+    case "dataset":
+      return (
+        <Panel label="Data you can download" icon={<Sheet aria-hidden className="size-3.5" />}>
+          <p className="text-sm font-medium text-foreground">{block.title}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {block.rowCount} verified {block.rowCount === 1 ? "row" : "rows"} — opens in Excel, Numbers or any
+            spreadsheet.
+          </p>
+          <div className="mt-3">
+            <AccessibleTable columns={block.columns} rows={block.rows.slice(0, 8)} />
+          </div>
+          <button
+            type="button"
+            onClick={() => downloadCsv(block.fileName, block.columns, block.rows)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:border-accent hover:text-accent"
+          >
+            <Download aria-hidden className="size-3.5" />
+            Download CSV
+          </button>
+          <div className="mt-2 space-y-1">
+            {block.sources.slice(0, 2).map((s) => (
+              <SourceLine key={`${s.sourceVersionId}-${s.sectionLabel}`} source={s} />
+            ))}
+          </div>
+        </Panel>
+      );
+
     case "clarification":
     case "follow_up_actions":
       return null;
