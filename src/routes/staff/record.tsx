@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2, ScrollText } from "lucide-react";
 
 import { StaffShell } from "@/components/statbridge/StaffShell";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getDecisionRecord } from "@/lib/statbridge/governance.functions";
 
