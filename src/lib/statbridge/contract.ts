@@ -115,6 +115,35 @@ export const publicRenderBlockSchema = z.discriminatedUnion("type", [
     type: z.literal("follow_up_actions"),
     questions: z.array(z.string()).max(3),
   }),
+  /** A published figure or map image carried by an approved publication. */
+  z.object({
+    type: z.literal("image"),
+    title: z.string(),
+    url: z.string(),
+    alternativeText: z.string(),
+    caption: z.string().nullable(),
+    source: publicSourceReferenceSchema,
+  }),
+  /** A published video or briefing recording linked from an approved source. */
+  z.object({
+    type: z.literal("video"),
+    title: z.string(),
+    url: z.string(),
+    /** Direct file playback is only offered for a media file we can play. */
+    playback: z.enum(["file", "link"]),
+    caption: z.string().nullable(),
+    source: publicSourceReferenceSchema,
+  }),
+  /** Verified figures offered as downloadable data (CSV or Excel-readable). */
+  z.object({
+    type: z.literal("dataset"),
+    title: z.string(),
+    fileName: z.string(),
+    columns: z.array(z.string()),
+    rows: z.array(z.record(z.string(), z.string())),
+    rowCount: z.number(),
+    sources: z.array(publicSourceReferenceSchema),
+  }),
 ]);
 export type PublicRenderBlock = z.infer<typeof publicRenderBlockSchema>;
 
