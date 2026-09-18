@@ -13,8 +13,10 @@ import { AssistantPortrait, type AssistantState } from "@/components/statbridge/
 import { EvidenceCanvas } from "@/components/statbridge/EvidenceCanvas";
 import { RenderBlock } from "@/components/statbridge/RenderBlock";
 import { type VoiceStatus } from "@/components/statbridge/VoiceInput";
+import { ContactCard, TalkToPerson } from "@/components/statbridge/VisitorPanel";
 import { REVIEW_REASON_LABELS, type PublicAnswer } from "@/lib/statbridge/contract";
 import { askQuestion, sendToOfficial } from "@/lib/statbridge/public.functions";
+import { useVisitorSession } from "@/lib/statbridge/useVisitor";
 
 type Turn =
   | { id: string; role: "user"; text: string }
