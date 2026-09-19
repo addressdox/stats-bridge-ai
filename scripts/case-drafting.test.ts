@@ -1,6 +1,11 @@
 import { beforeEach, expect, test } from "bun:test";
 
-let interpretation = { language: "zu", englishQuestion: "unemployment Q2 2025", searchQueries: ["unemployment Q2 2025"], reviewReasons: ["media"] };
+const interpretation = {
+  language: "zu",
+  englishQuestion: "unemployment Q2 2025",
+  searchQueries: ["unemployment Q2 2025"],
+  reviewReasons: ["media"],
+};
 let proposal: unknown;
 let generateFails = false;
 let generationCalls = 0;
@@ -8,17 +13,47 @@ const generationInstructions: string[] = [];
 let activePolicy: Record<string, unknown>;
 const dependencies = {
   interpret: async () => interpretation,
-  assistant: () => ({ name: "private-provider", model: "private-model", complete: async ({system}: {system: string}) => { generationCalls++; generationInstructions.push(system); if (system.startsWith("Verify a private draft")) return JSON.stringify({relevant: true, supported: true, issues: []}); if (generateFails) throw new Error("unavailable"); return JSON.stringify(proposal); } }),
+  assistant: () => ({
+    name: "private-provider",
+    model: "private-model",
+    complete: async ({ system }: { system: string }) => {
+      generationCalls++;
+      generationInstructions.push(system);
+      if (system.startsWith("Verify a private draft"))
+        return JSON.stringify({ relevant: true, supported: true, issues: [] });
+      if (generateFails) throw new Error("unavailable");
+      return JSON.stringify(proposal);
+    },
+  }),
   semanticSearch: async () => [],
 };
-const { resolveDraftEvidence, ensureCaseDraft, prepareCaseDraft } = await import("../src/lib/statbridge/case-drafting.server");
-const { communicationSuggestions } = await import("../src/lib/statbridge/communications-intelligence");
+const { resolveDraftEvidence, ensureCaseDraft, prepareCaseDraft } =
+  await import("../src/lib/statbridge/case-drafting.server");
+const { communicationSuggestions } =
+  await import("../src/lib/statbridge/communications-intelligence");
 const versionId = "11111111-1111-4111-a111-111111111111";
 const passageId = "22222222-2222-4222-a222-222222222222";
 const figureId = "33333333-3333-4333-a333-333333333333";
 const caseId = "44444444-4444-4444-a444-444444444444";
-const passage = { passage_id: passageId, content: "The official unemployment rate was 33.2% in Q2 2025.", source_version_id: versionId, title: "QLFS", version_label: "Q2 2025", page_number: 1 };
-const figure = { observation_id: figureId, measure: "Official unemployment rate", display_value: "33.2", unit: "%", geography: "South Africa", reference_period: "Q2 2025", source_version_id: versionId, title: "QLFS", version_label: "Q2 2025" };
+const passage = {
+  passage_id: passageId,
+  content: "The official unemployment rate was 33.2% in Q2 2025.",
+  source_version_id: versionId,
+  title: "QLFS",
+  version_label: "Q2 2025",
+  page_number: 1,
+};
+const figure = {
+  observation_id: figureId,
+  measure: "Official unemployment rate",
+  display_value: "33.2",
+  unit: "%",
+  geography: "South Africa",
+  reference_period: "Q2 2025",
+  source_version_id: versionId,
+  title: "QLFS",
+  version_label: "Q2 2025",
+};
 const calls: Array<{ name: string; args: any }> = [];
 let existingDraft: null | { id: string } = null;
 let evidenceAvailable = true;
@@ -26,44 +61,112 @@ let rpcFailure = false;
 let verifiedHuman = true;
 const db: any = {
   from(table: string) {
-    const chain = new Proxy({}, { get(_t, operation) {
-      if (operation === "then") return (resolve: any) => resolve({ data: table === "memory_items" ? [] : table === "observations" ? (verifiedHuman ? [{id:figureId}] : []) : table === "drafts" ? existingDraft : table === "cases" ? { id: caseId, reference: "SB-TEST", kind: "media", question_text: "IsiZulu question", status: "received" } : activePolicy, error: null });
-      return () => chain;
-    } }); return chain;
+    const chain = new Proxy(
+      {},
+      {
+        get(_t, operation) {
+          if (operation === "then")
+            return (resolve: any) =>
+              resolve({
+                data:
+                  table === "memory_items"
+                    ? []
+                    : table === "observations"
+                      ? verifiedHuman
+                        ? [{ id: figureId }]
+                        : []
+                      : table === "drafts"
+                        ? existingDraft
+                        : table === "cases"
+                          ? {
+                              id: caseId,
+                              reference: "SB-TEST",
+                              kind: "media",
+                              question_text: "IsiZulu question",
+                              status: "received",
+                            }
+                          : activePolicy,
+                error: null,
+              });
+          return () => chain;
+        },
+      },
+    );
+    return chain;
   },
   async rpc(name: string, args: any) {
     calls.push({ name, args });
     if (name === "save_generated_case_draft") return { data: "private-draft-id", error: null };
-    if (rpcFailure && name === "search_passages") return { data: null, error: { message: "database unavailable" } };
-    return { data: name === "search_passages" ? (evidenceAvailable ? [passage] : []) : name === "search_observations" ? (evidenceAvailable ? [figure] : []) : [], error: null };
+    if (rpcFailure && name === "search_passages")
+      return { data: null, error: { message: "database unavailable" } };
+    return {
+      data:
+        name === "search_passages"
+          ? evidenceAvailable
+            ? [passage]
+            : []
+          : name === "search_observations"
+            ? evidenceAvailable
+              ? [figure]
+              : []
+            : [],
+      error: null,
+    };
   },
 };
-beforeEach(() => { calls.length = 0; generationInstructions.length = 0; activePolicy = { id: versionId }; generationCalls = 0; generateFails = false; existingDraft = null; evidenceAvailable = true; rpcFailure = false; verifiedHuman = true; proposal = { body: "Izinga lokungasebenzi lingu-33.2%.", gaps: [], usedPassageIds: [passageId], usedObservationIds: [figureId] }; });
+beforeEach(() => {
+  calls.length = 0;
+  generationInstructions.length = 0;
+  activePolicy = { id: versionId };
+  generationCalls = 0;
+  generateFails = false;
+  existingDraft = null;
+  evidenceAvailable = true;
+  rpcFailure = false;
+  verifiedHuman = true;
+  proposal = {
+    body: "Izinga lokungasebenzi lingu-33.2%.",
+    gaps: [],
+    usedPassageIds: [passageId],
+    usedObservationIds: [figureId],
+  };
+});
 
 test("draft references resolve only to retrieved source identities", () => {
   const resolved = resolveDraftEvidence(proposal, [passage], [figure]);
   expect(resolved.evidence).toHaveLength(2);
-  expect(resolved.evidence.every(e => e.sourceVersionId === versionId)).toBe(true);
+  expect(resolved.evidence.every((e) => e.sourceVersionId === versionId)).toBe(true);
   expect(resolved.body).toContain("33.2%");
 });
 test("invented citations and unsupported draft bodies are rejected", () => {
-  expect(() => resolveDraftEvidence({ body: "Unsupported claim", usedPassageIds: ["invented"] }, [passage], [figure])).toThrow("unknown source");
-  expect(() => resolveDraftEvidence({ body: "Unsupported claim" }, [passage], [figure])).toThrow("no supporting evidence");
+  expect(() =>
+    resolveDraftEvidence(
+      { body: "Unsupported claim", usedPassageIds: ["invented"] },
+      [passage],
+      [figure],
+    ),
+  ).toThrow("unknown source");
+  expect(() => resolveDraftEvidence({ body: "Unsupported claim" }, [passage], [figure])).toThrow(
+    "no supporting evidence",
+  );
 });
 test("initial drafting persists evidence privately and never approves or releases", async () => {
   const result = await ensureCaseDraft(db, caseId, {}, dependencies);
   expect(result).toEqual({ draftId: "private-draft-id" });
   expect(Object.keys(result)).toEqual(["draftId"]);
-  const save = calls.find(c => c.name === "save_generated_case_draft")!;
+  const save = calls.find((c) => c.name === "save_generated_case_draft")!;
   expect(save.args._evidence).toHaveLength(2);
   expect(save.args._body).toContain("Izinga");
   expect(save.args._fingerprint).toMatch(/^[a-f0-9]{64}$/);
-  expect(calls.some(c => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
+  expect(calls.some((c) => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
 });
 test("intake retries keep an existing draft and do not regenerate", async () => {
   existingDraft = { id: "existing-draft" };
-  expect(await ensureCaseDraft(db, caseId, {}, dependencies)).toEqual({ draftId: "existing-draft" });
-  expect(generationCalls).toBe(0); expect(calls).toHaveLength(0);
+  expect(await ensureCaseDraft(db, caseId, {}, dependencies)).toEqual({
+    draftId: "existing-draft",
+  });
+  expect(generationCalls).toBe(0);
+  expect(calls).toHaveLength(0);
 });
 test("legacy media acknowledgement policy is retained but scoped to public delivery for private drafting", async () => {
   activePolicy.media_policy = "Never provide a substantive AI-written media answer.";
@@ -71,25 +174,33 @@ test("legacy media acknowledgement policy is retained but scoped to public deliv
   const instructions = generationInstructions[0]!;
   expect(instructions).toContain(activePolicy.media_policy as string);
   expect(instructions).toContain("govern PUBLIC delivery");
-  expect(instructions.indexOf("PRIVATE DRAFT SCOPE")).toBeGreaterThan(instructions.indexOf(activePolicy.media_policy as string));
+  expect(instructions.indexOf("PRIVATE DRAFT SCOPE")).toBeGreaterThan(
+    instructions.indexOf(activePolicy.media_policy as string),
+  );
   expect(instructions).toContain("Preserve confidentiality, evidence and topic restrictions");
   expect(generationInstructions[1]).toContain("Verify a private draft");
-  expect(calls.find(c => c.name === "save_generated_case_draft")!.args._evidence).toHaveLength(2);
-  expect(calls.some(c => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
+  expect(calls.find((c) => c.name === "save_generated_case_draft")!.args._evidence).toHaveLength(2);
+  expect(calls.some((c) => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
 });
 test("an intake acknowledgement with no evidence cannot replace the private media answer", async () => {
   activePolicy.media_policy = "Never provide a substantive AI-written media answer.";
-  proposal = { body: "Thank you for your enquiry. Please provide your newsroom contact details.", gaps: [], usedPassageIds: [], usedObservationIds: [] };
+  proposal = {
+    body: "Thank you for your enquiry. Please provide your newsroom contact details.",
+    gaps: [],
+    usedPassageIds: [],
+    usedObservationIds: [],
+  };
   const draft = await prepareCaseDraft(db, { caseId }, dependencies);
   expect(draft.body).not.toContain("Thank you for your enquiry");
   expect(draft.body).toContain("verified draft could not be prepared");
   expect(draft.gaps.length).toBeGreaterThan(0);
-  expect(calls.some(c => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
+  expect(calls.some((c) => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
 });
 test("no evidence creates a reviewable gap instead of invented substance", async () => {
   evidenceAvailable = false;
   const draft = await prepareCaseDraft(db, { caseId }, dependencies);
-  expect(draft.evidence).toHaveLength(0); expect(draft.gaps).toHaveLength(1);
+  expect(draft.evidence).toHaveLength(0);
+  expect(draft.gaps).toHaveLength(1);
   expect(generationCalls).toBe(0);
 });
 test("wording failure keeps evidence separate from an unavailable draft", async () => {
@@ -102,20 +213,80 @@ test("wording failure keeps evidence separate from an unavailable draft", async 
 });
 test("retrieval failures are not mislabelled as absent knowledge", async () => {
   rpcFailure = true;
-  await expect(prepareCaseDraft(db, { caseId }, dependencies)).rejects.toThrow("could not be searched");
+  await expect(prepareCaseDraft(db, { caseId }, dependencies)).rejects.toThrow(
+    "could not be searched",
+  );
   expect(generationCalls).toBe(0);
 });
 test("communications suggestions cite observed demand and prioritise evidence gaps", () => {
-  expect(communicationSuggestions([{ topic: "Gender", total: 7, answered: 2, gaps: 4, escalated: 1 }], "seven days")[0]).toContain("4 of 7 questions");
-  expect(communicationSuggestions([{ topic: "Employment", total: 6, answered: 5, gaps: 0, escalated: 1 }], "seven days")[0]).toContain("reviewed FAQ or press release");
-  expect(communicationSuggestions([{ topic: "Employment", total: 2, answered: 2, gaps: 0, escalated: 0 }], "seven days")).toEqual([]);
+  expect(
+    communicationSuggestions(
+      [{ topic: "Gender", total: 7, answered: 2, gaps: 4, escalated: 1 }],
+      "seven days",
+    )[0],
+  ).toContain("4 of 7 questions");
+  expect(
+    communicationSuggestions(
+      [{ topic: "Employment", total: 6, answered: 5, gaps: 0, escalated: 1 }],
+      "seven days",
+    )[0],
+  ).toContain("reviewed FAQ or press release");
+  expect(
+    communicationSuggestions(
+      [{ topic: "Employment", total: 2, answered: 2, gaps: 0, escalated: 0 }],
+      "seven days",
+    ),
+  ).toEqual([]);
 });
 
 test("timestamp-only legacy figures cannot become approved-release evidence", async () => {
   verifiedHuman = false;
   proposal = { body: passage.content, usedPassageIds: [passageId] };
-  const draft = await prepareCaseDraft(db, {caseId}, dependencies);
+  const draft = await prepareCaseDraft(db, { caseId }, dependencies);
   expect(draft.evidence).toHaveLength(1);
   expect(draft.evidence[0]?.passageId).toBe(passageId);
-  expect(draft.evidence.some(e => e.observationId === figureId)).toBe(false);
+  expect(draft.evidence.some((e) => e.observationId === figureId)).toBe(false);
+});
+
+test("detailed private drafting retains developed wording and grounded publication metadata", async () => {
+  const body =
+    "Official unemployment rate\n\nThe official unemployment rate was 33.2% in Q2 2025.\n\nReference period\n\nThis figure covers Q2 2025 in South Africa.\n\nSource\n\nThe figure is reported in QLFS, Q2 2025.";
+  proposal = { body, gaps: [], usedPassageIds: [passageId], usedObservationIds: [figureId] };
+  const result = await prepareCaseDraft(
+    db,
+    { caseId, format: "short_media_statement" },
+    dependencies,
+  );
+  expect(result.body).toBe(body);
+  expect(result.evidence).toHaveLength(2);
+  expect(result.gaps).toEqual([]);
+  const instructions = generationInstructions[0]!;
+  expect(instructions).toContain("DEPTH AND PRESENTATION");
+  expect(instructions).toContain("Do not calculate a new rate");
+  expect(instructions).toContain("fullest supported response");
+  expect(instructions).toContain("An official's specific editing instruction controls");
+  expect(generationInstructions[1]).toContain("EVERY factual claim");
+});
+
+test("publication metadata supports a detailed response without weakening numeric validation", () => {
+  const source = {
+    ...passage,
+    publisher: "Statistics South Africa",
+    published_on: "2026-08-15",
+    original_url: "https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2025.pdf",
+  };
+  const response = {
+    body: "The official unemployment rate was 33.2% in Q2 2025. Published 2026-08-15. Source: https://www.statssa.gov.za/publications/P0211/P02112ndQuarter2025.pdf",
+    gaps: [],
+    usedPassageIds: [passageId],
+    usedObservationIds: [],
+  };
+  expect(resolveDraftEvidence(response, [source], []).body).toBe(response.body);
+  expect(() =>
+    resolveDraftEvidence(
+      { ...response, body: response.body + " Another rate was 94.7%." },
+      [source],
+      [],
+    ),
+  ).toThrow("not supported");
 });

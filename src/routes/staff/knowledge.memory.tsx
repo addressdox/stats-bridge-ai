@@ -1,10 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { FileClock, Loader2, Search } from "lucide-react";
-import { useState } from "react";
+import { FileClock, ExternalLink } from "lucide-react";
+import { useEffect } from "react";
 
+import {
+  CollectionPagination,
+  CollectionToolbar,
+  collectionSelectClass,
+} from "@/components/statbridge/collection-controls";
+import { Empty, Loading, Pill } from "@/components/statbridge/desk-ui";
 import { StaffShell } from "@/components/statbridge/StaffShell";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  loadMemoryPage,
+  memorySearchSchema,
+  type MemorySearch,
+} from "@/lib/staff/knowledge-collections";
 
 const title = "Communication memory — Naledi knowledge base";
 const description = "Approved Stats SA responses, statements and FAQs available for careful reuse.";
@@ -21,117 +41,245 @@ export const Route = createFileRoute("/staff/knowledge/memory")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (search) => memorySearchSchema.parse(search),
   component: MemoryPage,
 });
-
-const REUSE_TONE: Record<string, string> = {
-  reusable: "bg-accent/15 text-accent",
-  needs_review: "bg-warn-surface text-warn-foreground",
-  historical_only: "bg-secondary text-muted-foreground",
-  withdrawn: "bg-destructive/10 text-destructive",
+const labels = {
+  reusable: "Reusable",
+  needs_review: "Needs review",
+  historical_only: "Historical only",
+  withdrawn: "Withdrawn",
 };
-
 function MemoryPage() {
-  const [term, setTerm] = useState("");
-
+  const filters = Route.useSearch(),
+    navigate = Route.useNavigate();
+  const update = (values: Partial<MemorySearch>) =>
+    void navigate({ search: (previous) => ({ ...previous, ...values }), replace: true });
   const query = useQuery({
-    queryKey: ["memory-items"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("memory_items")
-        .select(
-          "id, title, body, item_type, topic, audience, communicated_on, reference_period, origin, approval_basis, reuse_status, review_flag_reason, is_demo_seed, original_url",
-        )
-        .order("communicated_on", { ascending: false });
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
+    queryKey: ["memory-items", filters],
+    queryFn: ({ signal }) => loadMemoryPage(supabase, filters, signal),
   });
-
-  const needle = term.trim().toLowerCase();
-  const rows = (query.data ?? []).filter(
-    (m) =>
-      !needle ||
-      m.title.toLowerCase().includes(needle) ||
-      m.body.toLowerCase().includes(needle) ||
-      (m.topic ?? "").toLowerCase().includes(needle),
-  );
+  useEffect(() => {
+    if (query.data && query.data.page !== filters.page)
+      void navigate({
+        search: (previous) => ({ ...previous, page: query.data.page }),
+        replace: true,
+      });
+  }, [query.data, filters.page, navigate]);
 
   return (
     <StaffShell title="Communication memory">
-      <p className="max-w-2xl text-sm text-muted-foreground">
-        Only approved and released wording is filed here. An assistant conversation never becomes memory on its own. A
-        withdrawn or corrected source flags the items that relied on it.
-      </p>
-
-      <label className="mt-5 flex max-w-md items-center gap-2 rounded-md border border-border bg-surface px-3 py-2">
-        <Search aria-hidden className="size-4 text-muted-foreground" />
-        <span className="sr-only">Search the memory</span>
-        <input
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder="Search by topic or wording"
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-        />
-      </label>
-
-      {query.isPending && (
-        <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 aria-hidden className="size-4 animate-spin" />
-          Loading the memory…
+      <div className="space-y-5">
+        <p className="max-w-3xl text-sm text-muted-foreground">
+          Approved and released wording is filed here with its publication context. Check the reuse
+          status before using a response; a changed or withdrawn source flags the items that relied
+          on it.
         </p>
-      )}
-
-      {query.isError && (
-        <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          The memory could not be loaded. Your account may not have permission to see it.
-        </div>
-      )}
-
-      {query.isSuccess && rows.length === 0 && (
-        <div className="surface-panel mt-6 grid place-items-center p-12 text-center">
-          <FileClock aria-hidden className="size-8 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium">
-            {query.data.length === 0 ? "Nothing filed yet" : "Nothing matches that search"}
+        <CollectionToolbar
+          search={filters.q}
+          onSearch={(q) => update({ q, page: 1 })}
+          searchLabel="Search communication memory"
+          placeholder="Search title, topic or wording"
+          onReset={() => void navigate({ search: memorySearchSchema.parse({}), replace: true })}
+        >
+          <label className="flex flex-col gap-1 text-xs font-medium">
+            Reuse status
+            <select
+              className={collectionSelectClass}
+              value={filters.status}
+              onChange={(e) =>
+                update({
+                  status: memorySearchSchema.parse({ status: e.target.value }).status,
+                  page: 1,
+                })
+              }
+            >
+              <option value="all">All statuses</option>
+              {Object.entries(labels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-medium">
+            Item type
+            <select
+              className={collectionSelectClass}
+              value={filters.kind}
+              onChange={(e) =>
+                update({ kind: memorySearchSchema.parse({ kind: e.target.value }).kind, page: 1 })
+              }
+            >
+              <option value="all">All types</option>
+              {[
+                "media_response",
+                "press_release",
+                "official_statement",
+                "faq",
+                "other_messaging",
+              ].map((type) => (
+                <option key={type} value={type}>
+                  {type.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-medium">
+            Audience
+            <select
+              className={collectionSelectClass}
+              value={filters.audience}
+              onChange={(e) =>
+                update({
+                  audience: memorySearchSchema.parse({ audience: e.target.value }).audience,
+                  page: 1,
+                })
+              }
+            >
+              <option value="all">All audiences</option>
+              <option value="public">Public</option>
+              <option value="staff">Staff only</option>
+            </select>
+          </label>
+        </CollectionToolbar>
+        {query.isPending ? (
+          <Loading label="Loading communication memory…" />
+        ) : query.isError ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+          >
+            The memory could not be loaded. {query.error.message}
           </p>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            Released responses are filed here automatically, together with the evidence they rested on.
-          </p>
-        </div>
-      )}
-
-      <ul className="mt-6 space-y-3">
-        {rows.map((m) => (
-          <li key={m.id} className="surface-panel p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold">{m.title}</span>
-              <span className="rounded bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">{m.item_type}</span>
-              <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${REUSE_TONE[m.reuse_status] ?? ""}`}>
-                {m.reuse_status.replace(/_/g, " ")}
-              </span>
-              <span className="rounded bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">{m.audience}</span>
-              {m.is_demo_seed && (
-                <span className="rounded bg-warn/15 px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">
-                  Demonstration
-                </span>
-              )}
-            </div>
-
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">{m.body}</p>
-
-            <p className="mt-2 text-xs text-muted-foreground">
-              {m.topic ? `${m.topic} · ` : ""}communicated {m.communicated_on}
-              {m.reference_period ? ` · ${m.reference_period}` : ""} · origin {m.origin} · basis {m.approval_basis}
+        ) : query.data.rows.length === 0 ? (
+          <div className="surface-panel p-8 text-center">
+            <FileClock aria-hidden className="mx-auto size-8 text-muted-foreground" />
+            <Empty>No matching communication records.</Empty>
+            <p className="text-xs text-muted-foreground">
+              Adjust the search or filters. Released responses are filed here automatically.
             </p>
-
-            {m.review_flag_reason && (
-              <p className="mt-2 rounded border border-warn/40 bg-warn-surface p-2 text-xs text-warn-foreground">
-                Needs another look: {m.review_flag_reason}
-              </p>
-            )}
-          </li>
-        ))}
-      </ul>
+          </div>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {query.data.rows.map((m) => (
+              <MemoryCard key={m.id} item={m} />
+            ))}
+          </ul>
+        )}
+        {!query.isError && (
+          <CollectionPagination
+            page={query.data?.page ?? filters.page}
+            pageSize={filters.size}
+            total={query.data?.total ?? 0}
+            onPageChange={(page) => update({ page })}
+            onPageSizeChange={(size) =>
+              update({ size: memorySearchSchema.parse({ size }).size, page: 1 })
+            }
+            label="communication records"
+            busy={query.isFetching}
+          />
+        )}
+      </div>
     </StaffShell>
+  );
+}
+
+type MemoryItem = Awaited<ReturnType<typeof loadMemoryPage>>["rows"][number];
+function MemoryCard({ item: m }: { item: MemoryItem }) {
+  const tone =
+    m.reuse_status === "reusable"
+      ? "good"
+      : m.reuse_status === "needs_review"
+        ? "warn"
+        : m.reuse_status === "withdrawn"
+          ? "bad"
+          : "muted";
+  const original = m.original_url && /^https?:\/\//i.test(m.original_url) ? m.original_url : null;
+  return (
+    <li className="flex min-w-0 flex-col rounded-lg border border-border bg-surface p-4">
+      <Dialog>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <FileClock aria-hidden className="size-5 text-accent" />
+          <Pill tone={tone}>{labels[m.reuse_status]}</Pill>
+        </div>
+        <h2 className="mt-3 line-clamp-2 text-sm font-semibold leading-relaxed" title={m.title}>
+          {m.title}
+        </h2>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <Pill>{m.item_type.replaceAll("_", " ")}</Pill>
+          <Pill>{m.audience === "staff" ? "Staff only" : "Public"}</Pill>
+          {m.is_demo_seed && <Pill tone="warn">Demonstration</Pill>}
+        </div>
+        <p className="my-4 line-clamp-4 text-sm leading-relaxed text-muted-foreground">{m.body}</p>
+        {m.review_flag_reason && (
+          <p className="mb-3 line-clamp-2 rounded bg-warn-surface p-2 text-xs text-warn-foreground">
+            Needs review: {m.review_flag_reason}
+          </p>
+        )}
+        <div className="mt-auto">
+          <p className="mb-3 border-t border-border pt-3 text-xs text-muted-foreground">
+            {m.topic ? `${m.topic} · ` : ""}
+            {m.communicated_on}
+            {m.reference_period ? ` · ${m.reference_period}` : ""}
+          </p>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              aria-label={`Read communication: ${m.title}`}
+            >
+              Read communication
+            </Button>
+          </DialogTrigger>
+        </div>
+        <DialogContent className="max-h-[90dvh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <div className="mb-2 flex flex-wrap gap-2">
+              <Pill tone={tone}>{labels[m.reuse_status]}</Pill>
+              <Pill>{m.item_type.replaceAll("_", " ")}</Pill>
+              {m.is_demo_seed && <Pill tone="warn">Demonstration</Pill>}
+            </div>
+            <DialogTitle className="pr-6 leading-snug">{m.title}</DialogTitle>
+            <DialogDescription>
+              Released wording and its original communication context.
+            </DialogDescription>
+          </DialogHeader>
+          {m.review_flag_reason && (
+            <p className="rounded border border-warn/40 bg-warn-surface p-3 text-sm text-warn-foreground">
+              Needs another look: {m.review_flag_reason}
+            </p>
+          )}
+          <dl className="grid gap-3 rounded-lg border border-border bg-secondary/20 p-4 text-xs sm:grid-cols-2">
+            {[
+              ["Communicated", m.communicated_on],
+              ["Reference period", m.reference_period ?? "Not recorded"],
+              ["Topic", m.topic ?? "Not recorded"],
+              ["Audience", m.audience === "staff" ? "Staff only" : "Public"],
+              ["Origin", m.origin.replaceAll("_", " ")],
+              ["Approval basis", m.approval_basis],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="font-medium text-muted-foreground">{label}</dt>
+                <dd className="mt-1">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">{m.body}</div>
+          {original && (
+            <a
+              href={original}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 border-t border-border pt-4 text-sm text-accent underline underline-offset-2"
+            >
+              <ExternalLink aria-hidden className="size-4" />
+              Open original communication
+            </a>
+          )}
+        </DialogContent>
+      </Dialog>
+    </li>
   );
 }

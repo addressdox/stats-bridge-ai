@@ -5,8 +5,16 @@
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {
+  conversationCollectionSchema,
+  handoffCollectionSchema,
+  visitorCollectionSchema,
+} from "@/lib/staff/operations-collections";
 
-async function staffOnly(context: { supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> }; userId: string }) {
+async function staffOnly(context: {
+  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> };
+  userId: string;
+}) {
   const { data } = await context.supabase.rpc("is_staff", { _uid: context.userId });
   if (data !== true) throw new Error("This area is for Stats SA communications staff.");
   return context.userId;
@@ -37,20 +45,32 @@ export const getDeskOverview = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<DeskOverview> => {
     await staffOnly(context as never);
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data, error } = await context.supabase.rpc("staff_dashboard_summary", { _since: since, _include_demo: false });
+    const { data, error } = await context.supabase.rpc("staff_dashboard_summary", {
+      _since: since,
+      _include_demo: false,
+    });
     if (error || !data) throw new Error("The command-centre summary could not be loaded.");
     const value = data as Record<string, number | string | null>;
     const conversations = Number(value["conversations"] ?? 0);
     const resolved = Number(value["resolved"] ?? 0);
     return {
       generatedAt: String(value["generated_at"] ?? new Date().toISOString()),
-      liveConversations: Number(value["live_conversations"] ?? 0), waitingHandoffs: Number(value["waiting_handoffs"] ?? 0),
-      conversationsToday: conversations, answeredToday: resolved,
-      resolutionRate: conversations ? Math.round(resolved / conversations * 100) : null,
+      liveConversations: Number(value["live_conversations"] ?? 0),
+      waitingHandoffs: Number(value["waiting_handoffs"] ?? 0),
+      conversationsToday: conversations,
+      answeredToday: resolved,
+      resolutionRate: conversations ? Math.round((resolved / conversations) * 100) : null,
       averageSeconds: value["average_seconds"] === null ? null : Number(value["average_seconds"]),
-      openCases: Number(value["open_cases"] ?? 0), overdueCases: Number(value["overdue_cases"] ?? 0), coverageGaps: Number(value["coverage_gaps"] ?? 0), visitors: Number(value["visitors"] ?? 0),
-      pendingSources: Number(value["pending_sources"] ?? 0), failedIngestions: Number(value["failed_ingestions"] ?? 0), staleSources: Number(value["stale_sources"] ?? 0),
-      passages: Number(value["passages"] ?? 0), verifiedObservations: Number(value["verified_observations"] ?? 0), embeddings: Number(value["embeddings"] ?? 0),
+      openCases: Number(value["open_cases"] ?? 0),
+      overdueCases: Number(value["overdue_cases"] ?? 0),
+      coverageGaps: Number(value["coverage_gaps"] ?? 0),
+      visitors: Number(value["visitors"] ?? 0),
+      pendingSources: Number(value["pending_sources"] ?? 0),
+      failedIngestions: Number(value["failed_ingestions"] ?? 0),
+      staleSources: Number(value["stale_sources"] ?? 0),
+      passages: Number(value["passages"] ?? 0),
+      verifiedObservations: Number(value["verified_observations"] ?? 0),
+      embeddings: Number(value["embeddings"] ?? 0),
     };
   });
 
@@ -129,7 +149,9 @@ export const listConversations = createServerFn({ method: "POST" })
       })
       .filter((row) =>
         term
-          ? [row.visitorName, row.visitorEmail, row.summary, row.topic].some((v) => v?.toLowerCase().includes(term))
+          ? [row.visitorName, row.visitorEmail, row.summary, row.topic].some((v) =>
+              v?.toLowerCase().includes(term),
+            )
           : true,
       );
   });
@@ -144,7 +166,9 @@ export const readConversationDetail = createServerFn({ method: "POST" })
     const [conversation, turns, analysis, handoff] = await Promise.all([
       db
         .from("conversations")
-        .select("id, channel, state, language, device, page_url, started_at, ended_at, duration_seconds, visitors(id, full_name, email, phone, organisation, conversation_count)")
+        .select(
+          "id, channel, state, language, device, page_url, started_at, ended_at, duration_seconds, visitors(id, full_name, email, phone, organisation, conversation_count)",
+        )
         .eq("id", data.conversationId)
         .maybeSingle(),
       db
@@ -153,7 +177,11 @@ export const readConversationDetail = createServerFn({ method: "POST" })
         .eq("conversation_id", data.conversationId)
         .order("created_at", { ascending: true })
         .limit(300),
-      db.from("conversation_analysis").select("*").eq("conversation_id", data.conversationId).maybeSingle(),
+      db
+        .from("conversation_analysis")
+        .select("*")
+        .eq("conversation_id", data.conversationId)
+        .maybeSingle(),
       db
         .from("handoffs")
         .select("id, state, reason, urgency, summary, requested_at, accepted_at")
@@ -193,9 +221,13 @@ export type DeskHandoff = {
 export const listHandoffs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ state: z.enum(["all", "waiting", "accepted", "declined", "transferred", "closed"]).default("all") }).parse(
-      input ?? {},
-    ),
+    z
+      .object({
+        state: z
+          .enum(["all", "waiting", "accepted", "declined", "transferred", "closed"])
+          .default("all"),
+      })
+      .parse(input ?? {}),
   )
   .handler(async ({ data, context }): Promise<DeskHandoff[]> => {
     await staffOnly(context as never);
@@ -214,7 +246,11 @@ export const listHandoffs = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     return (rows ?? []).map((row) => {
-      const visitor = row.visitors as { full_name: string | null; email: string | null; phone: string | null } | null;
+      const visitor = row.visitors as {
+        full_name: string | null;
+        email: string | null;
+        phone: string | null;
+      } | null;
       const officer = row.profiles as { full_name: string } | null;
       return {
         id: row.id,
@@ -274,7 +310,12 @@ export const actOnHandoff = createServerFn({ method: "POST" })
       patch["closed_at"] = now;
     }
 
-    const { data: row, error } = await db.from("handoffs").update(patch as never).eq("id", data.handoffId).select("conversation_id").single();
+    const { data: row, error } = await db
+      .from("handoffs")
+      .update(patch as never)
+      .eq("id", data.handoffId)
+      .select("conversation_id")
+      .single();
     if (error) throw new Error(error.message);
 
     await db.from("handoff_events").insert({
@@ -285,7 +326,11 @@ export const actOnHandoff = createServerFn({ method: "POST" })
     });
 
     if (data.action === "accept" && row) {
-      const { data: profile } = await db.from("profiles").select("full_name").eq("id", userId).maybeSingle();
+      const { data: profile } = await db
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
       await db.from("conversation_turns").insert({
         conversation_id: row.conversation_id,
         author: "system",
@@ -293,7 +338,10 @@ export const actOnHandoff = createServerFn({ method: "POST" })
       });
     }
     if (data.action === "close" && row) {
-      await db.from("conversations").update({ state: "ended", ended_at: now }).eq("id", row.conversation_id);
+      await db
+        .from("conversations")
+        .update({ state: "ended", ended_at: now })
+        .eq("id", row.conversation_id);
     }
 
     return { ok: true };
@@ -302,7 +350,9 @@ export const actOnHandoff = createServerFn({ method: "POST" })
 export const replyAsOfficial = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ conversationId: z.string().uuid(), body: z.string().trim().min(1).max(4000) }).parse(input),
+    z
+      .object({ conversationId: z.string().uuid(), body: z.string().trim().min(1).max(4000) })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const userId = await staffOnly(context as never);
@@ -322,7 +372,11 @@ export const listColleagues = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const userId = await staffOnly(context as never);
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-    const { data } = await db.from("profiles").select("id, full_name, role").eq("is_active", true).neq("id", userId);
+    const { data } = await db
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("is_active", true)
+      .neq("id", userId);
     return data ?? [];
   });
 
@@ -340,20 +394,28 @@ export type DeskVisitor = {
 
 export const listVisitors = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ search: z.string().trim().max(120).default("") }).parse(input ?? {}))
+  .inputValidator((input: unknown) =>
+    z.object({ search: z.string().trim().max(120).default("") }).parse(input ?? {}),
+  )
   .handler(async ({ data, context }): Promise<DeskVisitor[]> => {
     await staffOnly(context as never);
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await db
       .from("visitors")
-      .select("id, full_name, email, phone, organisation, conversation_count, first_seen_at, last_seen_at, consent_given")
+      .select(
+        "id, full_name, email, phone, organisation, conversation_count, first_seen_at, last_seen_at, consent_given",
+      )
       .order("last_seen_at", { ascending: false })
       .limit(200);
 
     const term = data.search.toLowerCase();
     return (rows ?? [])
       .filter((r) =>
-        term ? [r.full_name, r.email, r.phone, r.organisation].some((v) => v?.toLowerCase().includes(term)) : true,
+        term
+          ? [r.full_name, r.email, r.phone, r.organisation].some((v) =>
+              v?.toLowerCase().includes(term),
+            )
+          : true,
       )
       .map((r) => ({
         id: r.id,
@@ -378,8 +440,14 @@ export const getKnowledgeHealth = createServerFn({ method: "GET" })
       db.from("kb_embeddings").select("id", { count: "exact", head: true }),
       db.from("passages").select("id", { count: "exact", head: true }),
       db.from("observations").select("id", { count: "exact", head: true }),
-      db.from("source_versions").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      db.from("source_versions").select("id", { count: "exact", head: true }).eq("status", "approved"),
+      db
+        .from("source_versions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+      db
+        .from("source_versions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "approved"),
     ]);
     return {
       embeddings: embeddings.count ?? 0,
@@ -397,4 +465,35 @@ export const rebuildEmbeddings = createServerFn({ method: "POST" })
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
     const { backfillEmbeddings } = await import("./embeddings.server");
     return await backfillEmbeddings(db, 200);
+  });
+
+/** Paginated operational collections. Legacy list functions remain compatible. */
+export const listConversationPage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => conversationCollectionSchema.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    await staffOnly(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadConversationPage } = await import("@/lib/staff/operations-collections");
+    return loadConversationPage(supabaseAdmin, data);
+  });
+
+export const listHandoffPage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => handoffCollectionSchema.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    await staffOnly(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadHandoffPage } = await import("@/lib/staff/operations-collections");
+    return loadHandoffPage(supabaseAdmin, data);
+  });
+
+export const listVisitorPage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => visitorCollectionSchema.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    await staffOnly(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadVisitorPage } = await import("@/lib/staff/operations-collections");
+    return loadVisitorPage(supabaseAdmin, data);
   });

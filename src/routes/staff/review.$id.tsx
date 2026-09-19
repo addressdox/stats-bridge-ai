@@ -34,7 +34,7 @@ export const Route = createFileRoute("/staff/review/$id")({
 const FORMATS = [
   { value: "general_reply", label: "General reply" },
   { value: "faq_answer", label: "FAQ answer" },
-  { value: "short_media_statement", label: "Short media statement" },
+  { value: "short_media_statement", label: "Media response" },
 ] as const;
 
 type Format = (typeof FORMATS)[number]["value"];
@@ -127,11 +127,23 @@ function WorkbenchPage() {
   const automaticDraft = useMutation({
     mutationFn: () => ensureReviewDraft({ data: { caseId: id } }),
     onSuccess: () => refresh(),
-    onError: (e: Error) => setNotice({ tone: "bad", text: `Automatic drafting could not finish: ${e.message} You can retry with Suggest wording.` }),
+    onError: (e: Error) =>
+      setNotice({
+        tone: "bad",
+        text: `Automatic drafting could not finish: ${e.message} You can retry with Suggest wording.`,
+      }),
   });
 
   useEffect(() => {
-    if (!can.review || !caseQuery.data || !draftsQuery.isSuccess || latest || body.trim() || ["released", "rejected"].includes(caseQuery.data.status)) return;
+    if (
+      !can.review ||
+      !caseQuery.data ||
+      !draftsQuery.isSuccess ||
+      latest ||
+      body.trim() ||
+      ["released", "rejected"].includes(caseQuery.data.status)
+    )
+      return;
     if (automaticDraftAttempt.current === id) return;
     automaticDraftAttempt.current = id;
     automaticDraft.mutate();
@@ -242,7 +254,11 @@ function WorkbenchPage() {
     onError: (e: Error) => setNotice({ tone: "bad", text: e.message }),
   });
 
-  const pending = automaticDraft.isPending || startReview.isPending || askAssistant.isPending || saveDraft.isPending;
+  const pending =
+    automaticDraft.isPending ||
+    startReview.isPending ||
+    askAssistant.isPending ||
+    saveDraft.isPending;
 
   const dirty = latest
     ? body !== latest.body ||
@@ -293,9 +309,16 @@ function WorkbenchPage() {
                 <span className="rounded bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   {caseQuery.data.status}
                 </span>
-                {caseQuery.data.review_reasons?.filter((r) => r === "sensitive" || r === "complex").map((r) => (
-                  <span key={r} className="rounded border border-warn/40 bg-warn-surface px-2 py-0.5 text-xs font-semibold text-warn-foreground">{r === "sensitive" ? "Sensitive request" : "Complex request"}</span>
-                ))}
+                {caseQuery.data.review_reasons
+                  ?.filter((r) => r === "sensitive" || r === "complex")
+                  .map((r) => (
+                    <span
+                      key={r}
+                      className="rounded border border-warn/40 bg-warn-surface px-2 py-0.5 text-xs font-semibold text-warn-foreground"
+                    >
+                      {r === "sensitive" ? "Sensitive request" : "Complex request"}
+                    </span>
+                  ))}
                 {caseQuery.data.is_demo_seed && (
                   <span className="rounded bg-warn/15 px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">
                     Demonstration
@@ -370,16 +393,32 @@ function WorkbenchPage() {
                   </div>
                 </div>
 
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Detailed response with published figures, relevant context and source references.
+                  Review the wording and any evidence gaps before saving.
+                </p>
                 <textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  rows={14}
+                  rows={20}
                   aria-label="Draft response"
                   disabled={automaticDraft.isPending}
                   className="mt-3 w-full rounded-md border border-border bg-surface p-3 font-sans text-sm leading-relaxed"
-                  placeholder={automaticDraft.isPending ? "Preparing an evidence-based draft for this request…" : "Review the automatically prepared response, or ask for a fresh draft below."}
+                  placeholder={
+                    automaticDraft.isPending
+                      ? "Preparing an evidence-based draft for this request…"
+                      : "Review the automatically prepared response, or ask for a fresh draft below."
+                  }
                 />
-                {automaticDraft.isPending && <p role="status" className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" aria-hidden />Preparing the AI draft from the submitted question and approved knowledge…</p>}
+                {automaticDraft.isPending && (
+                  <p
+                    role="status"
+                    className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"
+                  >
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                    Preparing the AI draft from the submitted question and approved knowledge…
+                  </p>
+                )}
 
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <input
@@ -521,7 +560,16 @@ function WorkbenchPage() {
 
           <aside className="space-y-4">
             {caseQuery.data.kind === "media" && <PaiaNotice />}
-            {caseQuery.data.kind === "media" && <MediaEmailDelivery caseId={id} canRelease={can.release} approved={Boolean(activeApproval)} hasUnsavedChanges={dirty} hasGaps={Boolean(latest?.gaps?.length)} onUpdated={refresh} />}
+            {caseQuery.data.kind === "media" && (
+              <MediaEmailDelivery
+                caseId={id}
+                canRelease={can.release}
+                approved={Boolean(activeApproval)}
+                hasUnsavedChanges={dirty}
+                hasGaps={Boolean(latest?.gaps?.length)}
+                onUpdated={refresh}
+              />
+            )}
             <section className="surface-panel p-4">
               <h2 className="text-sm font-semibold">Approval</h2>
               {activeApproval ? (
@@ -712,26 +760,28 @@ function DecisionPanel({
         >
           Approve this version
         </button>
-        {!media && <button
-          disabled={
-            busy ||
-            hasUnsavedChanges ||
-            hasGaps ||
-            !canRelease ||
-            !hasActiveApproval ||
-            alreadyReleased
-          }
-          onClick={() =>
-            run(async () => {
-              const { error } = await supabase.rpc("release_draft", { _case_id: caseId });
-              if (error) throw new Error(error.message);
-            }, "Released. The requester can now see the wording on their private page.")
-          }
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
-        >
-          <Send aria-hidden className="size-4" />
-          Release
-        </button>}
+        {!media && (
+          <button
+            disabled={
+              busy ||
+              hasUnsavedChanges ||
+              hasGaps ||
+              !canRelease ||
+              !hasActiveApproval ||
+              alreadyReleased
+            }
+            onClick={() =>
+              run(async () => {
+                const { error } = await supabase.rpc("release_draft", { _case_id: caseId });
+                if (error) throw new Error(error.message);
+              }, "Released. The requester can now see the wording on their private page.")
+            }
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+          >
+            <Send aria-hidden className="size-4" />
+            Release
+          </button>
+        )}
       </div>
 
       {!canRelease && (

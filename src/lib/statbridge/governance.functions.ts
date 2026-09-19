@@ -95,17 +95,15 @@ export const createGuideline = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    await db
-      .from("audit_events")
-      .insert({
-        actor_id: actor,
-        actor_role: "staff",
-        action: "guideline_draft_created",
-        entity_kind: "guideline",
-        entity_id: row.id,
-        detail: { change_summary: data.changeSummary },
-        origin: "screen",
-      });
+    await db.from("audit_events").insert({
+      actor_id: actor,
+      actor_role: "staff",
+      action: "guideline_draft_created",
+      entity_kind: "guideline",
+      entity_id: row.id,
+      detail: { change_summary: data.changeSummary },
+      origin: "screen",
+    });
     return { ok: true, id: row.id };
   });
 export const activateGuideline = createServerFn({ method: "POST" })
@@ -121,4 +119,43 @@ export const activateGuideline = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const getDecisionRecord=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({from:z.string().datetime().nullish(),to:z.string().datetime().nullish(),limit:z.number().int().min(1).max(100).default(50),offset:z.number().int().min(0).default(0)}).parse(i??{})).handler(async({context,data})=>{await allowed(context as never,"audit.view");const r=await(context as unknown as Ctx).supabase.rpc("staff_decision_record",{_from:data.from??null,_to:data.to??null,_limit:data.limit,_offset:data.offset});if(r.error)throw new Error((r.error as {message?:string}).message??"Decision record could not be loaded.");return r.data as any[];});
+export const getDecisionRecord = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z
+      .object({
+        from: z.string().datetime().nullish(),
+        to: z.string().datetime().nullish(),
+        limit: z.number().int().min(1).max(100).default(50),
+        offset: z.number().int().min(0).default(0),
+      })
+      .parse(i ?? {}),
+  )
+  .handler(async ({ context, data }) => {
+    await allowed(context as never, "audit.view");
+    const r = await (context as unknown as Ctx).supabase.rpc("staff_decision_record", {
+      _from: data.from ?? null,
+      _to: data.to ?? null,
+      _limit: data.limit,
+      _offset: data.offset,
+    });
+    if (r.error)
+      throw new Error(
+        (r.error as { message?: string }).message ?? "Decision record could not be loaded.",
+      );
+    return r.data as any[];
+  });
+
+/** Count, filter and page the complete release register after the audit permission check. */
+export const getDecisionRecordPage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(async (input: unknown) => {
+    const { decisionRecordSearchSchema } = await import("@/lib/staff/insights-record");
+    return decisionRecordSearchSchema.parse(input ?? {});
+  })
+  .handler(async ({ context, data }) => {
+    await allowed(context as never, "audit.view");
+    const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+    const { loadDecisionRecord } = await import("@/lib/staff/insights-record");
+    return loadDecisionRecord(db, data);
+  });
