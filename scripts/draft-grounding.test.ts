@@ -175,6 +175,64 @@ describe("private media draft grounding", () => {
     expect(f.calls).toHaveLength(0);
   });
 
+  test("a model-declared evidence gap is normal insufficiency, without unrelated candidate citations", async () => {
+    const f = fixture({
+      evidence: [{ ...passage, content: "The mortality publication describes death registrations but does not supply the requested rate." }],
+      proposal: { decision: "gap", body: "The supplied information does not include that death rate.", gaps: ["The numerical death rate is missing."], usedPassageIds: [], usedObservationIds: [] },
+    });
+    const draft = await f.prepare();
+    expect(draft.body).toBe(INSUFFICIENT_DRAFT_INFORMATION);
+    expect(draft.provider.model).toBe("no-evidence");
+    expect(draft.evidence).toEqual([]);
+    expect(draft.gaps.join(" ")).toContain("does not answer the submitted question");
+    expect(draft.gaps.join(" ")).not.toContain("unavailable");
+    expect(f.calls).toHaveLength(1);
+    expect(f.calls[0]?.system).toContain('"decision":"answer"|"gap"');
+  });
+
+  test("a gap label cannot publish unsupported facts from the model's body or notes", async () => {
+    const f = fixture({
+      proposal: { decision: "gap", body: "The death rate is 99.9% and caused by monetary policy.", gaps: ["The department confirms 99.9%."], usedPassageIds: [], usedObservationIds: [] },
+    });
+    const draft = await f.prepare();
+    expect(draft.body).toBe(INSUFFICIENT_DRAFT_INFORMATION);
+    expect(draft.evidence).toEqual([]);
+    expect(JSON.stringify(draft)).not.toContain("99.9");
+    expect(JSON.stringify(draft)).not.toContain("monetary policy");
+  });
+
+  test("an incomplete semantic search cannot be labelled a confirmed model knowledge gap", async () => {
+    const f = fixture({
+      semanticError: true,
+      proposal: { decision: "gap", body: "I do not have enough information.", usedPassageIds: [], usedObservationIds: [] },
+    });
+    const draft = await f.prepare();
+    expect(draft.body).not.toBe(INSUFFICIENT_DRAFT_INFORMATION);
+    expect(draft.body).toContain("could not be prepared");
+    expect(draft.gaps.join(" ")).toContain("unavailable");
+  });
+
+  test("a positive factual answer still needs citations even with the new decision field", async () => {
+    const f = fixture({
+      proposal: { decision: "answer", body: passage.content, usedPassageIds: [], usedObservationIds: [] },
+    });
+    const draft = await f.prepare();
+    expect(draft.body).not.toBe(passage.content);
+    expect(draft.body).toContain("could not be prepared");
+    expect(draft.provider.model).not.toBe("no-evidence");
+  });
+
+  test.each([
+    { decision: "gap", body: "No information", usedPassageIds: ["unrelated-id"] },
+    { decision: "gap", body: 42, usedPassageIds: [] },
+    { decision: "unknown", body: "No information", usedPassageIds: [] },
+  ])("invalid knowledge-gap proposals cannot bypass the proposal schema or evidence contract", async (proposal) => {
+    const f = fixture({ proposal });
+    const draft = await f.prepare();
+    expect(draft.provider.model).not.toBe("no-evidence");
+    expect(draft.body).toContain("could not be prepared");
+  });
+
   test.each(["passage", "observation"] as const)("failed %s hydration cannot become a false gap", async (kind) => {
     const f = fixture({
       evidence: [],
