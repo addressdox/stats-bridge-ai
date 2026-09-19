@@ -2824,6 +2824,34 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      staff_review_cases: {
+        Args: never
+        Returns: {
+          assigned_to: string | null
+          assigned_to_name: string | null
+          case_id: string | null
+          channel: Database["public"]["Enums"]["channel"] | null
+          deadline_at: string | null
+          draft_count: number | null
+          has_active_approval: boolean | null
+          is_demo_seed: boolean | null
+          kind: Database["public"]["Enums"]["case_kind"] | null
+          latest_draft_id: string | null
+          latest_draft_version: number | null
+          question_text: string | null
+          received_at: string | null
+          reference: string | null
+          review_reasons: Database["public"]["Enums"]["review_reason"][] | null
+          source_changed: boolean | null
+          status: Database["public"]["Enums"]["case_status"] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "review_queue"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       staff_review_queue: {
         Args: never
         Returns: {

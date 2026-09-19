@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { backfillEmbeddings, embedTexts } from "../src/lib/statbridge/embeddings.server";
+import { backfillEmbeddings, embedTexts, semanticSearch } from "../src/lib/statbridge/embeddings.server";
 
 type Row = Record<string, string | null>;
 function fakeDatabase(
@@ -81,6 +81,7 @@ function sourceRow(index: number): Row {
     source_version_id: "version",
     "source_versions.status": "approved",
     verified_at: "2026-01-01",
+    verified_by: "human-reviewer",
     measure: "Population",
     unit: "people",
     geography: "SA",
@@ -145,6 +146,7 @@ describe("embedding corpus traversal", () => {
     observations.push(
       { ...sourceRow(504), verified_at: null },
       { ...sourceRow(505), "source_versions.status": "pending" },
+      { ...sourceRow(506), verified_by: null },
     );
     const { db, tables } = fakeDatabase(
       [{ ...sourceRow(0), "source_versions.status": "pending" }],
@@ -152,6 +154,7 @@ describe("embedding corpus traversal", () => {
     );
     expect(await backfillEmbeddings(db, 700)).toEqual({ created: 503, remaining: 0 });
     expect(tables.kb_embeddings.every((r) => r.owner_kind === "observation")).toBe(true);
+    expect(tables.kb_embeddings.some((r) => r.owner_id === sourceRow(506).id)).toBe(false);
   });
   for (const failure of ["passages", "observations", "kb_embeddings", "upsert"]) {
     test(`propagates ${failure} errors`, async () => {
@@ -165,6 +168,60 @@ describe("embedding corpus traversal", () => {
       await expect(backfillEmbeddings(db)).rejects.toThrow("failed");
     });
   }
+});
+
+describe("semantic retrieval availability", () => {
+  function semanticDatabase(result: { data: unknown; error: { message: string } | null }) {
+    const calls: Array<{ name: string; args: { _embedding: string; _limit: number } }> = [];
+    return {
+      calls,
+      db: {
+        async rpc(name: string, args: { _embedding: string; _limit: number }) {
+          calls.push({ name, args });
+          return result;
+        },
+      } as unknown as Parameters<typeof semanticSearch>[0],
+    };
+  }
+
+  test("an embedding provider failure propagates instead of impersonating zero matching knowledge", async () => {
+    googleMock();
+    globalThis.fetch = (async () => new Response("temporary provider error", { status: 503 })) as typeof fetch;
+    const { db, calls } = semanticDatabase({ data: [], error: null });
+    await expect(semanticSearch(db, "fertility rate")).rejects.toThrow("Embedding request failed");
+    expect(calls).toHaveLength(0);
+  });
+
+  test("invalid provider vectors are not sent to the database or reported as an empty search", async () => {
+    googleMock();
+    globalThis.fetch = (async () => Response.json({ embeddings: [{ values: [0.1] }] })) as typeof fetch;
+    const { db, calls } = semanticDatabase({ data: [], error: null });
+    await expect(semanticSearch(db, "fertility rate")).rejects.toThrow("1536-dimensional");
+    expect(calls).toHaveLength(0);
+  });
+
+  test("a vector RPC error propagates instead of impersonating zero matching knowledge", async () => {
+    googleMock();
+    const { db, calls } = semanticDatabase({ data: null, error: { message: "vector search unavailable" } });
+    await expect(semanticSearch(db, "fertility rate")).rejects.toThrow("could not be searched");
+    expect(calls).toHaveLength(1);
+  });
+
+  test("a successful empty vector search remains empty and sends the requested limit", async () => {
+    googleMock();
+    const { db, calls } = semanticDatabase({ data: [], error: null });
+    expect(await semanticSearch(db, "fertility rate", 12)).toEqual([]);
+    expect(calls[0]?.name).toBe("search_knowledge_semantic");
+    expect(calls[0]?.args._limit).toBe(12);
+    expect(JSON.parse(calls[0]!.args._embedding)).toHaveLength(1536);
+  });
+
+  test("successful vector hits retain their source identities for approved-only hydration", async () => {
+    googleMock();
+    const hits = [{ owner_kind: "passage", owner_id: "fertility-passage", source_version_id: "approved-version", content: "Published fertility evidence", similarity: 0.85 }];
+    const { db } = semanticDatabase({ data: hits, error: null });
+    expect(await semanticSearch(db, "fertility rate")).toEqual(hits);
+  });
 });
 
 describe("embedding response validation", () => {

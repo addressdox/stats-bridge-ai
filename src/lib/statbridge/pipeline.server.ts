@@ -345,7 +345,7 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
     ? await runRetrievalTools(db, toolCalls, interpretation.englishQuestion).catch(() => null)
     : null;
 
-  const [keywordResults, semanticHits] = await Promise.all([
+  const [keywordResults, semantic] = await Promise.all([
     Promise.all(
       interpretation.searchQueries.map(async (query) => {
         const [passages, observations] = await Promise.all([
@@ -363,7 +363,9 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
         };
       }),
     ),
-    semanticSearch(db, interpretation.englishQuestion, 12).catch(() => []),
+    semanticSearch(db, interpretation.englishQuestion, 12)
+      .then((hits) => ({ hits, unavailable: false }))
+      .catch(() => ({ hits: [], unavailable: true })),
   ]);
   const passages = [
     ...new Map(keywordResults.flatMap((r) => r.passages).map((p) => [p.passage_id, p])).values(),
@@ -379,7 +381,7 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
   const extraPassageIds = [
     ...new Set([
       ...(toolResult?.passageIds ?? []),
-      ...semanticHits.filter((hit) => hit.owner_kind === "passage").map((hit) => hit.owner_id),
+      ...semantic.hits.filter((hit) => hit.owner_kind === "passage").map((hit) => hit.owner_id),
     ]),
   ]
     .filter((id) => !passages.some((p) => p.passage_id === id))
@@ -387,22 +389,26 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
   const extraObservationIds = [
     ...new Set([
       ...(toolResult?.observationIds ?? []),
-      ...semanticHits.filter((hit) => hit.owner_kind === "observation").map((hit) => hit.owner_id),
+      ...semantic.hits.filter((hit) => hit.owner_kind === "observation").map((hit) => hit.owner_id),
     ]),
   ]
     .filter((id) => !observations.some((o) => o.observation_id === id))
     .slice(0, 20);
 
   if (extraPassageIds.length > 0) {
-    const { data } = await db.rpc("search_passages_by_id", { _ids: extraPassageIds });
+    const { data, error } = await db.rpc("search_passages_by_id", { _ids: extraPassageIds });
+    if (error) throw new PipelineError("The matching source extracts could not be loaded. Please try again.", 503);
     for (const row of (data ?? []) as PassageRow[]) passages.push(row);
   }
   if (extraObservationIds.length > 0) {
-    const { data } = await db.rpc("search_observations_by_id", { _ids: extraObservationIds });
+    const { data, error } = await db.rpc("search_observations_by_id", { _ids: extraObservationIds });
+    if (error) throw new PipelineError("The matching source figures could not be loaded. Please try again.", 503);
     for (const row of (data ?? []) as ObservationRow[]) observations.push(row);
   }
 
   if (passages.length === 0 && observations.length === 0) {
+    if (semantic.unavailable)
+      throw new PipelineError("The source search could not be completed. Please try again; this is not a confirmed knowledge gap.", 503);
     return await storeAnswer({
       db,
       input,
@@ -435,7 +441,7 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
           p.published_on ? `, published ${p.published_on}` : ""
         })\nlocation: ${p.section_label ?? "—"}${p.page_number ? `, page ${p.page_number}` : ""}\ntext: ${trimQuote(
           p.content,
-          900,
+          2000,
         )}${i === passages.length - 1 ? "" : "\n"}`,
     )
     .join("\n");
@@ -532,6 +538,8 @@ ${extracts || "(none)"}`,
 
   const noEvidence = usedPassages.length === 0 && usedObservations.length === 0;
   if (proposal.decision === "gap" || noEvidence || lowConfidence) {
+    if (semantic.unavailable)
+      throw new PipelineError("The source search could not be completed. Please try again; this is not a confirmed knowledge gap.", 503);
     validation["gap_cause"] =
       proposal.decision === "gap" ? "model_gap" : noEvidence ? "no_valid_ids" : "low_confidence";
     return await storeAnswer({

@@ -184,6 +184,7 @@ async function collectPending(db: Admin, limit: number, sourceVersionId?: string
       )
       .eq("source_versions.status", "approved")
       .not("verified_at", "is", null)
+      .not("verified_by", "is", null)
       .order("id", { ascending: true })
       .limit(500);
     if (sourceVersionId) query = query.eq("source_version_id", sourceVersionId);
@@ -257,12 +258,13 @@ export async function semanticSearch(
   question: string,
   limit = 12,
 ): Promise<SemanticHit[]> {
-  const vector = await embedOne(question);
-  if (!vector) return [];
+  // An unavailable provider is not an empty knowledge base. Callers may still
+  // use successful lexical retrieval, but must not label a failed search a gap.
+  const [vector] = await embedTexts([question]);
   const { data, error } = await db.rpc("search_knowledge_semantic", {
     _embedding: JSON.stringify(vector),
     _limit: limit,
   });
-  if (error) return [];
+  if (error) throw new Error("The approved meaning index could not be searched.");
   return (data ?? []) as SemanticHit[];
 }

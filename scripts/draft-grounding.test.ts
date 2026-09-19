@@ -5,6 +5,7 @@ import {
   unsupportedDraftNumbers,
 } from "../src/lib/statbridge/draft-grounding";
 import { prepareCaseDraft, resolveDraftEvidence } from "../src/lib/statbridge/case-drafting.server";
+import type { SemanticHit } from "../src/lib/statbridge/embeddings.server";
 
 const passage = {
   passage_id: "death-passage",
@@ -24,6 +25,10 @@ function fixture(
     proposal?: Record<string, unknown>;
     verification?: Record<string, unknown>;
     verificationError?: boolean;
+    semanticError?: boolean;
+    semanticHits?: SemanticHit[];
+    semanticEvidence?: (typeof passage)[];
+    hydrationError?: "search_passages_by_id" | "search_observations_by_id";
   } = {},
 ) {
   const calls: Array<{ system: string; prompt: string }> = [];
@@ -58,8 +63,8 @@ function fixture(
       return chain;
     },
     rpc: async (name: string) => ({
-      data: name === "search_passages" ? evidence : [],
-      error: null,
+      data: name === "search_passages" ? evidence : name === "search_passages_by_id" ? options.semanticEvidence ?? [] : [],
+      error: name === options.hydrationError ? { message: "source hydration unavailable" } : null,
     }),
   };
   const dependencies = {
@@ -69,7 +74,10 @@ function fixture(
       searchQueries: ["mortality 2023"],
       reviewReasons: ["media" as const],
     }),
-    semanticSearch: async () => [],
+    semanticSearch: async () => {
+      if (options.semanticError) throw new Error("embedding provider unavailable");
+      return options.semanticHits ?? [];
+    },
     assistant: () => ({
       name: "fixture",
       model: "fixture",
@@ -136,6 +144,78 @@ describe("private media draft grounding", () => {
     expect(f.calls).toHaveLength(0);
   });
 
+  test("a failed semantic lookup without lexical evidence is an availability error, not a knowledge gap", async () => {
+    const f = fixture({ evidence: [], semanticError: true });
+    await expect(f.prepare()).rejects.toThrow("not a confirmed knowledge gap");
+    expect(f.calls).toHaveLength(0);
+  });
+
+  test("unrelated lexical results cannot hide a failed semantic lookup", async () => {
+    const f = fixture({
+      evidence: [{ ...passage, title: "Monetary policy", content: "The interest rate was 8.5% in 2023." }],
+      semanticError: true,
+    });
+    await expect(f.prepare()).rejects.toThrow("not a confirmed knowledge gap");
+    expect(f.calls).toHaveLength(0);
+  });
+
+  test("relevant approved lexical evidence still supports drafting during a semantic outage", async () => {
+    const f = fixture({ semanticError: true });
+    const draft = await f.prepare();
+    expect(draft.body).toBe(passage.content);
+    expect(draft.evidence[0]?.passageId).toBe(passage.passage_id);
+    expect(f.calls).toHaveLength(2);
+  });
+
+  test("successful empty lexical and semantic searches remain a genuine knowledge gap", async () => {
+    const f = fixture({ evidence: [], semanticHits: [] });
+    const draft = await f.prepare();
+    expect(draft.body).toBe(INSUFFICIENT_DRAFT_INFORMATION);
+    expect(draft.provider.model).toBe("no-evidence");
+    expect(f.calls).toHaveLength(0);
+  });
+
+  test.each(["passage", "observation"] as const)("failed %s hydration cannot become a false gap", async (kind) => {
+    const f = fixture({
+      evidence: [],
+      semanticHits: [{ owner_kind: kind, owner_id: "semantic-result", source_version_id: passage.source_version_id, content: passage.content, similarity: 0.9 }],
+      hydrationError: kind === "passage" ? "search_passages_by_id" : "search_observations_by_id",
+    });
+    await expect(f.prepare()).rejects.toThrow("could not be loaded");
+    expect(f.calls).toHaveLength(0);
+  });
+
+  test("semantic-only evidence is reloaded through the approved-source gate before drafting", async () => {
+    const f = fixture({
+      evidence: [],
+      semanticHits: [{ owner_kind: "passage", owner_id: passage.passage_id, source_version_id: passage.source_version_id, content: "An embedding candidate is not evidence by itself.", similarity: 0.9 }],
+      semanticEvidence: [passage],
+    });
+    const draft = await f.prepare();
+    expect(draft.body).toBe(passage.content);
+    expect(draft.evidence[0]?.statement).toBe(passage.content);
+    expect(f.calls[0]?.prompt).not.toContain("An embedding candidate is not evidence by itself");
+  });
+
+  test("the model and verifier receive fertility facts at the end of an ingestion-sized passage", async () => {
+    const fact = "The synthetic total fertility rate is 2.21 children per woman for South Africa in 2025.";
+    const content = `${"Methods and scope. ".repeat(100).slice(0, 1650)} ${fact}`;
+    expect(content.length).toBeLessThanOrEqual(1800);
+    expect(content.indexOf(fact)).toBeGreaterThan(1600);
+    const fertilityPassage = { ...passage, title: "Mid-year population estimates", version_label: "2025", content };
+    const f = fixture({
+      question: "What is the total fertility rate in South Africa in 2025?",
+      englishQuestion: "What is the total fertility rate in South Africa in 2025?",
+      evidence: [fertilityPassage],
+      proposal: { body: fact, usedPassageIds: [passage.passage_id], usedObservationIds: [], gaps: [] },
+    });
+    const draft = await f.prepare();
+    expect(f.calls[0]?.prompt).toContain(fact);
+    expect(JSON.parse(f.calls[1]!.prompt).citedEvidence[0].statement).toContain(fact);
+    expect(draft.body).toBe(fact);
+    expect(draft.evidence[0]?.statement).toContain(fact);
+  });
+
   test("the actual submitted question reaches both generation and independent verification", async () => {
     const f = fixture({
       question: "Lingakanani izinga lokufa ngo-2023?",
@@ -179,6 +259,41 @@ describe("private media draft grounding", () => {
     expect(unsupportedDraftNumbers("The rate was 8.7 per 1,000.", passage.content)).toEqual([
       "8.7",
     ]);
+  });
+
+  test.each([
+    ["2.12", "2,12"],
+    ["33.2", "33,2"],
+    ["450234", "450,234"],
+    ["1234.56", "1.234,56"],
+    ["1234,56", "1,234.56"],
+    ["1234567.89", "1.234.567,89"],
+    ["1 234,50", "1,234.5"],
+    ["0.12", "0,12"],
+    ["2.100", "2,10"],
+  ])("equivalent value %s is supported by the source's %s notation", (body, evidence) => {
+    expect(unsupportedDraftNumbers(`The value is ${body}.`, `The value is ${evidence}.`)).toEqual([]);
+  });
+
+  test.each([
+    ["212", "2,12"],
+    ["21.2", "2,12"],
+    ["1234", "12,34"],
+    ["2.12", "2,13"],
+    ["1234.56", "1.234,57"],
+    ["1,234,567", "1234,567"],
+  ])("different value %s is not supported by %s", (body, evidence) => {
+    expect(unsupportedDraftNumbers(`The value is ${body}.`, `The value is ${evidence}.`)).toHaveLength(1);
+  });
+
+  test("a fertility draft can cite an official decimal-comma rate without an invented-value failure", () => {
+    const fertility = { ...passage, title: "Mid-year population estimates", version_label: "2025", content: "The total fertility rate is 2,12 children per woman in South Africa for 2025." };
+    const result = resolveDraftEvidence({
+      body: "The total fertility rate is 2.12 children per woman in South Africa for 2025.",
+      usedPassageIds: [fertility.passage_id],
+    }, [fertility], []);
+    expect(result.body).toContain("2.12");
+    expect(result.evidence[0]?.statement).toContain("2,12");
   });
 
   test.each([
