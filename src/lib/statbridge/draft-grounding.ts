@@ -33,9 +33,11 @@ function normalizedNumber(token: string): string {
     if (!/^\d+$/.test(fraction) || !/^\d{1,3}$/.test(groups[0]!) ||
       groups.slice(1).some((group) => !/^\d{3}$/.test(group))) return token;
     integer = groups.join("");
-  } else if (/^\d+,\d{1,2}$/.test(token)) {
+  } else if (/^(?:\d+,\d{1,2}|0+,\d+)$/.test(token)) {
     // Stats SA publishes rates such as 2,12; removing that comma would turn
     // the value into 212 and falsely reject a correctly worded 2.12 answer.
+    // A zero before the comma also identifies a fractional value: 0,001
+    // must never be mistaken for the grouped integer 1.
     [integer, fraction] = token.split(",") as [string, string];
   } else if (/^\d{1,3}(?:,\d{3})+$/.test(token)) {
     integer = token.replace(/,/g, "");

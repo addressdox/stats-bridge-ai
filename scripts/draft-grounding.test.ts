@@ -270,6 +270,9 @@ describe("private media draft grounding", () => {
     ["1234567.89", "1.234.567,89"],
     ["1 234,50", "1,234.5"],
     ["0.12", "0,12"],
+    ["0.001", "0,001"],
+    ["0.00001", "0,00001"],
+    ["0", "0,000"],
     ["2.100", "2,10"],
   ])("equivalent value %s is supported by the source's %s notation", (body, evidence) => {
     expect(unsupportedDraftNumbers(`The value is ${body}.`, `The value is ${evidence}.`)).toEqual([]);
@@ -282,6 +285,8 @@ describe("private media draft grounding", () => {
     ["2.12", "2,13"],
     ["1234.56", "1.234,57"],
     ["1,234,567", "1234,567"],
+    ["1", "0,001"],
+    ["1", "0,00001"],
   ])("different value %s is not supported by %s", (body, evidence) => {
     expect(unsupportedDraftNumbers(`The value is ${body}.`, `The value is ${evidence}.`)).toHaveLength(1);
   });
