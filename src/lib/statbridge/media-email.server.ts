@@ -7,11 +7,21 @@ export type EmailResult =
   | { ok: true; providerId: string }
   | { ok: false; message: string; retrySafe: boolean };
 
+/** Accept one mailbox only; preserve a configured display name without nesting it. */
+function formatMediaEmailSender(value: string): string | null {
+  if (/[\u0000-\u001f\u007f]/.test(value) || value.length > 320) return null;
+  const sender = value.trim();
+  if (emailAddress.safeParse(sender).success) return `Naledi <${sender}>`;
+  const mailbox = /^("(?:[^"\\]|\\[\\"])+"|[^<>"\\,;:@]+)\s*<([^<>]+)>$/.exec(sender);
+  if (!mailbox?.[1]?.trim() || !emailAddress.safeParse(mailbox[2]).success) return null;
+  return `${mailbox[1].trim()} <${mailbox[2]!.trim()}>`;
+}
+
 export function mediaEmailConfig(env: Record<string, string | undefined> = process.env): MediaEmailConfig | null {
-  const apiKey = env["RESEND_API_KEY"]?.trim();
-  const from = env["MEDIA_EMAIL_FROM"]?.trim();
-  if (!apiKey || !from || !emailAddress.safeParse(from).success) return null;
-  return { apiKey, from };
+  const apiKey = env["RESEND_API_KEY"]?.trim() || env["RESEND_KEY"]?.trim();
+  const from = env["MEDIA_EMAIL_FROM"]?.trim() ? env["MEDIA_EMAIL_FROM"] : env["RESEND_FROM"];
+  if (!apiKey || !from || !formatMediaEmailSender(from)) return null;
+  return { apiKey, from: from.trim() };
 }
 
 export async function deliverMediaEmail(
@@ -21,6 +31,9 @@ export async function deliverMediaEmail(
 ): Promise<EmailResult> {
   if (!emailAddress.safeParse(input.recipient).success)
     return { ok: false, message: "This media request does not contain a valid email address.", retrySafe: true };
+  const from = formatMediaEmailSender(config.from);
+  if (!from)
+    return { ok: false, message: "The approved email sender is not configured correctly.", retrySafe: true };
   try {
     const response = await request("https://api.resend.com/emails", {
       method: "POST",
@@ -32,7 +45,7 @@ export async function deliverMediaEmail(
       // Plain text preserves the official's exact approved wording, including
       // line breaks, without treating it as HTML or generating new AI content.
       body: JSON.stringify({
-        from: `Naledi <${config.from}>`,
+        from,
         to: [input.recipient],
         subject: `Response to media enquiry ${input.reference.replace(/[\r\n]/g, " ")}`,
         text: input.body,

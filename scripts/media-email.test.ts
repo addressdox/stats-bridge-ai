@@ -21,6 +21,51 @@ test("missing or invalid sender configuration cannot release or email anything",
   expect(f.calls).toHaveLength(0);
 });
 
+test("configured compatibility aliases and formatted sender mailbox are accepted", () => {
+  const from = '"NALEDI" <noreply@example.invalid>';
+  expect(mediaEmailConfig({ RESEND_KEY: " alias-key ", RESEND_FROM: from })).toEqual({ apiKey: "alias-key", from });
+  expect(mediaEmailConfig({ RESEND_API_KEY: "", MEDIA_EMAIL_FROM: "", RESEND_KEY: "alias-key", RESEND_FROM: from })).toEqual({ apiKey: "alias-key", from });
+});
+
+test("canonical configuration takes precedence and invalid canonical sender fails closed", () => {
+  const env = { RESEND_API_KEY: "canonical-key", MEDIA_EMAIL_FROM: config.from, RESEND_KEY: "alias-key", RESEND_FROM: "Other <other@example.invalid>" };
+  expect(mediaEmailConfig(env)).toEqual({ apiKey: "canonical-key", from: config.from });
+  expect(mediaEmailConfig({ ...env, MEDIA_EMAIL_FROM: "not-a-mailbox" })).toBe(null);
+});
+
+test("sender formatting preserves existing display names and adds Naledi only to bare addresses", async () => {
+  for (const [from, expected] of [
+    [config.from, `Naledi <${config.from}>`],
+    ['"NALEDI" <noreply@example.invalid>', '"NALEDI" <noreply@example.invalid>'],
+    ["Naledi Desk <desk@example.invalid>", "Naledi Desk <desk@example.invalid>"],
+    ['"Statistics, Media Desk" <desk@example.invalid>', '"Statistics, Media Desk" <desk@example.invalid>'],
+  ]) {
+    let payload: any;
+    const request = (async (_url, init) => { payload = JSON.parse(String(init?.body)); return Response.json({ id: "receipt" }); }) as typeof fetch;
+    expect((await deliverMediaEmail(approved, { ...config, from: from! }, request)).ok).toBe(true);
+    expect(payload.from).toBe(expected);
+  }
+});
+
+test("sender header injection, multiple mailboxes and malformed display names are refused before sending", async () => {
+  let sends = 0;
+  const request = (async () => { sends++; return Response.json({ id: "bad" }); }) as typeof fetch;
+  for (const from of [
+    "Naledi <desk@example.invalid>\r\nBcc: other@example.invalid",
+    "desk@example.invalid\n",
+    "Naledi\u0000 <desk@example.invalid>",
+    "desk@example.invalid, other@example.invalid",
+    "Naledi <desk@example.invalid>, Other <other@example.invalid>",
+    '"Naledi <desk@example.invalid>',
+    "Naledi <<desk@example.invalid>>",
+    "Naledi <not-an-email>",
+  ]) {
+    expect(mediaEmailConfig({ RESEND_KEY: "test", RESEND_FROM: from })).toBe(null);
+    expect((await deliverMediaEmail(approved, { ...config, from }, request)).ok).toBe(false);
+  }
+  expect(sends).toBe(0);
+});
+
 test("email uses the saved recipient, exact approved body and stable release idempotency key", async () => {
   let sent: { body: any; headers: Headers } | null = null;
   const request = (async (_url, init) => {
