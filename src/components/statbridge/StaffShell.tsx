@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 
 import { StatBridgeMark } from "@/components/statbridge/SiteChrome";
+import { ThemeToggle } from "@/components/statbridge/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABELS, useStaff } from "@/lib/staff/useStaff";
 
@@ -157,8 +158,9 @@ export function StaffShell({ children, title }: { children: React.ReactNode; tit
       <div className="min-w-0 flex-1">
          <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
            <div className="flex items-center gap-3"><button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open staff navigation">{menuOpen ? <X className="size-5"/> : <Menu className="size-5"/>}</button><h1 className="text-lg font-semibold tracking-tight">{title}</h1></div>
-           <div className="flex items-center gap-3 md:hidden">
-            <button onClick={signOut} className="text-xs font-medium text-accent">
+           <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button onClick={signOut} className="text-xs font-medium text-accent md:hidden">
               Sign out
             </button>
           </div>

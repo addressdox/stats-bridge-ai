@@ -5,6 +5,7 @@
  * reasons later, but it can never remove one added here.
  */
 import type { Database } from "@/integrations/supabase/types";
+import { configuredTopicReasons, type GuidancePolicy } from "./guidance";
 
 export type ReviewReason = Database["public"]["Enums"]["review_reason"];
 
@@ -90,8 +91,8 @@ function matchAny(text: string, patterns: RegExp[]) {
   return patterns.some((p) => p.test(text));
 }
 
-export function routeQuestion(question: string): RoutingVerdict {
-  const reasons = new Set<ReviewReason>();
+export function routeQuestion(question: string, policy?: GuidancePolicy | null): RoutingVerdict {
+  const reasons = new Set<ReviewReason>(configuredTopicReasons(question, policy));
   const text = question.trim();
 
   // Reading an existing publication is public retrieval; a journalist's

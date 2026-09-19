@@ -6,7 +6,7 @@ let generateFails = false;
 let generationCalls = 0;
 const dependencies = {
   interpret: async () => interpretation,
-  assistant: () => ({ name: "private-provider", model: "private-model", complete: async () => { generationCalls++; if (generateFails) throw new Error("unavailable"); return JSON.stringify(proposal); } }),
+  assistant: () => ({ name: "private-provider", model: "private-model", complete: async ({system}: {system: string}) => { generationCalls++; if (system.startsWith("Verify a private draft")) return JSON.stringify({relevant: true, supported: true, issues: []}); if (generateFails) throw new Error("unavailable"); return JSON.stringify(proposal); } }),
   semanticSearch: async () => [],
 };
 const { resolveDraftEvidence, ensureCaseDraft, prepareCaseDraft } = await import("../src/lib/statbridge/case-drafting.server");
@@ -69,11 +69,12 @@ test("no evidence creates a reviewable gap instead of invented substance", async
   expect(draft.evidence).toHaveLength(0); expect(draft.gaps).toHaveLength(1);
   expect(generationCalls).toBe(0);
 });
-test("wording failure retains exact extracts with an unresolved review gap", async () => {
+test("wording failure keeps evidence separate from an unavailable draft", async () => {
   generateFails = true;
   const draft = await prepareCaseDraft(db, { caseId }, dependencies);
   expect(draft.evidence).toHaveLength(2);
-  expect(draft.body).toContain(passage.content);
+  expect(draft.body).not.toContain(passage.content);
+  expect(draft.body).toContain("verified draft could not be prepared");
   expect(draft.gaps.join(" ")).toContain("not a completed response");
 });
 test("retrieval failures are not mislabelled as absent knowledge", async () => {

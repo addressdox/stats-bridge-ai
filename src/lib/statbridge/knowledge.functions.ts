@@ -222,7 +222,7 @@ export const listKnowledgeSources = createServerFn({ method: "GET" })
     await requirePermission(context as never, "sources.view");
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
     const [versions, observations, passages, jobs] = await Promise.all([
-      readKnowledgeRows((from, to) => db.from("source_versions").select("id,source_id,version_label,status,approval_basis,ingest_state,ingest_note,published_on,reference_period,page_count,original_url,file_path,supersedes_version_id,withdrawal_reason,created_at,sources!source_versions_source_id_fkey(title,publisher,source_type,audience,topic,current_version_id)").order("created_at", { ascending: false }).order("id").range(from, to)),
+      readKnowledgeRows((from, to) => db.from("source_versions").select("id,source_id,version_label,status,approval_basis,ingest_state,ingest_note,published_on,reference_period,page_count,original_url,file_path,supersedes_version_id,withdrawal_reason,deleted_at,created_at,sources!source_versions_source_id_fkey(title,publisher,source_type,audience,topic,current_version_id)").or("deleted_at.is.null,file_path.not.is.null").order("created_at", { ascending: false }).order("id").range(from, to)),
       readKnowledgeRows((from, to) => db.from("observations").select("source_version_id,verified_at,verified_by").order("id").range(from, to)),
       readKnowledgeRows((from, to) => db.from("passages").select("source_version_id").order("id").range(from, to)),
       readKnowledgeRows((from, to) => db.from("knowledge_ingestion_jobs").select("id,source_version_id,state,progress,error_message,file_name,kind,created_at").order("created_at", { ascending: false }).order("id").range(from, to)),
@@ -242,7 +242,7 @@ export const openKnowledgeOriginal = createServerFn({ method: "GET" })
   .handler(async ({ context, data }) => {
     await requirePermission(context as never, "sources.view");
     const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-    const { data: version, error } = await db.from("source_versions").select("file_path,original_url").eq("id", data.versionId).maybeSingle();
+    const { data: version, error } = await db.from("source_versions").select("file_path,original_url").eq("id", data.versionId).is("deleted_at", null).maybeSingle();
     if (error || !version) throw new Error("The source original could not be found.");
     if (!version.file_path) {
       if (!version.original_url) throw new Error("This version has no original file or link.");
@@ -286,11 +286,32 @@ export const decideKnowledgeSource = createServerFn({ method: "POST" })
       try {
         const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
         const { backfillEmbeddings } = await import("@/lib/statbridge/embeddings.server");
-        await backfillEmbeddings(db, 120);
+        // Index the publication just approved, rather than an unrelated global backlog.
+        await backfillEmbeddings(db, 120, data.versionId);
       } catch {
         // Approval remains valid; keyword search is available while vector indexing retries later.
       }
     }
+    return { ok: true };
+  });
+
+/** Exclude the version before removing its original; preserve past citation/audit references. */
+export const deleteKnowledgeSource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ versionId: z.string().uuid(), reason: z.string().trim().min(3).max(1000) }).parse(input))
+  .handler(async ({ context, data }) => {
+    await requirePermission(context as never, "sources.approve");
+    const client = (context as unknown as AuthContext).supabase;
+    const prepared = await client.rpc("delete_knowledge_source", { _version_id: data.versionId, _reason: data.reason });
+    if (prepared.error) throw new Error("The source could not be removed from the library. Refresh and try again.");
+    const filePath = typeof prepared.data === "string" ? prepared.data : null;
+    if (filePath) {
+      const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+      const removal = await db.storage.from("knowledge-files").remove([filePath]);
+      if (removal.error) throw new Error("This source is excluded from the AI, but its original file could not be deleted. Use Retry file deletion in the library.");
+    }
+    const completed = await client.rpc("finalize_knowledge_deletion", { _version_id: data.versionId });
+    if (completed.error) throw new Error("This source is excluded from the AI, but deletion could not be finalised. Retry file deletion in the library.");
     return { ok: true };
   });
 /** Bulk check of extracted figures. Only a person may mark a figure as checked. */

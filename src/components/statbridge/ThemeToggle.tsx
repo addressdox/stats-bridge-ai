@@ -6,7 +6,7 @@ export type Theme = "dark" | "light";
 const STORAGE_KEY = "statbridge-theme";
 
 /** Inline script: applies the stored theme before first paint, so there is no flash. */
-export const themeBootstrapScript = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'dark';var e=document.documentElement;e.classList.remove('light','dark');e.classList.add(t==='light'?'light':'dark');}catch(_){document.documentElement.classList.add('dark');}})();`;
+export const themeBootstrapScript = `(function(){var e=document.documentElement;try{var t=localStorage.getItem('${STORAGE_KEY}');e.classList.remove('light','dark');e.classList.add(t==='dark'?'dark':'light');}catch(_){e.classList.remove('dark');e.classList.add('light');}})();`;
 
 function applyTheme(theme: Theme) {
   const el = document.documentElement;
@@ -15,10 +15,11 @@ function applyTheme(theme: Theme) {
 }
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? "dark";
+    let stored: Theme = "light";
+    try { stored = localStorage.getItem(STORAGE_KEY) === "dark" ? "dark" : "light"; } catch { /* Use the default when storage is unavailable. */ }
     setTheme(stored);
     applyTheme(stored);
   }, []);

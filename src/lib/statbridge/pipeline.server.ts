@@ -1,3 +1,4 @@
+import { buildGuidelineInstructions, guidelineWordingIssues } from "./guidance";
 /**
  * The Ask pipeline. Every public question passes through here.
  *
@@ -240,13 +241,11 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
 
   const { data: guideline } = await db
     .from("guidelines")
-    .select(
-      "id, title, terminology, style_rules, number_rules, media_policy, sensitive_topic_policy, escalation_policy, multilingual_rules, forbidden_phrases, prohibited_claims",
-    )
+    .select("*")
     .eq("status", "active")
     .maybeSingle();
 
-  const mandatory = routeQuestion(input.question);
+  const mandatory = routeQuestion(input.question, guideline);
   const previous = await readQuestionContext(db, input.parentAnswerRef).catch(() => null);
   let interpretation;
   try {
@@ -452,7 +451,7 @@ export async function runAsk(input: AskInput): Promise<PublicAnswer> {
   let proposal: ModelProposal;
   try {
     const raw = await assistant.complete({
-      system: `${SYSTEM_PROMPT}\n\n${languageInstruction(input.language)}`,
+      system: `${SYSTEM_PROMPT}\n\n${languageInstruction(input.language)}\n\n${buildGuidelineInstructions(guideline)}`,
       prompt: `QUESTION: ${input.question}
 REPLY LANGUAGE: ${input.language}
 ENGLISH SEARCH INTERPRETATION: ${interpretation.englishQuestion}
@@ -476,6 +475,11 @@ ${extracts || "(none)"}`,
 
   const providerInfo = { name: assistant.name, model: assistant.model };
   const validation: Record<string, unknown> = { proposal_decision: proposal.decision };
+
+  const wordingIssues = guidelineWordingIssues(proposal.explanation ?? "", guideline);
+  if (proposal.decision === "answer" && wordingIssues.length) {
+    return escalateToCase({ db, input, reasons: ["complex"], siteId, guidelineId: guideline?.id ?? null, startedAt: started });
+  }
 
   // --- Server-side validation. Unknown ids are dropped, not trusted. ---
   const passageById = new Map(passages.map((p) => [p.passage_id, p]));
@@ -893,14 +897,25 @@ type EscalateArgs = {
 export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> {
   const { db } = args;
   let input = args.input;
-  if (normalizeLanguage(input.language) === "auto") {
+  let reasons = [...args.reasons];
+  let guidelineId = args.guidelineId;
+  // Media intake and explicit handoff bypass runAsk, so apply the same current
+  // policy here as well. Never replace the mandatory media reason.
+  const { data: policy, error: policyError } = await db.from("guidelines").select("*").eq("status", "active").maybeSingle();
+  if (!policyError && policy) guidelineId = policy.id;
+  reasons = [...new Set([...reasons, ...routeQuestion(input.question, policy).reasons])];
+  if (!args.guidelineId || normalizeLanguage(input.language) === "auto") {
     try {
-      const interpreted = await interpretQuestion(input.question, input.language);
+      const interpreted = await interpretQuestion(input.question, input.language, policy);
       input = { ...input, language: interpreted.language };
+      reasons = [...new Set([...reasons, ...interpreted.reviewReasons])];
     } catch {
-      input = { ...input, language: "en" };
+      // A failed classifier never removes deterministic flags or blocks logging.
+      reasons = [...new Set([...reasons, "complex" as const])];
+      if (normalizeLanguage(input.language) === "auto") input = { ...input, language: "en" };
     }
   }
+  if (policyError) reasons = [...new Set([...reasons, "complex" as const])];
   const { token, hash } = makeStatusToken();
   // A media case can only be opened once the newsroom's name, outlet and
   // contact details are on hand. Without them the request is still routed to a
@@ -910,14 +925,14 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
     args.requester?.name && args.requester?.outlet && args.requester?.contact,
   );
   const wantsMedia =
-    (args.kind ?? (args.reasons.includes("media") ? "media" : "public_escalation")) === "media";
+    (args.kind ?? (reasons.includes("media") ? "media" : "public_escalation")) === "media";
   const kind: "media" | "public_escalation" =
     wantsMedia && hasRequesterDetails ? "media" : "public_escalation";
 
   const { data, error } = await db.rpc("open_case", {
     _kind: kind,
     _question: input.question,
-    _reasons: args.reasons.length ? args.reasons : ["complex"],
+    _reasons: reasons.length ? reasons : ["complex"],
     _token_hash: hash,
     _channel: input.channel,
     _consent: args.requester?.consent ?? false,
@@ -950,14 +965,14 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
       detail: { retry: "staff_review" },
     });
   }
-  const acknowledgementOnly = isAcknowledgementOnly(args.reasons);
+  const acknowledgementOnly = isAcknowledgementOnly(reasons);
   const statusUrl = `/case/${opened.reference}?token=${token}`;
 
   return await storeAnswer({
     db,
     input,
     siteId: args.siteId,
-    guidelineId: args.guidelineId,
+    guidelineId,
     outcome: "escalated",
     topic: null,
     officialBlocks: [
@@ -979,7 +994,7 @@ export async function escalateToCase(args: EscalateArgs): Promise<PublicAnswer> 
     references: [],
     clarification: null,
     gapDescription: null,
-    reviewReasons: args.reasons,
+    reviewReasons: reasons,
     evidence: [],
     provider: null,
     latency: Date.now() - args.startedAt,

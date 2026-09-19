@@ -31,10 +31,17 @@ test("explicitly declined consent is respected rather than logging the request",
 test("legacy missing-detail placeholders do not satisfy intake", () => {
   const result = validateMediaIntake({ ...enquiry, outlet: "Not given", contact: "Not given" });
   expect(result.ready).toBe(false);
-  if (!result.ready) expect(result.reply.missing_fields).toEqual(["outlet", "contact"]);
+  if (!result.ready) expect(result.reply.missing_fields.sort()).toEqual(["contact", "outlet"]);
 });
 test("complete intake preserves actual details and explicit consent", () => {
   const result = validateMediaIntake({ ...enquiry, language: "zu", name: " Test Reporter " });
   expect(result.ready).toBe(true);
   if (result.ready) expect(result.data).toEqual({ ...enquiry, language: "zu", channel: "web" });
+});
+test("media enquiries require a real email format for the official response", () => {
+  for (const contact of ["0712345678", "reporter", "reporter@", "a@b", "reporter@example.invalid,other@example.invalid"]) {
+    const result = validateMediaIntake({ ...enquiry, contact });
+    expect(result.ready).toBe(false);
+    if (!result.ready) expect(result.reply.missing_fields).toContain("contact");
+  }
 });

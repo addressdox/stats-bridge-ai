@@ -128,6 +128,17 @@ describe("embedding corpus traversal", () => {
       reads.filter((r) => r.table === "kb_embeddings").every((r) => r.ids && r.ids.length <= 100),
     ).toBe(true);
   });
+  test("indexes the just-approved upload before unrelated global backlog", async () => {
+    googleMock();
+    const passages = [
+      ...Array.from({ length: 130 }, (_, i) => sourceRow(i)),
+      { ...sourceRow(131), source_version_id: "new-upload" },
+      { ...sourceRow(132), source_version_id: "new-upload" },
+    ];
+    const { db, tables } = fakeDatabase(passages);
+    expect(await backfillEmbeddings(db, 120, "new-upload")).toEqual({ created: 2, remaining: 0 });
+    expect(tables.kb_embeddings.map(row => row.source_version_id)).toEqual(["new-upload", "new-upload"]);
+  });
   test("paginates verified observations and excludes unapproved versions and unverified observations", async () => {
     googleMock();
     const observations = Array.from({ length: 503 }, (_, i) => sourceRow(i));

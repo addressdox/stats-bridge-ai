@@ -122,7 +122,7 @@ type PendingRow = {
   content: string;
 };
 
-async function collectPending(db: Admin, limit: number): Promise<PendingRow[]> {
+async function collectPending(db: Admin, limit: number, sourceVersionId?: string): Promise<PendingRow[]> {
   if (!Number.isSafeInteger(limit) || limit < 0)
     throw new Error("Embedding limit must be a non-negative integer.");
   const pending: PendingRow[] = [];
@@ -153,6 +153,7 @@ async function collectPending(db: Admin, limit: number): Promise<PendingRow[]> {
       .eq("source_versions.status", "approved")
       .order("id", { ascending: true })
       .limit(500);
+    if (sourceVersionId) query = query.eq("source_version_id", sourceVersionId);
     if (after) query = query.gt("id", after);
     const { data, error } = await query;
     if (error) throw new Error(`Reading passages for embeddings failed: ${error.message}`);
@@ -185,6 +186,7 @@ async function collectPending(db: Admin, limit: number): Promise<PendingRow[]> {
       .not("verified_at", "is", null)
       .order("id", { ascending: true })
       .limit(500);
+    if (sourceVersionId) query = query.eq("source_version_id", sourceVersionId);
     if (after) query = query.gt("id", after);
     const { data, error } = await query;
     if (error) throw new Error(`Reading observations for embeddings failed: ${error.message}`);
@@ -213,8 +215,8 @@ async function collectPending(db: Admin, limit: number): Promise<PendingRow[]> {
 }
 
 /** Generates any missing embeddings. Safe to run repeatedly. */
-export async function backfillEmbeddings(db: Admin, limit = 120) {
-  const pending = await collectPending(db, limit);
+export async function backfillEmbeddings(db: Admin, limit = 120, sourceVersionId?: string) {
+  const pending = await collectPending(db, limit, sourceVersionId);
   if (pending.length === 0) return { created: 0, remaining: 0 };
 
   let created = 0;
@@ -237,7 +239,7 @@ export async function backfillEmbeddings(db: Admin, limit = 120) {
     created += rows.length;
   }
 
-  const remaining = (await collectPending(db, 1)).length;
+  const remaining = (await collectPending(db, 1, sourceVersionId)).length;
   return { created, remaining };
 }
 

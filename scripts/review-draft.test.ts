@@ -4,13 +4,14 @@ let permitted = true;
 const context = { userId: "real-authenticated-user", supabase: { rpc: async (name: string, args: any) => { calls.push({ name, args }); return { data: name === "has_permission" ? permitted : "saved-draft-id", error: null }; } } };
 mock.module("@tanstack/react-start", () => ({ createServerFn: () => { let validate: any; const chain = { middleware: () => chain, inputValidator: (fn: any) => { validate = fn; return chain; }, handler: (fn: any) => async (input: any) => fn({ data: validate(input.data), context }) }; return chain; } }));
 mock.module("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
-const { saveReviewedDraft, suggestDraft, beginPressRelease } = await import("../src/lib/staff/draft.functions");
+const { saveReviewedDraft, suggestDraft, ensureReviewDraft, beginPressRelease } = await import("../src/lib/staff/draft.functions");
 const caseId = "44444444-4444-4444-a444-444444444444";
 const evidence = [{ sourceVersionId: "11111111-1111-4111-a111-111111111111", passageId: "22222222-2222-4222-a222-222222222222", statement: "Official text" }];
 beforeEach(() => { calls.length = 0; permitted = true; });
 test("drafting and saving require the existing case-review permission", async () => {
   permitted = false;
   await expect(suggestDraft({ data: { caseId } })).rejects.toThrow("case review access");
+  await expect(ensureReviewDraft({ data: { caseId } })).rejects.toThrow("case review access");
   await expect(saveReviewedDraft({ data: { caseId, body: "Edited reply", format: "general_reply", gaps: [] } })).rejects.toThrow("case review access");
   await expect(beginPressRelease({ data: { topic: "Employment statistics in South Africa" } })).rejects.toThrow("case review access");
   expect(calls.every(c => c.name === "has_permission")).toBe(true);

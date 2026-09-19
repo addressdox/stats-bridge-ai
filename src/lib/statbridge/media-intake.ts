@@ -33,7 +33,7 @@ export function validateMediaIntake(values: Record<string, unknown>): MediaIntak
   const labels: Record<string, string> = {
     name: "your name",
     outlet: "your media outlet",
-    contact: "an email address or phone number",
+    contact: "a valid email address for the official response",
     question: "the details of your media enquiry",
     language: "your preferred language",
     deadline: "your deadline",

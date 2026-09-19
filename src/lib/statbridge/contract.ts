@@ -219,7 +219,7 @@ export const mediaQueryRequestSchema = z.object({
   language: z.string().trim().max(40).default("auto"),
   name: z.string().trim().min(2, "Please give your name.").max(120),
   outlet: z.string().trim().min(2, "Please give your media outlet.").max(160),
-  contact: z.string().trim().min(5, "Please give an email address or phone number.").max(200),
+  contact: z.string().trim().email("Please give a valid email address.").max(200),
   deadline: z.string().nullish(),
   question: z.string().trim().min(10, "Please describe your request.").max(4000),
   consent: z.literal(true, { errorMap: () => ({ message: "Consent is required." }) }),

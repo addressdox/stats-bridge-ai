@@ -52,6 +52,17 @@ export const suggestDraft = createServerFn({ method: "POST" })
     };
   });
 
+/** Recover an intake draft automatically without replacing an official's work. */
+export const ensureReviewDraft = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ caseId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await canReview(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { ensureCaseDraft } = await import("@/lib/statbridge/case-drafting.server");
+    return ensureCaseDraft(supabaseAdmin, data.caseId);
+  });
+
 export const saveReviewedDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>

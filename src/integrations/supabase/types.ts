@@ -874,6 +874,8 @@ export type Database = {
           prohibited_claims: string[]
           required_phrases: string[]
           retired_at: string | null
+          sensitive_topics: string[]
+          complex_topics: string[]
           sensitive_topic_policy: string | null
           status: Database["public"]["Enums"]["guideline_status"]
           style_rules: string | null
@@ -904,6 +906,8 @@ export type Database = {
           prohibited_claims?: string[]
           required_phrases?: string[]
           retired_at?: string | null
+          sensitive_topics?: string[]
+          complex_topics?: string[]
           sensitive_topic_policy?: string | null
           status?: Database["public"]["Enums"]["guideline_status"]
           style_rules?: string | null
@@ -934,6 +938,8 @@ export type Database = {
           prohibited_claims?: string[]
           required_phrases?: string[]
           retired_at?: string | null
+          sensitive_topics?: string[]
+          complex_topics?: string[]
           sensitive_topic_policy?: string | null
           status?: Database["public"]["Enums"]["guideline_status"]
           style_rules?: string | null
@@ -1892,6 +1898,8 @@ export type Database = {
           change_note: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           file_fingerprint: string | null
           file_path: string | null
           id: string
@@ -1916,6 +1924,8 @@ export type Database = {
           change_note?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           file_fingerprint?: string | null
           file_path?: string | null
           id?: string
@@ -1940,6 +1950,8 @@ export type Database = {
           change_note?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           file_fingerprint?: string | null
           file_path?: string | null
           id?: string
@@ -2449,6 +2461,14 @@ export type Database = {
           _note: string
           _reasons: Database["public"]["Enums"]["review_reason"][]
         }
+        Returns: undefined
+      }
+      delete_knowledge_source: {
+        Args: { _version_id: string; _reason: string }
+        Returns: string | null
+      }
+      finalize_knowledge_deletion: {
+        Args: { _version_id: string }
         Returns: undefined
       }
       erase_contacts: { Args: never; Returns: number }

@@ -114,7 +114,7 @@ export const functionDeclarations = [
         question: text("The media enquiry in the caller's original language."),
         name: text("Journalist's actual name."),
         outlet: text("Their media outlet."),
-        contact: text("Email address or phone number supplied for the official reply."),
+        contact: text("A valid email address supplied for the official media reply. Confirm unclear spelling aloud; a phone number alone is not sufficient for a media enquiry."),
         deadline: text("Their deadline, only if supplied."),
         consent,
         language,

@@ -15,8 +15,7 @@
  *   assist   / assist-surface    -> AI-generated wording (teal)
  *   warn     / warn-surface      -> decisions, deadlines, refusals
  *
- * The dark stage is the default. `.light` flips the same tokens to a
- * white surface for the embeddable widget and for slow connections.
+ * Light is the default. Both modes retain the same layout and semantic tokens.
  */
 
 @theme inline {
@@ -185,14 +184,14 @@
   --chart-3: oklch(0.4 0.075 70);
   --chart-4: oklch(0.55 0.015 250);
   --chart-5: oklch(0.72 0.012 250);
-  --sidebar: oklch(0.172 0 0);
-  --sidebar-foreground: oklch(0.955 0 0);
-  --sidebar-primary: oklch(0.755 0.105 80);
-  --sidebar-primary-foreground: oklch(0.148 0 0);
-  --sidebar-accent: oklch(0.26 0 0);
-  --sidebar-accent-foreground: oklch(0.96 0 0);
-  --sidebar-border: oklch(1 0 0 / 14%);
-  --sidebar-ring: oklch(0.755 0.105 80);
+  --sidebar: oklch(0.975 0.004 85);
+  --sidebar-foreground: oklch(0.185 0 0);
+  --sidebar-primary: oklch(0.52 0.095 72);
+  --sidebar-primary-foreground: oklch(0.99 0.003 85);
+  --sidebar-accent: oklch(0.94 0.006 85);
+  --sidebar-accent-foreground: oklch(0.26 0 0);
+  --sidebar-border: oklch(0.9 0.005 85);
+  --sidebar-ring: oklch(0.52 0.095 72);
   --glass-shadow: 0 24px 60px -40px oklch(0.2 0 0 / 28%);
   --glow-teal: 0 0 0 1px oklch(0.52 0.095 72 / 18%), 0 18px 48px -32px oklch(0.52 0.095 72 / 32%);
 }

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { BookOpen, FileText, Globe2, Loader2, Radar, Search, UploadCloud } from "lucide-react";
+import { BookOpen, FileText, Globe2, Loader2, Radar, Search, Trash2, UploadCloud } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Empty, Panel, Pill, StatCard } from "@/components/statbridge/desk-ui";
@@ -9,7 +9,7 @@ import { StaffShell } from "@/components/statbridge/StaffShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { runKnowledgeCrawl } from "@/lib/statbridge/crawl.functions";
-import { decideKnowledgeSource, ingestKnowledgeFile, ingestKnowledgeUrl, listKnowledgeSources, openKnowledgeOriginal, reviewKnowledgeSource, verifyFigures } from "@/lib/statbridge/knowledge.functions";
+import { deleteKnowledgeSource, decideKnowledgeSource, ingestKnowledgeFile, ingestKnowledgeUrl, listKnowledgeSources, openKnowledgeOriginal, reviewKnowledgeSource, verifyFigures } from "@/lib/statbridge/knowledge.functions";
 import { useStaff } from "@/lib/staff/useStaff";
 
 const title="Knowledge library — Naledi staff";
@@ -58,6 +58,10 @@ type ApprovalBasis = "demonstration" | "official";
 
 function SourceCard({row,canDecide,canVerify,busy,replace,act}:{row:any;canDecide:boolean;canVerify:boolean;busy:boolean;replace:(()=>void)|undefined;act:(a:"approve"|"reject"|"withdraw",r?:string,basis?:ApprovalBasis)=>void}) {
  const [reason,setReason]=useState("");
+ const [confirmDelete,setConfirmDelete]=useState(false);
+ const deleteSource=useServerFn(deleteKnowledgeSource);
+ const qc=useQueryClient();
+ const deletion=useMutation({mutationFn:()=>deleteSource({data:{versionId:row.id,reason}}),onSuccess:()=>{toast.success("Source deleted. Earlier citation and audit records are retained.");void qc.invalidateQueries({queryKey:["knowledge-library"]});},onError:(error:Error)=>{toast.error(error.message);void qc.invalidateQueries({queryKey:["knowledge-library"]});}});
  const getOriginal=useServerFn(openKnowledgeOriginal);
  const original=useMutation({mutationFn:()=>getOriginal({data:{versionId:row.id}}),onError:(error:Error)=>toast.error(error.message)});
  const [reviewOpen,setReviewOpen]=useState(false);
@@ -67,7 +71,7 @@ function SourceCard({row,canDecide,canVerify,busy,replace,act}:{row:any;canDecid
  const unverified=row.counts.figures-row.counts.verified;
  return <article className="rounded-lg border border-border p-4">
   <div className="flex flex-wrap items-start justify-between gap-3">
-   <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><FileText className="size-4 text-accent"/><h3 className="font-medium">{row.sources?.title}</h3><Pill tone={tone}>{row.status}</Pill><Pill>{row.job?.state??row.ingest_state}</Pill>{row.approval_basis&&<Pill>{row.approval_basis==="demonstration"?"Demonstration approval":"Official department approval"}</Pill>}</div><p className="mt-1 text-xs text-muted-foreground">{row.sources?.publisher} · {row.sources?.source_type?.replaceAll("_"," ")} · {row.version_label} · {row.sources?.audience==="staff"?"Staff only":"Public"}</p></div>
+   <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><FileText className="size-4 text-accent"/><h3 className="font-medium">{row.sources?.title}</h3><Pill tone={tone}>{row.deleted_at?"Deleted — file removal pending":row.status}</Pill><Pill>{row.job?.state??row.ingest_state}</Pill>{row.approval_basis&&<Pill>{row.approval_basis==="demonstration"?"Demonstration approval":"Official department approval"}</Pill>}</div><p className="mt-1 text-xs text-muted-foreground">{row.sources?.publisher} · {row.sources?.source_type?.replaceAll("_"," ")} · {row.version_label} · {row.sources?.audience==="staff"?"Staff only":"Public"}</p></div>
    <div className="grid grid-cols-3 gap-4 text-center text-xs"><div><b className="block text-base">{row.counts.passages}</b>extracts</div><div><b className="block text-base">{row.counts.figures}</b>figures</div><div><b className="block text-base">{row.counts.verified}</b>verified</div></div>
   </div>
   <p className="mt-2 text-xs text-muted-foreground">{row.status==="approved"?(row.sources?.audience==="staff"?"Available as internal drafting guidance; not public factual evidence.":"Available to public answers and internal drafting."):row.status==="pending"?"Not available to the AI until a person reviews and approves this version.":"Excluded from AI retrieval."}{row.reference_period?` Reference period: ${row.reference_period}.`:""}</p>
@@ -76,9 +80,9 @@ function SourceCard({row,canDecide,canVerify,busy,replace,act}:{row:any;canDecid
   {row.supersedes_version_id&&<p className="mt-1 text-xs text-muted-foreground">Replacement version; earlier evidence is retained in the register.</p>}
   {row.ingest_note&&<p className="mt-3 rounded bg-secondary/60 p-2 text-xs text-muted-foreground">{row.ingest_note}</p>}
   {row.job?.error_message&&<p className="mt-3 rounded bg-destructive/5 p-2 text-xs text-destructive">{row.job.error_message}</p>}
-  {row.original_url&&<a className="mt-2 inline-block text-xs text-accent underline" href={row.original_url} target="_blank" rel="noreferrer">Open original source</a>}
-  {row.file_path&&<div className="mt-2 flex items-center gap-3"><Button type="button" size="sm" variant="outline" disabled={original.isPending} onClick={()=>original.mutate()}>{original.isPending?"Preparing original…":"Prepare private original"}</Button>{original.data&&<a className="text-xs text-accent underline" href={original.data.url} target="_blank" rel="noreferrer">Open uploaded original (valid 5 minutes)</a>}</div>}
-  <div className="mt-3 flex flex-wrap gap-2">{replace&&<Button type="button" size="sm" variant="outline" onClick={replace}>Add replacement version</Button>}<Button type="button" size="sm" variant="outline" aria-expanded={reviewOpen} aria-controls={`evidence-${row.id}`} onClick={()=>setReviewOpen(!reviewOpen)}><BookOpen/>{reviewOpen?"Hide evidence":"Review extracts and figures"}</Button></div>
+  {!row.deleted_at&&row.original_url&&<a className="mt-2 inline-block text-xs text-accent underline" href={row.original_url} target="_blank" rel="noreferrer">Open original source</a>}
+  {!row.deleted_at&&row.file_path&&<div className="mt-2 flex items-center gap-3"><Button type="button" size="sm" variant="outline" disabled={original.isPending} onClick={()=>original.mutate()}>{original.isPending?"Preparing original…":"Prepare private original"}</Button>{original.data&&<a className="text-xs text-accent underline" href={original.data.url} target="_blank" rel="noreferrer">Open uploaded original (valid 5 minutes)</a>}</div>}
+  <div className="mt-3 flex flex-wrap gap-2">{replace&&!row.deleted_at&&<Button type="button" size="sm" variant="outline" onClick={replace}>Add replacement version</Button>}<Button type="button" size="sm" variant="outline" aria-expanded={reviewOpen} aria-controls={`evidence-${row.id}`} onClick={()=>setReviewOpen(!reviewOpen)}><BookOpen/>{reviewOpen?"Hide evidence":"Review extracts and figures"}</Button></div>
   {reviewOpen&&<SourceEvidence versionId={row.id} originalUrl={original.data?.url??row.original_url} sourceTitle={row.sources?.title??row.version_label} canVerify={canVerify&&(row.status==="pending"||(row.status==="approved"&&row.approval_basis==="demonstration"))}/>}
   {canDecide&&<div className="mt-3 space-y-3">
    {row.status==="pending"&&<div className="space-y-2 rounded border border-border p-3">
@@ -88,7 +92,8 @@ function SourceCard({row,canDecide,canVerify,busy,replace,act}:{row:any;canDecid
     {unverified>0&&<p className="text-xs text-muted-foreground">Check the {unverified} remaining figure{unverified===1?"":"s"} in the evidence panel before approval.</p>}
     <Button type="button" size="sm" disabled={busy||!reviewed||!row.counts.passages||row.ingest_state!=="done"||unverified>0} onClick={()=>act("approve",undefined,basis)}>{basis==="demonstration"?"Approve for demonstration":"Record official approval"}</Button>
    </div>}
-   <div className="flex flex-wrap gap-2"><input aria-label={`Reason for rejecting or withdrawing ${row.sources?.title??"source"}`} className={`${input} min-w-48 flex-1`} placeholder="Reason for rejection or withdrawal" value={reason} onChange={e=>setReason(e.target.value)}/>{row.status==="pending"&&<Button size="sm" variant="destructive" disabled={busy||reason.length<3} onClick={()=>act("reject",reason)}>Reject</Button>}{row.status==="approved"&&<Button size="sm" variant="outline" disabled={busy||reason.length<3} onClick={()=>act("withdraw",reason)}>Withdraw</Button>}</div>
+   <div className="flex flex-wrap gap-2"><input aria-label={`Reason for rejecting, withdrawing or deleting ${row.sources?.title??"source"}`} className={`${input} min-w-48 flex-1`} placeholder="Reason for rejection, withdrawal or deletion" value={reason} onChange={e=>setReason(e.target.value)}/>{row.status==="pending"&&<Button size="sm" variant="destructive" disabled={busy||reason.length<3} onClick={()=>act("reject",reason)}>Reject</Button>}{row.status==="approved"&&<Button size="sm" variant="outline" disabled={busy||reason.length<3} onClick={()=>act("withdraw",reason)}>Withdraw</Button>}<Button type="button" size="sm" variant="destructive" disabled={busy||deletion.isPending||reason.trim().length<3} onClick={()=>setConfirmDelete(true)}><Trash2/>{row.deleted_at?"Retry file deletion":"Delete source"}</Button></div>
+   {confirmDelete&&<div role="alert" className="space-y-3 rounded border border-destructive/30 bg-destructive/5 p-3"><p className="text-sm">Delete this source version and its uploaded original? It will no longer be available to the AI. Earlier citations and audit records are retained. This cannot be undone.</p><div className="flex gap-2"><Button type="button" size="sm" variant="destructive" disabled={deletion.isPending} onClick={()=>deletion.mutate()}>{deletion.isPending?"Deleting…":"Confirm deletion"}</Button><Button type="button" size="sm" variant="outline" disabled={deletion.isPending} onClick={()=>setConfirmDelete(false)}>Cancel</Button></div></div>}
   </div>}
  </article>;
 }

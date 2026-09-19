@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { SiteFooter, SiteHeader } from "@/components/statbridge/SiteChrome";
 import { Button } from "@/components/ui/button";
+import { PaiaNotice } from "@/components/statbridge/PaiaNotice";
 import { mediaQueryRequestSchema, type PublicAnswer } from "@/lib/statbridge/contract";
 import { submitMediaQuery } from "@/lib/statbridge/public.functions";
 
@@ -71,7 +72,7 @@ function MediaPage() {
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               Naledi prepares a private draft from approved sources for a Stats SA communications official to
               review, edit and approve. Nothing below is an answer to your question yet; the reply appears only after
-              an authorised official releases it.
+              an authorised official releases it. The approved response will be sent to the email address you provided.
             </p>
             <p className="mt-5 font-mono text-2xl font-semibold">{result.caseReference}</p>
             {result.statusToken && (
@@ -87,6 +88,7 @@ function MediaPage() {
             <p className="mt-4 text-xs text-muted-foreground">
               Save this link now. It is the only way back to this request.
             </p>
+            <div className="mt-4"><PaiaNotice /></div>
           </div>
         ) : (
           <>
@@ -94,18 +96,19 @@ function MediaPage() {
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
               Every media request is handled by a Stats SA communications official. You will receive a case reference
               and a private status link. AI-assisted drafts remain internal until an authorised official reviews,
-              approves and releases the response.
+              approves and sends the response to your email address.
             </p>
 
             <form onSubmit={onSubmit} className="mt-8 space-y-5">
+              <PaiaNotice />
               <Field id="name" label="Your name" error={errors["name"]}>
                 <input id="name" name="name" autoComplete="name" className={inputClass} />
               </Field>
               <Field id="outlet" label="Media outlet" error={errors["outlet"]}>
                 <input id="outlet" name="outlet" autoComplete="organization" className={inputClass} />
               </Field>
-              <Field id="contact" label="Email address or phone number" error={errors["contact"]}>
-                <input id="contact" name="contact" autoComplete="email" className={inputClass} />
+              <Field id="contact" label="Email address" error={errors["contact"]}>
+                <input id="contact" name="contact" type="email" required maxLength={200} autoComplete="email" className={inputClass} />
               </Field>
               <Field id="deadline" label="Your deadline (optional)" error={errors["deadline"]}>
                 <input id="deadline" name="deadline" type="datetime-local" className={inputClass} />

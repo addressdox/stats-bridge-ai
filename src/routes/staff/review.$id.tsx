@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Send, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { StaffShell } from "@/components/statbridge/StaffShell";
+import { PaiaNotice } from "@/components/statbridge/PaiaNotice";
+import { MediaEmailDelivery } from "@/components/statbridge/MediaEmailDelivery";
 import { supabase } from "@/integrations/supabase/client";
-import { suggestDraft, saveReviewedDraft } from "@/lib/staff/draft.functions";
+import { ensureReviewDraft, suggestDraft, saveReviewedDraft } from "@/lib/staff/draft.functions";
 import type { DraftEvidence } from "@/lib/statbridge/draft.contract";
 import { useStaff } from "@/lib/staff/useStaff";
 import { REVIEW_REASON_LABELS } from "@/lib/statbridge/contract";
@@ -49,6 +51,7 @@ function WorkbenchPage() {
   const [suggestedEvidence, setSuggestedEvidence] = useState<DraftEvidence[] | null>(null);
   const [notice, setNotice] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [loadedVersion, setLoadedVersion] = useState<number | null>(null);
+  const automaticDraftAttempt = useRef<string | null>(null);
 
   useEffect(() => {
     setBody("");
@@ -121,6 +124,19 @@ function WorkbenchPage() {
   const latest = draftsQuery.data?.[0] ?? null;
   const activeApproval = approvalQuery.data?.find((a) => a.status === "active") ?? null;
 
+  const automaticDraft = useMutation({
+    mutationFn: () => ensureReviewDraft({ data: { caseId: id } }),
+    onSuccess: () => refresh(),
+    onError: (e: Error) => setNotice({ tone: "bad", text: `Automatic drafting could not finish: ${e.message} You can retry with Suggest wording.` }),
+  });
+
+  useEffect(() => {
+    if (!can.review || !caseQuery.data || !draftsQuery.isSuccess || latest || body.trim() || ["released", "rejected"].includes(caseQuery.data.status)) return;
+    if (automaticDraftAttempt.current === id) return;
+    automaticDraftAttempt.current = id;
+    automaticDraft.mutate();
+  }, [id, can.review, caseQuery.data, draftsQuery.isSuccess, latest, body]);
+
   const evidenceQuery = useQuery({
     queryKey: ["draft-evidence", latest?.id],
     enabled: Boolean(latest?.id),
@@ -163,6 +179,7 @@ function WorkbenchPage() {
     queryClient.invalidateQueries({ queryKey: ["case-drafts", id] });
     queryClient.invalidateQueries({ queryKey: ["case-approvals", id] });
     queryClient.invalidateQueries({ queryKey: ["case-release", id] });
+    queryClient.invalidateQueries({ queryKey: ["media-email-delivery", id] });
     queryClient.invalidateQueries({ queryKey: ["review-queue"] });
     queryClient.invalidateQueries({ queryKey: ["draft-evidence"] });
   }
@@ -225,7 +242,7 @@ function WorkbenchPage() {
     onError: (e: Error) => setNotice({ tone: "bad", text: e.message }),
   });
 
-  const pending = startReview.isPending || askAssistant.isPending || saveDraft.isPending;
+  const pending = automaticDraft.isPending || startReview.isPending || askAssistant.isPending || saveDraft.isPending;
 
   const dirty = latest
     ? body !== latest.body ||
@@ -276,6 +293,9 @@ function WorkbenchPage() {
                 <span className="rounded bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   {caseQuery.data.status}
                 </span>
+                {caseQuery.data.review_reasons?.filter((r) => r === "sensitive" || r === "complex").map((r) => (
+                  <span key={r} className="rounded border border-warn/40 bg-warn-surface px-2 py-0.5 text-xs font-semibold text-warn-foreground">{r === "sensitive" ? "Sensitive request" : "Complex request"}</span>
+                ))}
                 {caseQuery.data.is_demo_seed && (
                   <span className="rounded bg-warn/15 px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">
                     Demonstration
@@ -355,9 +375,11 @@ function WorkbenchPage() {
                   onChange={(e) => setBody(e.target.value)}
                   rows={14}
                   aria-label="Draft response"
+                  disabled={automaticDraft.isPending}
                   className="mt-3 w-full rounded-md border border-border bg-surface p-3 font-sans text-sm leading-relaxed"
-                  placeholder="Write the response here, or ask for suggested wording below."
+                  placeholder={automaticDraft.isPending ? "Preparing an evidence-based draft for this request…" : "Review the automatically prepared response, or ask for a fresh draft below."}
                 />
+                {automaticDraft.isPending && <p role="status" className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" aria-hidden />Preparing the AI draft from the submitted question and approved knowledge…</p>}
 
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <input
@@ -431,6 +453,7 @@ function WorkbenchPage() {
                 canRelease={can.release}
                 hasActiveApproval={Boolean(activeApproval)}
                 alreadyReleased={Boolean(releaseQuery.data)}
+                media={caseQuery.data.kind === "media"}
                 onAction={act}
               />
             )}
@@ -497,6 +520,8 @@ function WorkbenchPage() {
           </div>
 
           <aside className="space-y-4">
+            {caseQuery.data.kind === "media" && <PaiaNotice />}
+            {caseQuery.data.kind === "media" && <MediaEmailDelivery caseId={id} canRelease={can.release} approved={Boolean(activeApproval)} hasUnsavedChanges={dirty} hasGaps={Boolean(latest?.gaps?.length)} onUpdated={refresh} />}
             <section className="surface-panel p-4">
               <h2 className="text-sm font-semibold">Approval</h2>
               {activeApproval ? (
@@ -595,6 +620,7 @@ function DecisionPanel({
   canRelease,
   hasActiveApproval,
   alreadyReleased,
+  media,
   onAction,
 }: {
   caseId: string;
@@ -605,6 +631,7 @@ function DecisionPanel({
   canRelease: boolean;
   hasActiveApproval: boolean;
   alreadyReleased: boolean;
+  media: boolean;
   onAction: <T>(fn: () => Promise<T>, okText: string) => Promise<void>;
 }) {
   const [reason, setReason] = useState("");
@@ -685,7 +712,7 @@ function DecisionPanel({
         >
           Approve this version
         </button>
-        <button
+        {!media && <button
           disabled={
             busy ||
             hasUnsavedChanges ||
@@ -704,7 +731,7 @@ function DecisionPanel({
         >
           <Send aria-hidden className="size-4" />
           Release
-        </button>
+        </button>}
       </div>
 
       {!canRelease && (

@@ -60,6 +60,21 @@ function ReviewQueuePage() {
       return data ?? [];
     },
   });
+  const emailQuery = useQuery({
+    queryKey: ["review-queue", "email-delivery"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("releases")
+        .select("id,case_id,delivery_state,released_at,cases!inner(reference,kind,question_text,review_reasons,is_demo_seed)")
+        .eq("cases.kind", "media")
+        .order("released_at", { ascending: false })
+        .limit(50);
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    enabled: can.review || can.release,
+    refetchInterval: (current) => current.state.data?.some((item) => item.delivery_state === "queued") ? 3000 : false,
+  });
 
   return (
     <StaffShell title="Review queue">
@@ -137,11 +152,20 @@ function ReviewQueuePage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-sm font-semibold">{row.reference}</span>
                   <span className="rounded bg-secondary px-2 py-0.5 text-[11px] font-semibold text-secondary-foreground">
-                    {row.kind === "media" ? "Media" : "Public escalation"}
+                    {row.kind === "media" ? "Media request" : "Public escalation"}
                   </span>
+                  {row.review_reasons?.includes("sensitive") && (
+                    <span className="inline-flex items-center gap-1 rounded bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">
+                      <AlertTriangle aria-hidden className="size-3" />Sensitive request
+                    </span>
+                  )}
+                  {row.review_reasons?.includes("complex") && (
+                    <span className="rounded bg-warn-surface px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">Complex request</span>
+                  )}
                   <span className="rounded bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                     {STATUS_LABELS[row.status as string] ?? row.status}
                   </span>
+                  {row.kind === "media" && <span className="text-[11px] text-muted-foreground">Email: not sent</span>}
                   {row.source_changed && (
                     <span className="inline-flex items-center gap-1 rounded bg-warn-surface px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">
                       <AlertTriangle aria-hidden className="size-3" />A source changed
@@ -186,6 +210,30 @@ function ReviewQueuePage() {
           ))}
         </ul>
       )}
+      {(can.review || can.release) && <section className="mt-6 space-y-3" aria-label="Media email delivery">
+        <h2 className="text-sm font-semibold">Media email delivery</h2>
+        <p className="text-xs text-muted-foreground">The latest 50 released media responses. Open a request to check its email or retry a failed send.</p>
+        {emailQuery.isPending && <p className="text-sm text-muted-foreground">Loading delivery status…</p>}
+        {emailQuery.isError && <p role="alert" className="text-sm text-destructive">Email delivery status could not be loaded.</p>}
+        {emailQuery.isSuccess && emailQuery.data.length === 0 && <p className="text-sm text-muted-foreground">No media responses have been released yet.</p>}
+        <ul className="space-y-2">
+          {(emailQuery.data ?? []).map((row) => <li key={row.id}>
+            <Link to="/staff/review/$id" params={{ id: row.case_id }} className="surface-panel block p-4 transition-colors hover:border-accent/50">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-sm font-semibold">{row.cases.reference}</span>
+                <span className="rounded bg-secondary px-2 py-0.5 text-[11px] font-semibold text-secondary-foreground">Media request</span>
+                {row.cases.review_reasons?.includes("sensitive") && <span className="rounded bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">Sensitive request</span>}
+                {row.cases.review_reasons?.includes("complex") && <span className="rounded bg-warn-surface px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">Complex request</span>}
+                <span className={`text-xs font-medium ${row.delivery_state === "sent" ? "text-accent" : row.delivery_state === "failed" ? "text-destructive" : "text-muted-foreground"}`}>
+                  {row.delivery_state === "sent" ? "Sent" : row.delivery_state === "failed" ? "Failed to send" : row.delivery_state === "queued" ? "Sending — awaiting confirmation" : "Not sent"}
+                </span>
+                {row.cases.is_demo_seed && <span className="rounded bg-warn/15 px-2 py-0.5 text-[11px] font-semibold text-warn-foreground">Demonstration</span>}
+              </div>
+              <p className="mt-2 line-clamp-2 text-sm text-foreground">{row.cases.question_text}</p>
+            </Link>
+          </li>)}
+        </ul>
+      </section>}
     </StaffShell>
   );
 }
