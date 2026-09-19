@@ -4,9 +4,11 @@ let interpretation = { language: "zu", englishQuestion: "unemployment Q2 2025", 
 let proposal: unknown;
 let generateFails = false;
 let generationCalls = 0;
+const generationInstructions: string[] = [];
+let activePolicy: Record<string, unknown>;
 const dependencies = {
   interpret: async () => interpretation,
-  assistant: () => ({ name: "private-provider", model: "private-model", complete: async ({system}: {system: string}) => { generationCalls++; if (system.startsWith("Verify a private draft")) return JSON.stringify({relevant: true, supported: true, issues: []}); if (generateFails) throw new Error("unavailable"); return JSON.stringify(proposal); } }),
+  assistant: () => ({ name: "private-provider", model: "private-model", complete: async ({system}: {system: string}) => { generationCalls++; generationInstructions.push(system); if (system.startsWith("Verify a private draft")) return JSON.stringify({relevant: true, supported: true, issues: []}); if (generateFails) throw new Error("unavailable"); return JSON.stringify(proposal); } }),
   semanticSearch: async () => [],
 };
 const { resolveDraftEvidence, ensureCaseDraft, prepareCaseDraft } = await import("../src/lib/statbridge/case-drafting.server");
@@ -25,7 +27,7 @@ let verifiedHuman = true;
 const db: any = {
   from(table: string) {
     const chain = new Proxy({}, { get(_t, operation) {
-      if (operation === "then") return (resolve: any) => resolve({ data: table === "memory_items" ? [] : table === "observations" ? (verifiedHuman ? [{id:figureId}] : []) : table === "drafts" ? existingDraft : table === "cases" ? { id: caseId, reference: "SB-TEST", kind: "media", question_text: "IsiZulu question", status: "received" } : { id: versionId }, error: null });
+      if (operation === "then") return (resolve: any) => resolve({ data: table === "memory_items" ? [] : table === "observations" ? (verifiedHuman ? [{id:figureId}] : []) : table === "drafts" ? existingDraft : table === "cases" ? { id: caseId, reference: "SB-TEST", kind: "media", question_text: "IsiZulu question", status: "received" } : activePolicy, error: null });
       return () => chain;
     } }); return chain;
   },
@@ -36,7 +38,7 @@ const db: any = {
     return { data: name === "search_passages" ? (evidenceAvailable ? [passage] : []) : name === "search_observations" ? (evidenceAvailable ? [figure] : []) : [], error: null };
   },
 };
-beforeEach(() => { calls.length = 0; generationCalls = 0; generateFails = false; existingDraft = null; evidenceAvailable = true; rpcFailure = false; verifiedHuman = true; proposal = { body: "Izinga lokungasebenzi lingu-33.2%.", gaps: [], usedPassageIds: [passageId], usedObservationIds: [figureId] }; });
+beforeEach(() => { calls.length = 0; generationInstructions.length = 0; activePolicy = { id: versionId }; generationCalls = 0; generateFails = false; existingDraft = null; evidenceAvailable = true; rpcFailure = false; verifiedHuman = true; proposal = { body: "Izinga lokungasebenzi lingu-33.2%.", gaps: [], usedPassageIds: [passageId], usedObservationIds: [figureId] }; });
 
 test("draft references resolve only to retrieved source identities", () => {
   const resolved = resolveDraftEvidence(proposal, [passage], [figure]);
@@ -62,6 +64,27 @@ test("intake retries keep an existing draft and do not regenerate", async () => 
   existingDraft = { id: "existing-draft" };
   expect(await ensureCaseDraft(db, caseId, {}, dependencies)).toEqual({ draftId: "existing-draft" });
   expect(generationCalls).toBe(0); expect(calls).toHaveLength(0);
+});
+test("legacy media acknowledgement policy is retained but scoped to public delivery for private drafting", async () => {
+  activePolicy.media_policy = "Never provide a substantive AI-written media answer.";
+  await ensureCaseDraft(db, caseId, {}, dependencies);
+  const instructions = generationInstructions[0]!;
+  expect(instructions).toContain(activePolicy.media_policy as string);
+  expect(instructions).toContain("govern PUBLIC delivery");
+  expect(instructions.indexOf("PRIVATE DRAFT SCOPE")).toBeGreaterThan(instructions.indexOf(activePolicy.media_policy as string));
+  expect(instructions).toContain("Preserve confidentiality, evidence and topic restrictions");
+  expect(generationInstructions[1]).toContain("Verify a private draft");
+  expect(calls.find(c => c.name === "save_generated_case_draft")!.args._evidence).toHaveLength(2);
+  expect(calls.some(c => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
+});
+test("an intake acknowledgement with no evidence cannot replace the private media answer", async () => {
+  activePolicy.media_policy = "Never provide a substantive AI-written media answer.";
+  proposal = { body: "Thank you for your enquiry. Please provide your newsroom contact details.", gaps: [], usedPassageIds: [], usedObservationIds: [] };
+  const draft = await prepareCaseDraft(db, { caseId }, dependencies);
+  expect(draft.body).not.toContain("Thank you for your enquiry");
+  expect(draft.body).toContain("verified draft could not be prepared");
+  expect(draft.gaps.length).toBeGreaterThan(0);
+  expect(calls.some(c => c.name === "approve_draft" || c.name === "release_draft")).toBe(false);
 });
 test("no evidence creates a reviewable gap instead of invented substance", async () => {
   evidenceAvailable = false;

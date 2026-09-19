@@ -35,7 +35,7 @@ const initial: GuidelineDraft = {
     "Use Statistics South Africa and Stats SA consistently. Do not imply ministerial or executive endorsement.",
   messagingRules: "Separate verified facts from context. State limitations plainly.",
   mediaPolicy:
-    "Acknowledge media enquiries, capture contact details and create a case reference. Never provide a substantive AI-written media answer.",
+    "Publicly acknowledge media enquiries, capture contact details and create a case reference. Do not send or publish a substantive AI-written media answer without official approval. Prepare private evidence-backed response drafts for communications officials to review, edit and approve before release.",
   sensitiveTopicPolicy:
     "Escalate sensitive, personal, legal, political, security, embargoed or potentially harmful requests without substantive AI commentary.",
   escalationPolicy:
